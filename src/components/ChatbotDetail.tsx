@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import {
   Bot,
   ArrowLeft,
@@ -14,8 +14,9 @@ import {
   ExternalLink,
   Copy,
   Check,
+  Trash2,
 } from "lucide-react";
-import { useChatbot } from "../hooks/useChatbots";
+import { useChatbot, useDeleteChatbot } from "../hooks/useChatbots";
 import { useKnowledgeBase } from "../hooks/useKnowledgeBase";
 import { useChatMessages, useChatAnalytics } from "../hooks/useChatMessages";
 import { ChatPreview } from "./ChatPreview";
@@ -23,6 +24,7 @@ import { AnalyticsChart } from "./AnalyticsChart";
 
 export const ChatbotDetail = () => {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const { data: chatbot, isLoading: chatbotLoading } = useChatbot(id || "");
   const { data: knowledgeBase = [], isLoading: kbLoading } = useKnowledgeBase(
     id || ""
@@ -32,10 +34,12 @@ export const ChatbotDetail = () => {
   const { data: analytics, isLoading: analyticsLoading } = useChatAnalytics(
     id || ""
   );
+  const deleteChatbot = useDeleteChatbot();
   const [activeTab, setActiveTab] = useState<
     "overview" | "chat" | "knowledge" | "analytics"
   >("overview");
   const [copiedUrl, setCopiedUrl] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const publicChatUrl = `${window.location.origin}/chat/${id}`;
 
@@ -43,6 +47,26 @@ export const ChatbotDetail = () => {
     navigator.clipboard.writeText(publicChatUrl);
     setCopiedUrl(true);
     setTimeout(() => setCopiedUrl(false), 2000);
+  };
+
+  const handleDelete = async () => {
+    if (!chatbot) return;
+
+    if (
+      confirm(
+        `Are you sure you want to delete "${chatbot.name}"? This action cannot be undone and will also delete all associated knowledge base content and chat messages.`
+      )
+    ) {
+      setIsDeleting(true);
+      try {
+        await deleteChatbot.mutateAsync(chatbot.id);
+        navigate("/chatbots");
+      } catch (error) {
+        console.error("Error deleting chatbot:", error);
+        alert("Failed to delete chatbot. Please try again.");
+        setIsDeleting(false);
+      }
+    }
   };
 
   if (chatbotLoading) {
@@ -189,6 +213,19 @@ export const ChatbotDetail = () => {
             <Code className="h-4 w-4 mr-2" />
             Get Code
           </Link>
+          <button
+            onClick={handleDelete}
+            disabled={isDeleting}
+            className="inline-flex items-center px-4 py-2 border border-red-300 rounded-lg text-sm font-medium text-red-600 bg-white hover:bg-red-50 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            title={`Delete ${chatbot.name}`}
+          >
+            {isDeleting ? (
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-red-600 mr-2"></div>
+            ) : (
+              <Trash2 className="h-4 w-4 mr-2" />
+            )}
+            {isDeleting ? "Deleting..." : "Delete"}
+          </button>
         </div>
       </div>
 

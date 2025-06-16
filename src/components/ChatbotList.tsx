@@ -1,11 +1,32 @@
+import { useState } from "react";
 import { Bot, Plus, MessageCircle, Settings, Trash2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
-import { useChatbots } from "../hooks/useChatbots";
+import { useChatbots, useDeleteChatbot } from "../hooks/useChatbots";
 
 export const ChatbotList = () => {
   const { user } = useAuth();
   const { data: chatbots = [], isLoading } = useChatbots(user?.id || "");
+  const deleteChatbot = useDeleteChatbot();
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  const handleDelete = async (chatbotId: string, chatbotName: string) => {
+    if (
+      confirm(
+        `Are you sure you want to delete "${chatbotName}"? This action cannot be undone and will also delete all associated knowledge base content and chat messages.`
+      )
+    ) {
+      setDeletingId(chatbotId);
+      try {
+        await deleteChatbot.mutateAsync(chatbotId);
+      } catch (error) {
+        console.error("Error deleting chatbot:", error);
+        alert("Failed to delete chatbot. Please try again.");
+      } finally {
+        setDeletingId(null);
+      }
+    }
+  };
 
   return (
     <div className="space-y-8">
@@ -109,8 +130,17 @@ export const ChatbotList = () => {
                   >
                     <Settings className="h-4 w-4" />
                   </Link>
-                  <button className="flex items-center justify-center px-3 py-2 border border-red-300 text-red-600 rounded-xl hover:bg-red-50 transition-colors duration-200">
-                    <Trash2 className="h-4 w-4" />
+                  <button
+                    onClick={() => handleDelete(chatbot.id, chatbot.name)}
+                    disabled={deletingId === chatbot.id}
+                    className="flex items-center justify-center px-3 py-2 border border-red-300 text-red-600 rounded-xl hover:bg-red-50 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                    title={`Delete ${chatbot.name}`}
+                  >
+                    {deletingId === chatbot.id ? (
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-red-600"></div>
+                    ) : (
+                      <Trash2 className="h-4 w-4" />
+                    )}
                   </button>
                 </div>
               </div>
