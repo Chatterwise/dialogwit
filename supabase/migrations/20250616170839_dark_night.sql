@@ -1,5 +1,5 @@
 /*
-  # Chatbot Builder Database Schema
+  # ChatterWise Database Schema
 
   1. New Tables
     - `chatbots`

@@ -1,35 +1,39 @@
-import React, { useState } from 'react'
-import { Bot, Mail, Lock, User } from 'lucide-react'
-import { useAuth } from '../hooks/useAuth'
+import React, { useState } from "react";
+import { Bot, Mail, Lock, User } from "lucide-react";
+import { useAuth } from "../hooks/useAuth";
 
 export const Auth = () => {
-  const [isSignUp, setIsSignUp] = useState(false)
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
-  const { signIn, signUp } = useAuth()
+  const [isSignUp, setIsSignUp] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const { signIn, signUp } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
-    setError('')
+    e.preventDefault();
+    setLoading(true);
+    setError("");
 
     try {
       if (isSignUp) {
-        const { error } = await signUp(email, password)
-        if (error) throw error
-        setError('Check your email for confirmation link!')
+        const { error } = await signUp(email, password);
+        if (error) throw error;
+        setError("Check your email for confirmation link!");
       } else {
-        const { error } = await signIn(email, password)
-        if (error) throw error
+        const { error } = await signIn(email, password);
+        if (error) throw error;
       }
-    } catch (error: any) {
-      setError(error.message)
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        setError(error.message);
+      } else {
+        setError("An unexpected error occurred.");
+      }
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
@@ -39,19 +43,22 @@ export const Auth = () => {
             <Bot className="h-12 w-12 text-blue-600" />
           </div>
           <h2 className="mt-6 text-3xl font-extrabold text-gray-900">
-            {isSignUp ? 'Create your account' : 'Sign in to your account'}
+            {isSignUp ? "Create your account" : "Sign in to your account"}
           </h2>
           <p className="mt-2 text-sm text-gray-600">
-            {isSignUp 
-              ? 'Start building AI-powered chatbots today' 
-              : 'Welcome back to ChatBot Builder'}
+            {isSignUp
+              ? "Start building AI-powered chatbots today"
+              : "Welcome back to ChatterWise"}
           </p>
         </div>
-        
+
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="space-y-4">
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+              <label
+                htmlFor="email"
+                className="block text-sm font-medium text-gray-700"
+              >
                 Email address
               </label>
               <div className="mt-1 relative">
@@ -69,9 +76,12 @@ export const Auth = () => {
                 <Mail className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
               </div>
             </div>
-            
+
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+              <label
+                htmlFor="password"
+                className="block text-sm font-medium text-gray-700"
+              >
                 Password
               </label>
               <div className="mt-1 relative">
@@ -107,8 +117,12 @@ export const Auth = () => {
                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
               ) : (
                 <>
-                  {isSignUp ? <User className="h-4 w-4 mr-2" /> : <Mail className="h-4 w-4 mr-2" />}
-                  {isSignUp ? 'Create Account' : 'Sign In'}
+                  {isSignUp ? (
+                    <User className="h-4 w-4 mr-2" />
+                  ) : (
+                    <Mail className="h-4 w-4 mr-2" />
+                  )}
+                  {isSignUp ? "Create Account" : "Sign In"}
                 </>
               )}
             </button>
@@ -120,13 +134,13 @@ export const Auth = () => {
               onClick={() => setIsSignUp(!isSignUp)}
               className="text-sm text-blue-600 hover:text-blue-500"
             >
-              {isSignUp 
-                ? 'Already have an account? Sign in' 
+              {isSignUp
+                ? "Already have an account? Sign in"
                 : "Don't have an account? Sign up"}
             </button>
           </div>
         </form>
       </div>
     </div>
-  )
-}
+  );
+};

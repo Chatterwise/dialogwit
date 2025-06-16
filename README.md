@@ -5,6 +5,7 @@ A complete chatbot integration solution that allows users to easily add AI-power
 ## 🚀 Features
 
 ### For React Developers
+
 - **Headless UI Approach**: Complete control over chat interface design
 - **TypeScript Support**: Fully typed for better development experience
 - **Built-in State Management**: Handles messages, loading states, and errors
@@ -12,11 +13,70 @@ A complete chatbot integration solution that allows users to easily add AI-power
 - **Zero Dependencies**: Self-contained hook with no external dependencies
 
 ### For All Other Frameworks
+
 - **Universal Script Tag**: Works with any framework or vanilla HTML
 - **No Build Process**: Just add a script tag and you're ready
 - **Highly Customizable**: Colors, position, theme, and behavior options
 - **Responsive Design**: Works perfectly on desktop and mobile
 - **Professional UI**: Beautiful, modern chat widget design
+
+💡 Folder Structure (under `supabase/functions/`):
+
+- `_shared/`: All shared logic.
+  - `types.ts`: TypeScript interfaces and types.
+  - `utils/`: Utility functions:
+    - `openai.ts`: Embedding + chat completion logic.
+    - `chunking.ts`: `chunkText` with smart paragraph/sentence boundaries.
+    - `database.ts`: Batch insert, metadata tracking, fallback queries.
+    - `response.ts`: Standard success/error responses.
+  - `handlers/`: Abstracted core handlers.
+    - `rag.ts`: `generateRAGResponse()`, supports streaming + citations.
+    - `processing.ts`: `processKnowledgeBase()`, handles batch ingestion.
+
+📦 Edge Functions:
+
+- `chat/index.ts`: Handles user messages using RAG.
+- `process-knowledge-base/index.ts`: Ingests docs, chunks, and embeds.
+- `train-chatbot/index.ts`: Training abstraction (optional).
+
+✅ Key Features:
+
+1. **Batch Efficiency**
+
+   - Inserts up to 100 chunks per query.
+   - Embeds up to 20 chunks per OpenAI call.
+   - Rate limit–safe, with exponential backoff.
+
+2. **Chunking**
+
+   - Preserves paragraphs/sentences.
+   - Configurable `maxLength`, `overlapLength`.
+
+3. **Citation Support**
+
+   - Chunk metadata: `source_url`, `chunk_index`, `similarity`, etc.
+   - Optionally included in chatbot responses.
+
+4. **Search & Fallback**
+
+   - Primary: vector search via `match_documents()`.
+   - Fallback: text-based keyword search if embeddings fail or unavailable.
+
+5. **Robust Error Handling**
+
+   - `OpenAIError`, `ValidationError`, etc.
+   - 4xx/5xx status codes and JSON error payloads.
+   - Detects missing/invalid `OPENAI_API_KEY`.
+
+6. **Streaming Ready**
+   - `streamChatCompletion()` using `ReadableStream`.
+   - Easily swapped into chat handler.
+
+🛠️ Extendable:
+
+- Add new metadata fields to chunks (e.g., section titles).
+- Track processing timestamps and document versions.
+- Easily portable to other vector DBs or LLM providers.
 
 ## 📁 Files Included
 
@@ -36,25 +96,22 @@ A complete chatbot integration solution that allows users to easily add AI-power
 1. **Download the hook**: Copy `useChatbot.ts` into your React project
 
 2. **Install and use**:
+
 ```tsx
-import { useChatbot } from './useChatbot'
+import { useChatbot } from "./useChatbot";
 
 function ChatComponent() {
   const { messages, sendMessage, isLoading } = useChatbot({
-    botId: 'your-bot-id',
-    apiUrl: 'https://your-api.supabase.co/functions/v1',
-    apiKey: 'your-api-key'
-  })
+    botId: "your-bot-id",
+    apiUrl: "https://your-api.supabase.co/functions/v1",
+    apiKey: "your-api-key",
+  });
 
   const handleSend = (message: string) => {
-    sendMessage(message)
-  }
+    sendMessage(message);
+  };
 
-  return (
-    <div>
-      {/* Your custom chat UI here */}
-    </div>
-  )
+  return <div>{/* Your custom chat UI here */}</div>;
 }
 ```
 
@@ -63,17 +120,18 @@ function ChatComponent() {
 1. **Host the widget**: Upload `chatbot-widget.js` to your server
 
 2. **Add to your HTML**:
+
 ```html
-<script 
-  src="https://your-domain.com/chatbot-widget.js" 
+<script
+  src="https://your-domain.com/chatbot-widget.js"
   data-bot-id="your-bot-id"
   data-api-url="https://your-api.supabase.co/functions/v1"
   data-api-key="your-api-key"
   data-theme="light"
   data-position="bottom-right"
   data-primary-color="#3B82F6"
-  async>
-</script>
+  async
+></script>
 ```
 
 ## ⚙️ Configuration Options
@@ -82,29 +140,29 @@ function ChatComponent() {
 
 ```typescript
 interface UseChatbotOptions {
-  botId: string                                    // Required: Your bot ID
-  apiUrl?: string                                  // API endpoint URL
-  apiKey?: string                                  // API authentication key
-  onError?: (error: string) => void               // Error callback
-  onMessageSent?: (message: string) => void       // Message sent callback
-  onResponseReceived?: (response: string) => void // Response received callback
+  botId: string; // Required: Your bot ID
+  apiUrl?: string; // API endpoint URL
+  apiKey?: string; // API authentication key
+  onError?: (error: string) => void; // Error callback
+  onMessageSent?: (message: string) => void; // Message sent callback
+  onResponseReceived?: (response: string) => void; // Response received callback
 }
 ```
 
 ### Script Tag Attributes
 
-| Attribute | Description | Default |
-|-----------|-------------|---------|
-| `data-bot-id` | Your chatbot ID (required) | - |
-| `data-api-url` | API endpoint URL | - |
-| `data-api-key` | API authentication key | - |
-| `data-theme` | Widget theme (`light`, `dark`) | `light` |
-| `data-position` | Widget position (`bottom-right`, `bottom-left`, `top-right`, `top-left`) | `bottom-right` |
-| `data-primary-color` | Primary color (hex) | `#3B82F6` |
-| `data-title` | Widget title | `AI Assistant` |
-| `data-subtitle` | Widget subtitle | `Online` |
-| `data-placeholder` | Input placeholder | `Type your message...` |
-| `data-welcome-message` | Welcome message | `Hello! How can I help you today?` |
+| Attribute              | Description                                                              | Default                            |
+| ---------------------- | ------------------------------------------------------------------------ | ---------------------------------- |
+| `data-bot-id`          | Your chatbot ID (required)                                               | -                                  |
+| `data-api-url`         | API endpoint URL                                                         | -                                  |
+| `data-api-key`         | API authentication key                                                   | -                                  |
+| `data-theme`           | Widget theme (`light`, `dark`)                                           | `light`                            |
+| `data-position`        | Widget position (`bottom-right`, `bottom-left`, `top-right`, `top-left`) | `bottom-right`                     |
+| `data-primary-color`   | Primary color (hex)                                                      | `#3B82F6`                          |
+| `data-title`           | Widget title                                                             | `AI Assistant`                     |
+| `data-subtitle`        | Widget subtitle                                                          | `Online`                           |
+| `data-placeholder`     | Input placeholder                                                        | `Type your message...`             |
+| `data-welcome-message` | Welcome message                                                          | `Hello! How can I help you today?` |
 
 ## 🎮 Widget API (Script Tag)
 
@@ -112,22 +170,22 @@ The script tag integration exposes a global `ChatbotWidget` object:
 
 ```javascript
 // Open the chat widget
-ChatbotWidget.open()
+ChatbotWidget.open();
 
 // Close the chat widget
-ChatbotWidget.close()
+ChatbotWidget.close();
 
 // Toggle the chat widget
-ChatbotWidget.toggle()
+ChatbotWidget.toggle();
 
 // Send a message programmatically
-ChatbotWidget.sendMessage("Hello!")
+ChatbotWidget.sendMessage("Hello!");
 
 // Check if widget is open
-console.log(ChatbotWidget.isOpen()) // true/false
+console.log(ChatbotWidget.isOpen()); // true/false
 
 // Access configuration
-console.log(ChatbotWidget.config)
+console.log(ChatbotWidget.config);
 ```
 
 ## 🌐 Framework Compatibility
@@ -149,35 +207,35 @@ console.log(ChatbotWidget.config)
 
 ```tsx
 const { messages, sendMessage, isLoading } = useChatbot({
-  botId: 'your-bot-id',
-  apiUrl: 'https://your-api.supabase.co/functions/v1',
-  apiKey: 'your-api-key'
-})
+  botId: "your-bot-id",
+  apiUrl: "https://your-api.supabase.co/functions/v1",
+  apiKey: "your-api-key",
+});
 
 return (
   <div className="my-custom-chat">
-    {messages.map(msg => (
+    {messages.map((msg) => (
       <div key={msg.id} className="message">
         <div className="user-message">{msg.message}</div>
         <div className="bot-response">
-          {msg.isLoading ? 'Thinking...' : msg.response}
+          {msg.isLoading ? "Thinking..." : msg.response}
         </div>
       </div>
     ))}
   </div>
-)
+);
 ```
 
 ### Script Tag Custom Colors
 
 ```html
-<script 
-  src="chatbot-widget.js" 
+<script
+  src="chatbot-widget.js"
   data-bot-id="your-bot-id"
   data-primary-color="#ff6b6b"
   data-theme="dark"
-  data-position="bottom-left">
-</script>
+  data-position="bottom-left"
+></script>
 ```
 
 ## 🔒 Security Notes
@@ -202,13 +260,13 @@ Add this to enable debug logging:
 
 ```javascript
 // For script tag integration
-window.ChatbotWidget.debug = true
+window.ChatbotWidget.debug = true;
 
 // For React hook
 const { messages, error } = useChatbot({
   // ... options
-  onError: (error) => console.error('Chat error:', error)
-})
+  onError: (error) => console.error("Chat error:", error),
+});
 ```
 
 ## 📚 API Reference
@@ -217,12 +275,12 @@ const { messages, error } = useChatbot({
 
 ```typescript
 interface UseChatbotReturn {
-  messages: ChatMessage[]           // Array of chat messages
-  isLoading: boolean               // Loading state
-  error: string | null             // Error message if any
-  sendMessage: (message: string) => Promise<void>  // Send message function
-  clearMessages: () => void        // Clear all messages
-  retryLastMessage: () => Promise<void>  // Retry last failed message
+  messages: ChatMessage[]; // Array of chat messages
+  isLoading: boolean; // Loading state
+  error: string | null; // Error message if any
+  sendMessage: (message: string) => Promise<void>; // Send message function
+  clearMessages: () => void; // Clear all messages
+  retryLastMessage: () => Promise<void>; // Retry last failed message
 }
 ```
 
@@ -230,11 +288,11 @@ interface UseChatbotReturn {
 
 ```typescript
 interface ChatMessage {
-  id: string                       // Unique message ID
-  message: string                  // User's message
-  response: string                 // Bot's response
-  timestamp: Date                  // Message timestamp
-  isLoading?: boolean             // Loading state for this message
+  id: string; // Unique message ID
+  message: string; // User's message
+  response: string; // Bot's response
+  timestamp: Date; // Message timestamp
+  isLoading?: boolean; // Loading state for this message
 }
 ```
 

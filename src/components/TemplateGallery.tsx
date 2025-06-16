@@ -1,6 +1,5 @@
-import React from 'react'
-import { ChatTemplateShowcase } from './ChatTemplates/ChatTemplateShowcase'
+import { ChatTemplateShowcase } from "./ChatTemplates/ChatTemplateShowcase";
 
 export const TemplateGallery = () => {
-  return <ChatTemplateShowcase />
-}
+  return <ChatTemplateShowcase />;
+};

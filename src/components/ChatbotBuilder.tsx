@@ -1,43 +1,51 @@
-import React, { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { Bot, Upload, FileText, Loader, CheckCircle, Zap, Brain } from 'lucide-react'
-import { useAuth } from '../hooks/useAuth'
-import { useCreateChatbot } from '../hooks/useChatbots'
-import { useAddKnowledgeBase } from '../hooks/useKnowledgeBase'
-import { useTrainChatbot } from '../hooks/useTraining'
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import {
+  Bot,
+  Upload,
+  FileText,
+  CheckCircle,
+  Zap,
+  Brain,
+  Database,
+} from "lucide-react";
+import { useAuth } from "../hooks/useAuth";
+import { useCreateChatbot } from "../hooks/useChatbots";
+import { useAddKnowledgeBase } from "../hooks/useKnowledgeBase";
+import { useTrainChatbot } from "../hooks/useTraining";
 
 export const ChatbotBuilder = () => {
-  const navigate = useNavigate()
-  const { user } = useAuth()
-  const createChatbot = useCreateChatbot()
-  const addKnowledgeBase = useAddKnowledgeBase()
-  const trainChatbot = useTrainChatbot()
-  
-  const [step, setStep] = useState(1)
-  const [createdChatbotId, setCreatedChatbotId] = useState<string>('')
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const createChatbot = useCreateChatbot();
+  const addKnowledgeBase = useAddKnowledgeBase();
+  const trainChatbot = useTrainChatbot();
+
+  const [step, setStep] = useState(1);
+  const [createdChatbotId, setCreatedChatbotId] = useState<string>("");
   const [formData, setFormData] = useState({
-    name: '',
-    description: '',
-    knowledgeBase: '',
-    knowledgeBaseType: 'text' as 'text' | 'document',
+    name: "",
+    description: "",
+    knowledgeBase: "",
+    knowledgeBaseType: "text" as "text" | "document",
     useOpenAI: true,
-    openAIModel: 'gpt-3.5-turbo'
-  })
+    openAIModel: "gpt-3.5-turbo",
+  });
 
   const handleNext = () => {
     if (step < 5) {
-      setStep(step + 1)
+      setStep(step + 1);
     }
-  }
+  };
 
   const handleBack = () => {
     if (step > 1) {
-      setStep(step - 1)
+      setStep(step - 1);
     }
-  }
+  };
 
   const handleSubmit = async () => {
-    if (!user) return
+    if (!user) return;
 
     try {
       // Create chatbot
@@ -45,10 +53,10 @@ export const ChatbotBuilder = () => {
         name: formData.name,
         description: formData.description,
         user_id: user.id,
-        status: 'creating'
-      })
+        status: "creating",
+      });
 
-      setCreatedChatbotId(chatbot.id)
+      setCreatedChatbotId(chatbot.id);
 
       // Add knowledge base
       if (formData.knowledgeBase) {
@@ -56,63 +64,70 @@ export const ChatbotBuilder = () => {
           chatbot_id: chatbot.id,
           content: formData.knowledgeBase,
           content_type: formData.knowledgeBaseType,
-          processed: false
-        })
+          processed: false,
+        });
       }
 
-      setStep(3) // Move to processing step
+      setStep(3); // Move to processing step
 
-      // Start training with OpenAI
+      // Start RAG processing with OpenAI
       if (formData.useOpenAI) {
         await trainChatbot.mutateAsync({
           chatbotId: chatbot.id,
-          model: formData.openAIModel
-        })
+          model: formData.openAIModel,
+        });
       }
 
-      setStep(4) // Move to training step
-      
+      setStep(4); // Move to training step
+
       // Simulate final processing
       setTimeout(() => {
-        setStep(5) // Move to completion step
-      }, 3000)
-
+        setStep(5); // Move to completion step
+      }, 3000);
     } catch (error) {
-      console.error('Error creating chatbot:', error)
+      console.error("Error creating chatbot:", error);
     }
-  }
+  };
 
   const handleFinish = () => {
-    navigate(`/chatbots/${createdChatbotId}`)
-  }
+    navigate(`/chatbots/${createdChatbotId}`);
+  };
 
   return (
-    <div className="max-w-2xl mx-auto">
+    <div className="max-w-3xl mx-auto">
       {/* Progress Bar */}
       <div className="mb-8">
         <div className="flex items-center justify-between mb-2">
-          <span className="text-sm font-medium text-gray-700">Step {step} of 5</span>
-          <span className="text-sm text-gray-500">{Math.round((step / 5) * 100)}% Complete</span>
+          <span className="text-sm font-medium text-gray-700">
+            Step {step} of 5
+          </span>
+          <span className="text-sm text-gray-500">
+            {Math.round((step / 5) * 100)}% Complete
+          </span>
         </div>
         <div className="w-full bg-gray-200 rounded-full h-2">
-          <div 
-            className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+          <div
+            className="bg-primary-600 h-2 rounded-full transition-all duration-300"
             style={{ width: `${(step / 5) * 100}%` }}
           />
         </div>
       </div>
 
       {/* Step Content */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+      <div className="bg-white/95 rounded-2xl shadow-xl border border-gray-100 p-8">
         {step === 1 && (
-          <div className="space-y-6">
+          <div className="space-y-8">
             <div className="text-center">
-              <Bot className="h-12 w-12 text-blue-600 mx-auto" />
-              <h2 className="mt-4 text-2xl font-bold text-gray-900">Create Your Chatbot</h2>
-              <p className="mt-2 text-gray-600">Let's start by giving your chatbot a name and description.</p>
+              <Bot className="h-16 w-16 text-primary-600 mx-auto" />
+              <h2 className="mt-4 text-2xl font-bold text-gray-900 font-display tracking-tight">
+                Create Your Chatbot
+              </h2>
+              <p className="mt-2 text-gray-600">
+                Let's start by giving your chatbot a name and description.
+              </p>
             </div>
-            
-            <div className="space-y-4">
+
+            <div className="space-y-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Chatbot Name
@@ -120,21 +135,25 @@ export const ChatbotBuilder = () => {
                 <input
                   type="text"
                   value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  onChange={(e) =>
+                    setFormData({ ...formData, name: e.target.value })
+                  }
+                  className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-primary-400 transition"
                   placeholder="e.g., Customer Support Bot"
                 />
               </div>
-              
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Description
                 </label>
                 <textarea
                   value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, description: e.target.value })
+                  }
                   rows={3}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-primary-400 transition"
                   placeholder="Describe what your chatbot will help with..."
                 />
               </div>
@@ -143,34 +162,62 @@ export const ChatbotBuilder = () => {
         )}
 
         {step === 2 && (
-          <div className="space-y-6">
+          <div className="space-y-8">
             <div className="text-center">
-              <FileText className="h-12 w-12 text-blue-600 mx-auto" />
-              <h2 className="mt-4 text-2xl font-bold text-gray-900">Add Knowledge Base</h2>
-              <p className="mt-2 text-gray-600">Upload documents or add text that your chatbot will use to answer questions.</p>
+              <FileText className="h-16 w-16 text-primary-600 mx-auto" />
+              <h2 className="mt-4 text-2xl font-bold text-gray-900 font-display tracking-tight">
+                Add Knowledge Base
+              </h2>
+              <p className="mt-2 text-gray-600">
+                Upload documents or add text that your chatbot will use to
+                answer questions.
+              </p>
             </div>
-            
-            <div className="space-y-4">
+
+            <div className="space-y-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  AI Training Options
+                  RAG Processing Options
                 </label>
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <div className="bg-primary-50 border border-primary-200 rounded-xl p-6">
                   <div className="flex items-center">
                     <input
                       type="checkbox"
                       id="useOpenAI"
                       checked={formData.useOpenAI}
-                      onChange={(e) => setFormData({ ...formData, useOpenAI: e.target.checked })}
-                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          useOpenAI: e.target.checked,
+                        })
+                      }
+                      className="h-4 w-4 text-primary-600 focus:ring-primary-400 border-gray-300 rounded"
                     />
-                    <label htmlFor="useOpenAI" className="ml-2 text-sm font-medium text-blue-900">
-                      Use OpenAI for advanced training
+                    <label
+                      htmlFor="useOpenAI"
+                      className="ml-2 text-sm font-medium text-primary-900"
+                    >
+                      Use OpenAI for RAG (Retrieval-Augmented Generation)
                     </label>
                   </div>
-                  <p className="text-sm text-blue-700 mt-1">
-                    Enable AI-powered training for better responses and understanding
+                  <p className="text-sm text-primary-700 mt-2">
+                    Enable AI-powered chunking, embeddings, and semantic search
+                    for better responses
                   </p>
+                  <div className="mt-4 text-xs text-primary-600 space-y-2">
+                    <div className="flex items-center">
+                      <Database className="h-4 w-4 mr-2" />
+                      <span>Automatic content chunking</span>
+                    </div>
+                    <div className="flex items-center">
+                      <Brain className="h-4 w-4 mr-2" />
+                      <span>Vector embeddings for semantic search</span>
+                    </div>
+                    <div className="flex items-center">
+                      <Zap className="h-4 w-4 mr-2" />
+                      <span>Context-aware responses</span>
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -181,10 +228,14 @@ export const ChatbotBuilder = () => {
                   </label>
                   <select
                     value={formData.openAIModel}
-                    onChange={(e) => setFormData({ ...formData, openAIModel: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    onChange={(e) =>
+                      setFormData({ ...formData, openAIModel: e.target.value })
+                    }
+                    className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-primary-400 transition"
                   >
-                    <option value="gpt-3.5-turbo">GPT-3.5 Turbo (Recommended)</option>
+                    <option value="gpt-3.5-turbo">
+                      GPT-3.5 Turbo (Recommended)
+                    </option>
                     <option value="gpt-4">GPT-4 (Advanced)</option>
                     <option value="gpt-4-turbo">GPT-4 Turbo (Latest)</option>
                   </select>
@@ -195,20 +246,23 @@ export const ChatbotBuilder = () => {
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Knowledge Base Content
                 </label>
-                <div className="border-2 border-dashed border-gray-300 rounded-lg p-6">
-                  <div className="text-center">
-                    <Upload className="h-8 w-8 text-gray-400 mx-auto mb-2" />
-                    <p className="text-sm text-gray-600 mb-4">
-                      Upload documents or paste your content below
-                    </p>
-                    <textarea
-                      value={formData.knowledgeBase}
-                      onChange={(e) => setFormData({ ...formData, knowledgeBase: e.target.value })}
-                      rows={8}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      placeholder="Paste your knowledge base content here..."
-                    />
-                  </div>
+                <div className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center">
+                  <Upload className="h-10 w-10 text-gray-400 mx-auto mb-4" />
+                  <p className="text-sm text-gray-600 mb-6">
+                    Upload documents or paste your content below
+                  </p>
+                  <textarea
+                    value={formData.knowledgeBase}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        knowledgeBase: e.target.value,
+                      })
+                    }
+                    rows={8}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-primary-400 transition"
+                    placeholder="Paste your knowledge base content here..."
+                  />
                 </div>
               </div>
             </div>
@@ -216,42 +270,78 @@ export const ChatbotBuilder = () => {
         )}
 
         {step === 3 && (
-          <div className="space-y-6">
+          <div className="space-y-8">
             <div className="text-center">
-              <Loader className="h-12 w-12 text-blue-600 mx-auto animate-spin" />
-              <h2 className="mt-4 text-2xl font-bold text-gray-900">Processing Knowledge Base</h2>
-              <p className="mt-2 text-gray-600">Analyzing and indexing your content for optimal performance.</p>
+              <Database className="h-16 w-16 text-primary-600 mx-auto animate-pulse" />
+              <h2 className="mt-4 text-2xl font-bold text-gray-900 font-display tracking-tight">
+                Processing Knowledge Base
+              </h2>
+              <p className="mt-2 text-gray-600">
+                Chunking content and creating vector embeddings for optimal
+                retrieval.
+              </p>
             </div>
-            
-            <div className="bg-blue-50 rounded-lg p-4">
-              <div className="flex items-center">
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 mr-3"></div>
-                <span className="text-sm text-blue-800">Processing your knowledge base...</span>
+
+            <div className="space-y-4">
+              <div className="bg-primary-50 rounded-xl p-6">
+                <div className="flex items-center">
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary-600 mr-3"></div>
+                  <span className="text-sm text-primary-800">
+                    Chunking content into optimal segments...
+                  </span>
+                </div>
+              </div>
+
+              <div className="bg-purple-50 rounded-xl p-6">
+                <div className="flex items-center">
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-purple-600 mr-3"></div>
+                  <span className="text-sm text-purple-800">
+                    Creating vector embeddings...
+                  </span>
+                </div>
               </div>
             </div>
           </div>
         )}
 
         {step === 4 && (
-          <div className="space-y-6">
+          <div className="space-y-8">
             <div className="text-center">
-              <Brain className="h-12 w-12 text-purple-600 mx-auto animate-pulse" />
-              <h2 className="mt-4 text-2xl font-bold text-gray-900">AI Training in Progress</h2>
-              <p className="mt-2 text-gray-600">Training your chatbot with OpenAI for intelligent responses.</p>
+              <Brain className="h-16 w-16 text-purple-600 mx-auto animate-pulse" />
+              <h2 className="mt-4 text-2xl font-bold text-gray-900 font-display tracking-tight">
+                RAG Pipeline Processing
+              </h2>
+              <p className="mt-2 text-gray-600">
+                Setting up retrieval-augmented generation for intelligent
+                responses.
+              </p>
             </div>
-            
-            <div className="space-y-3">
-              <div className="bg-green-50 rounded-lg p-4">
+
+            <div className="space-y-4">
+              <div className="bg-green-50 rounded-xl p-6">
                 <div className="flex items-center">
-                  <CheckCircle className="h-4 w-4 text-green-600 mr-3" />
-                  <span className="text-sm text-green-800">Knowledge base processed ✓</span>
+                  <CheckCircle className="h-5 w-5 text-green-600 mr-3" />
+                  <span className="text-sm text-green-800">
+                    Content chunked successfully ✓
+                  </span>
                 </div>
               </div>
-              
-              <div className="bg-purple-50 rounded-lg p-4">
+
+              <div className="bg-green-50 rounded-xl p-6">
                 <div className="flex items-center">
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-purple-600 mr-3"></div>
-                  <span className="text-sm text-purple-800">Training AI model with {formData.openAIModel}...</span>
+                  <CheckCircle className="h-5 w-5 text-green-600 mr-3" />
+                  <span className="text-sm text-green-800">
+                    Vector embeddings created ✓
+                  </span>
+                </div>
+              </div>
+
+              <div className="bg-purple-50 rounded-xl p-6">
+                <div className="flex items-center">
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-purple-600 mr-3"></div>
+                  <span className="text-sm text-purple-800">
+                    Setting up semantic search with {formData.openAIModel}...
+                  </span>
                 </div>
               </div>
             </div>
@@ -259,30 +349,55 @@ export const ChatbotBuilder = () => {
         )}
 
         {step === 5 && (
-          <div className="space-y-6">
+          <div className="space-y-8">
             <div className="text-center">
-              <CheckCircle className="h-12 w-12 text-green-600 mx-auto" />
-              <h2 className="mt-4 text-2xl font-bold text-gray-900">Chatbot Created Successfully!</h2>
-              <p className="mt-2 text-gray-600">Your AI-powered chatbot is ready to use and has been trained with OpenAI.</p>
+              <CheckCircle className="h-16 w-16 text-green-600 mx-auto" />
+              <h2 className="mt-4 text-2xl font-bold text-gray-900 font-display tracking-tight">
+                RAG Chatbot Ready!
+              </h2>
+              <p className="mt-2 text-gray-600">
+                Your AI-powered chatbot with retrieval-augmented generation is
+                ready to use.
+              </p>
             </div>
-            
-            <div className="space-y-3">
-              <div className="bg-green-50 rounded-lg p-4">
+
+            <div className="space-y-4">
+              <div className="bg-green-50 rounded-xl p-6">
                 <div className="flex items-center">
-                  <CheckCircle className="h-5 w-5 text-green-600 mr-3" />
+                  <CheckCircle className="h-6 w-6 text-green-600 mr-3" />
                   <div>
-                    <p className="text-sm font-medium text-green-800">Chatbot "{formData.name}" is ready!</p>
-                    <p className="text-sm text-green-700">AI training completed with {formData.openAIModel}</p>
+                    <p className="text-sm font-medium text-green-800">
+                      Chatbot "{formData.name}" is ready!
+                    </p>
+                    <p className="text-sm text-green-700">
+                      RAG pipeline configured with {formData.openAIModel}
+                    </p>
                   </div>
                 </div>
               </div>
 
-              <div className="bg-blue-50 rounded-lg p-4">
+              <div className="bg-primary-50 rounded-xl p-6">
                 <div className="flex items-center">
-                  <Zap className="h-5 w-5 text-blue-600 mr-3" />
+                  <Database className="h-6 w-6 text-primary-600 mr-3" />
                   <div>
-                    <p className="text-sm font-medium text-blue-800">Public chat URL generated</p>
-                    <p className="text-sm text-blue-700 font-mono">
+                    <p className="text-sm font-medium text-primary-800">
+                      Vector database ready
+                    </p>
+                    <p className="text-sm text-primary-700">
+                      Content chunked and embedded for semantic search
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-purple-50 rounded-xl p-6">
+                <div className="flex items-center">
+                  <Zap className="h-6 w-6 text-purple-600 mr-3" />
+                  <div>
+                    <p className="text-sm font-medium text-purple-800">
+                      Public chat URL generated
+                    </p>
+                    <p className="text-sm text-purple-700 font-mono">
                       {window.location.origin}/chat/{createdChatbotId}
                     </p>
                   </div>
@@ -297,11 +412,23 @@ export const ChatbotBuilder = () => {
           <button
             onClick={handleBack}
             disabled={step === 1}
-            className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-5 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-xl hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
           >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-4 w-4 mr-2 inline"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+            >
+              <path
+                fillRule="evenodd"
+                d="M9.707 14.707a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 1.414L7.414 9H15a1 1 0 110 2H7.414l2.293 2.293a1 1 0 010 1.414z"
+                clipRule="evenodd"
+              />
+            </svg>
             Back
           </button>
-          
+
           {step < 3 && (
             <button
               onClick={step === 2 ? handleSubmit : handleNext}
@@ -310,16 +437,16 @@ export const ChatbotBuilder = () => {
                 (step === 2 && !formData.knowledgeBase) ||
                 createChatbot.isPending
               }
-              className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-5 py-2.5 text-sm font-semibold text-white bg-primary-600 border border-transparent rounded-xl shadow-card hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
             >
-              {step === 2 ? 'Create & Train Chatbot' : 'Next'}
+              {step === 2 ? "Create & Process RAG" : "Next"}
             </button>
           )}
-          
+
           {step === 5 && (
             <button
               onClick={handleFinish}
-              className="px-4 py-2 text-sm font-medium text-white bg-green-600 border border-transparent rounded-lg hover:bg-green-700"
+              className="px-5 py-2.5 text-sm font-semibold text-white bg-green-600 border border-transparent rounded-xl shadow-card hover:bg-green-700 transition-colors duration-200"
             >
               View Chatbot
             </button>
@@ -327,5 +454,5 @@ export const ChatbotBuilder = () => {
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
