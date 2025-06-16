@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbot Widget - Vanilla JS Example</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+        }
+        
+        .demo-section {
+            margin-bottom: 40px;
+            padding: 20px;
+            border: 2px dashed #ddd;
+            border-radius: 8px;
+            background: #fafafa;
+        }
+        
+        .demo-section h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        
+        .code-block {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 6px;
+            padding: 16px;
+            margin: 16px 0;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 14px;
+            overflow-x: auto;
+        }
+        
+        .btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 14px;
+        }
+        
+        .btn:hover {
+            background: #0056b3;
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+        }
+        
+        .btn-secondary:hover {
+            background: #545b62;
+        }
+        
+        .widget-controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .status {
+            padding: 10px;
+            border-radius: 6px;
+            margin: 10px 0;
+            font-size: 14px;
+        }
+        
+        .status.info {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+        
+        .status.success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🤖 AI Chatbot Widget Demo</h1>
+        <p class="subtitle">This page demonstrates how to integrate the chatbot widget into any website using vanilla JavaScript.</p>
+        
+        <div class="demo-section">
+            <h3>📋 Basic Integration</h3>
+            <p>Add this script tag to your HTML to get started:</p>
+            <div class="code-block">
+&lt;script 
+  src="https://your-domain.com/chatbot-widget.js" 
+  data-bot-id="your-bot-id-here"
+  data-api-url="https://your-api.supabase.co/functions/v1"
+  data-api-key="your-api-key"
+  data-theme="light"
+  data-position="bottom-right"
+  data-primary-color="#007bff"
+  async&gt;
+&lt;/script&gt;
+            </div>
+            <div class="status info">
+                ℹ️ The widget will automatically appear in the bottom-right corner of your page.
+            </div>
+        </div>
+        
+        <div class="demo-section">
+            <h3>🎛️ Widget Controls</h3>
+            <p>You can control the widget programmatically using JavaScript:</p>
+            <div class="code-block">
+// Open the chat widget
+ChatbotWidget.open()
+
+// Close the chat widget
+ChatbotWidget.close()
+
+// Toggle the chat widget
+ChatbotWidget.toggle()
+
+// Send a message programmatically
+ChatbotWidget.sendMessage("Hello from JavaScript!")
+
+// Check if widget is open
+console.log(ChatbotWidget.isOpen())
+
+// Access widget configuration
+console.log(ChatbotWidget.config)
+            </div>
+            
+            <div class="widget-controls">
+                <button class="btn" onclick="openWidget()">Open Widget</button>
+                <button class="btn" onclick="closeWidget()">Close Widget</button>
+                <button class="btn" onclick="toggleWidget()">Toggle Widget</button>
+                <button class="btn btn-secondary" onclick="sendTestMessage()">Send Test Message</button>
+                <button class="btn btn-secondary" onclick="checkStatus()">Check Status</button>
+            </div>
+            
+            <div id="status-display"></div>
+        </div>
+        
+        <div class="demo-section">
+            <h3>⚙️ Configuration Options</h3>
+            <p>Customize the widget appearance and behavior:</p>
+            <div class="code-block">
+&lt;script 
+  src="chatbot-widget.js" 
+  data-bot-id="your-bot-id"
+  data-api-url="https://your-api.supabase.co/functions/v1"
+  data-api-key="your-api-key"
+  data-theme="dark"                    &lt;!-- light, dark --&gt;
+  data-position="bottom-left"          &lt;!-- bottom-right, bottom-left, top-right, top-left --&gt;
+  data-primary-color="#ff6b6b"         &lt;!-- Any hex color --&gt;
+  data-title="Customer Support"        &lt;!-- Widget title --&gt;
+  data-subtitle="We're here to help"   &lt;!-- Widget subtitle --&gt;
+  data-placeholder="How can we help?"  &lt;!-- Input placeholder --&gt;
+  data-welcome-message="Hi there! 👋"  &lt;!-- Welcome message --&gt;
+  async&gt;
+&lt;/script&gt;
+            </div>
+        </div>
+        
+        <div class="demo-section">
+            <h3>🔧 Advanced Usage</h3>
+            <p>For more advanced integrations, you can listen to widget events:</p>
+            <div class="code-block">
+// Wait for widget to load
+document.addEventListener('DOMContentLoaded', function() {
+    // Check if widget is available
+    if (typeof ChatbotWidget !== 'undefined') {
+        console.log('Chatbot widget loaded successfully')
+        
+        // You can now use the widget API
+        // Example: Auto-open widget after 5 seconds
+        setTimeout(() => {
+            ChatbotWidget.open()
+        }, 5000)
+    }
+})
+
+// Handle escape key to close widget
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape' && ChatbotWidget.isOpen()) {
+        ChatbotWidget.close()
+    }
+})
+            </div>
+        </div>
+        
+        <div class="demo-section">
+            <h3>🌐 Framework Compatibility</h3>
+            <p>This widget works with any web framework or CMS:</p>
+            <ul>
+                <li>✅ Vanilla HTML/JavaScript</li>
+                <li>✅ WordPress</li>
+                <li>✅ Shopify</li>
+                <li>✅ Squarespace</li>
+                <li>✅ Wix</li>
+                <li>✅ Angular</li>
+                <li>✅ Vue.js</li>
+                <li>✅ Svelte</li>
+                <li>✅ Any other framework</li>
+            </ul>
+            <div class="status success">
+                ✅ No build process or dependencies required!
+            </div>
+        </div>
+    </div>
+
+    <!-- Chatbot Widget Script -->
+    <script 
+        src="../chatbot-widget.js" 
+        data-bot-id="demo-bot-123"
+        data-api-url="https://your-api.supabase.co/functions/v1"
+        data-api-key="demo-api-key"
+        data-theme="light"
+        data-position="bottom-right"
+        data-primary-color="#007bff"
+        data-title="Demo Assistant"
+        data-subtitle="Try me out!"
+        data-welcome-message="Hello! This is a demo of the chatbot widget. Try sending a message!"
+        async>
+    </script>
+
+    <script>
+        // Demo control functions
+        function openWidget() {
+            if (typeof ChatbotWidget !== 'undefined') {
+                ChatbotWidget.open()
+                showStatus('Widget opened', 'success')
+            } else {
+                showStatus('Widget not loaded yet', 'info')
+            }
+        }
+
+        function closeWidget() {
+            if (typeof ChatbotWidget !== 'undefined') {
+                ChatbotWidget.close()
+                showStatus('Widget closed', 'success')
+            } else {
+                showStatus('Widget not loaded yet', 'info')
+            }
+        }
+
+        function toggleWidget() {
+            if (typeof ChatbotWidget !== 'undefined') {
+                ChatbotWidget.toggle()
+                showStatus('Widget toggled', 'success')
+            } else {
+                showStatus('Widget not loaded yet', 'info')
+            }
+        }
+
+        function sendTestMessage() {
+            if (typeof ChatbotWidget !== 'undefined') {
+                ChatbotWidget.sendMessage("This is a test message from the demo page!")
+                showStatus('Test message sent', 'success')
+            } else {
+                showStatus('Widget not loaded yet', 'info')
+            }
+        }
+
+        function checkStatus() {
+            if (typeof ChatbotWidget !== 'undefined') {
+                const isOpen = ChatbotWidget.isOpen()
+                const config = ChatbotWidget.config
+                showStatus(`Widget is ${isOpen ? 'open' : 'closed'}. Bot ID: ${config.botId}`, 'info')
+            } else {
+                showStatus('Widget not loaded yet', 'info')
+            }
+        }
+
+        function showStatus(message, type) {
+            const statusDiv = document.getElementById('status-display')
+            statusDiv.innerHTML = `<div class="status ${type}">${message}</div>`
+            setTimeout(() => {
+                statusDiv.innerHTML = ''
+            }, 3000)
+        }
+
+        // Auto-open widget after page loads (demo purposes)
+        window.addEventListener('load', function() {
+            setTimeout(() => {
+                if (typeof ChatbotWidget !== 'undefined') {
+                    showStatus('Demo widget loaded! Click the chat button to try it out.', 'success')
+                }
+            }, 1000)
+        })
+    </script>
+</body>
+</html>
