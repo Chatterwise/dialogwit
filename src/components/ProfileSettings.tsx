@@ -1,128 +1,132 @@
-import React, { useState, useEffect } from 'react'
-import { User, Save, Loader, Upload, CheckCircle, AlertTriangle } from 'lucide-react'
-import { useAuth } from '../hooks/useAuth'
-import { useUserProfile, useUpdateUserProfile } from '../hooks/useUserProfile'
+import React, { useState, useEffect } from "react";
+import { Save, Loader, Upload, CheckCircle, AlertTriangle } from "lucide-react";
+import { useAuth } from "../hooks/useAuth";
+import { useUserProfile, useUpdateUserProfile } from "../hooks/useUserProfile";
 
 export const ProfileSettings = () => {
-  const { user } = useAuth()
-  const { data: profile, isLoading: profileLoading } = useUserProfile(user?.id || '')
-  const updateProfile = useUpdateUserProfile()
-  
+  const { user } = useAuth();
+  const { data: profile, isLoading: profileLoading } = useUserProfile(
+    user?.id || ""
+  );
+  const updateProfile = useUpdateUserProfile();
+
   const [formData, setFormData] = useState({
-    full_name: '',
-    avatar_url: '',
-    company: '',
-    timezone: 'UTC-8'
-  })
-  
-  const [avatarFile, setAvatarFile] = useState<File | null>(null)
-  const [avatarPreview, setAvatarPreview] = useState<string | null>(null)
-  const [saveSuccess, setSaveSuccess] = useState(false)
-  const [saveError, setError] = useState<string | null>(null)
+    full_name: "",
+    avatar_url: "",
+    company: "",
+    timezone: "UTC-8",
+  });
+
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const [saveSuccess, setSaveSuccess] = useState(false);
+  const [saveError, setError] = useState<string | null>(null);
 
   // Load profile data when available
   useEffect(() => {
     if (profile) {
       setFormData({
-        full_name: profile.full_name || '',
-        avatar_url: profile.avatar_url || '',
-        company: profile.company || '',
-        timezone: profile.timezone || 'UTC-8'
-      })
+        full_name: profile.full_name || "",
+        avatar_url: profile.avatar_url || "",
+        company: profile.company || "",
+        timezone: profile.timezone || "UTC-8",
+      });
     }
-  }, [profile])
+  }, [profile]);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target
-    setFormData(prev => ({ ...prev, [name]: value }))
-  }
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
 
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0]
-      
+      const file = e.target.files[0];
+
       // Check file size (max 1MB)
       if (file.size > 1024 * 1024) {
-        setError('Avatar image must be less than 1MB')
-        return
+        setError("Avatar image must be less than 1MB");
+        return;
       }
-      
-      setAvatarFile(file)
-      
+
+      setAvatarFile(file);
+
       // Create preview
-      const reader = new FileReader()
+      const reader = new FileReader();
       reader.onload = (event) => {
-        setAvatarPreview(event.target?.result as string)
-      }
-      reader.readAsDataURL(file)
+        setAvatarPreview(event.target?.result as string);
+      };
+      reader.readAsDataURL(file);
     }
-  }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setSaveSuccess(false)
-    setError(null)
-    
-    if (!user) return
-    
+    e.preventDefault();
+    setSaveSuccess(false);
+    setError(null);
+
+    if (!user) return;
+
     try {
       // First upload avatar if there's a new one
-      let avatarUrl = formData.avatar_url
-      
+      let avatarUrl = formData.avatar_url;
+
       if (avatarFile) {
-        const { data, error } = await uploadAvatar(avatarFile, user.id)
-        if (error) throw new Error(error.message)
-        if (data) avatarUrl = data.publicUrl
+        const { data, error } = await uploadAvatar(avatarFile, user.id);
+        if (error) throw new Error(error.message);
+        if (data) avatarUrl = data.publicUrl;
       }
-      
+
       // Then update profile
       await updateProfile.mutateAsync({
         id: user.id,
         updates: {
           ...formData,
-          avatar_url: avatarUrl
-        }
-      })
-      
-      setSaveSuccess(true)
-      
+          avatar_url: avatarUrl,
+        },
+      });
+
+      setSaveSuccess(true);
+
       // Reset success message after 3 seconds
       setTimeout(() => {
-        setSaveSuccess(false)
-      }, 3000)
+        setSaveSuccess(false);
+      }, 3000);
     } catch (error) {
-      console.error('Failed to update profile:', error)
-      setError('Failed to update profile. Please try again.')
+      console.error("Failed to update profile:", error);
+      setError("Failed to update profile. Please try again.");
     }
-  }
+  };
 
   const uploadAvatar = async (file: File, userId: string) => {
-    const fileName = `avatar-${userId}-${Date.now()}`
-    const filePath = `avatars/${fileName}`
-    
+    const fileName = `avatar-${userId}-${Date.now()}`;
+    const filePath = `avatars/${fileName}`;
+
     const { data, error } = await supabase.storage
-      .from('user-content')
+      .from("user-content")
       .upload(filePath, file, {
-        cacheControl: '3600',
-        upsert: true
-      })
-    
-    if (error) return { data: null, error }
-    
+        cacheControl: "3600",
+        upsert: true,
+      });
+
+    if (error) return { data: null, error };
+
     // Get public URL
     const { data: publicUrlData } = supabase.storage
-      .from('user-content')
-      .getPublicUrl(filePath)
-    
-    return { data: publicUrlData, error: null }
-  }
+      .from("user-content")
+      .getPublicUrl(filePath);
+
+    return { data: publicUrlData, error: null };
+  };
 
   if (profileLoading) {
     return (
       <div className="flex items-center justify-center h-64">
         <Loader className="h-8 w-8 animate-spin text-primary-600" />
       </div>
-    )
+    );
   }
 
   return (
@@ -130,16 +134,18 @@ export const ProfileSettings = () => {
       <h3 className="text-xl font-semibold text-gray-900 mb-8">
         Profile Information
       </h3>
-      
+
       {saveSuccess && (
         <div className="mb-6 bg-green-50 border border-green-200 rounded-lg p-4">
           <div className="flex items-center">
             <CheckCircle className="h-5 w-5 text-green-500 mr-3" />
-            <p className="text-sm text-green-700">Profile updated successfully!</p>
+            <p className="text-sm text-green-700">
+              Profile updated successfully!
+            </p>
           </div>
         </div>
       )}
-      
+
       {saveError && (
         <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
           <div className="flex items-center">
@@ -148,14 +154,14 @@ export const ProfileSettings = () => {
           </div>
         </div>
       )}
-      
+
       <form onSubmit={handleSubmit} className="space-y-8">
         <div className="flex items-center space-x-8">
           <div className="relative h-24 w-24 rounded-full overflow-hidden bg-gray-100 flex items-center justify-center">
-            {(avatarPreview || formData.avatar_url) ? (
-              <img 
-                src={avatarPreview || formData.avatar_url} 
-                alt="Avatar" 
+            {avatarPreview || formData.avatar_url ? (
+              <img
+                src={avatarPreview || formData.avatar_url}
+                alt="Avatar"
                 className="h-full w-full object-cover"
               />
             ) : (
@@ -190,7 +196,7 @@ export const ProfileSettings = () => {
             </label>
             <input
               type="email"
-              value={user?.email || ''}
+              value={user?.email || ""}
               disabled
               className="w-full px-4 py-2 border border-gray-300 rounded-xl bg-gray-50 text-gray-500"
             />
@@ -261,5 +267,5 @@ export const ProfileSettings = () => {
         </div>
       </form>
     </div>
-  )
-}
+  );
+};

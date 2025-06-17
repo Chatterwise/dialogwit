@@ -1,6 +1,6 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '../lib/supabase';
-import { useAuth } from './useAuth';
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "../lib/supabase";
+import { useAuth } from "./useAuth";
 
 interface SendEmailOptions {
   to: string | string[];
@@ -25,24 +25,29 @@ export const useEmail = () => {
 
   const sendEmail = useMutation({
     mutationFn: async (options: SendEmailOptions) => {
-      const { data: { session } } = await supabase.auth.getSession();
-      
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
       if (!session) {
-        throw new Error('No active session');
+        throw new Error("No active session");
       }
 
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/email/send`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.access_token}`,
-        },
-        body: JSON.stringify(options),
-      });
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/email/send`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${session.access_token}`,
+          },
+          body: JSON.stringify(options),
+        }
+      );
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to send email');
+        throw new Error(errorData.error || "Failed to send email");
       }
 
       return await response.json();
@@ -51,23 +56,28 @@ export const useEmail = () => {
 
   const sendWelcomeEmail = useMutation({
     mutationFn: async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
       if (!session) {
-        throw new Error('No active session');
+        throw new Error("No active session");
       }
 
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/email/welcome`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.access_token}`,
-        },
-      });
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/email/welcome`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${session.access_token}`,
+          },
+        }
+      );
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to send welcome email');
+        throw new Error(errorData.error || "Failed to send welcome email");
       }
 
       return await response.json();
@@ -75,25 +85,36 @@ export const useEmail = () => {
   });
 
   const sendNewChatbotEmail = useMutation({
-    mutationFn: async ({ chatbotId, chatbotName }: { chatbotId: string, chatbotName: string }) => {
-      const { data: { session } } = await supabase.auth.getSession();
-      
+    mutationFn: async ({
+      chatbotId,
+      chatbotName,
+    }: {
+      chatbotId: string;
+      chatbotName: string;
+    }) => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
       if (!session) {
-        throw new Error('No active session');
+        throw new Error("No active session");
       }
 
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/email/new-chatbot`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.access_token}`,
-        },
-        body: JSON.stringify({ chatbotId, chatbotName }),
-      });
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/email/new-chatbot`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${session.access_token}`,
+          },
+          body: JSON.stringify({ chatbotId, chatbotName }),
+        }
+      );
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to send new chatbot email');
+        throw new Error(errorData.error || "Failed to send new chatbot email");
       }
 
       return await response.json();
@@ -101,28 +122,33 @@ export const useEmail = () => {
   });
 
   const getEmailSettings = useQuery({
-    queryKey: ['email-settings', user?.id],
+    queryKey: ["email-settings", user?.id],
     queryFn: async () => {
       if (!user) {
-        throw new Error('User not authenticated');
+        throw new Error("User not authenticated");
       }
 
-      const { data: { session } } = await supabase.auth.getSession();
-      
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
       if (!session) {
-        throw new Error('No active session');
+        throw new Error("No active session");
       }
 
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/email-settings`, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${session.access_token}`,
-        },
-      });
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/email-settings`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
+          },
+        }
+      );
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to get email settings');
+        throw new Error(errorData.error || "Failed to get email settings");
       }
 
       const data = await response.json();
@@ -133,30 +159,35 @@ export const useEmail = () => {
 
   const updateEmailSettings = useMutation({
     mutationFn: async (settings: EmailSettings) => {
-      const { data: { session } } = await supabase.auth.getSession();
-      
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
       if (!session) {
-        throw new Error('No active session');
+        throw new Error("No active session");
       }
 
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/email-settings`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.access_token}`,
-        },
-        body: JSON.stringify(settings),
-      });
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/email-settings`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${session.access_token}`,
+          },
+          body: JSON.stringify(settings),
+        }
+      );
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to update email settings');
+        throw new Error(errorData.error || "Failed to update email settings");
       }
 
       return await response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['email-settings', user?.id] });
+      queryClient.invalidateQueries({ queryKey: ["email-settings", user?.id] });
     },
   });
 
@@ -167,6 +198,7 @@ export const useEmail = () => {
     getEmailSettings: getEmailSettings.data,
     isLoadingSettings: getEmailSettings.isLoading,
     updateEmailSettings,
-    refetchSettings: () => queryClient.invalidateQueries({ queryKey: ['email-settings', user?.id] }),
+    refetchSettings: () =>
+      queryClient.invalidateQueries({ queryKey: ["email-settings", user?.id] }),
   };
 };

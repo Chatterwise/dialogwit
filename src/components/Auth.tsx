@@ -28,34 +28,38 @@ export const Auth = () => {
         const { error } = await supabase.auth.resetPasswordForEmail(email, {
           redirectTo: `${window.location.origin}/reset-password`,
         });
-        
+
         if (error) throw error;
-        
+        console.log("handleSubmit");
         // Send password reset email via Resend
         await sendEmail.mutateAsync({
           to: email,
           subject: "Reset Your ChatterWise Password",
           templateId: "password-reset",
           templateData: {
-            resetLink: `${window.location.origin}/reset-password?email=${encodeURIComponent(email)}`
-          }
+            resetLink: `${
+              window.location.origin
+            }/reset-password?email=${encodeURIComponent(email)}`,
+          },
         });
-        
+
         setSuccessMessage("Check your email for password reset instructions!");
       } else if (isSignUp) {
         // Handle sign up
         const { error } = await signUp(email, password);
-        
+
         if (error) throw error;
-        
-        setSuccessMessage("Verification email sent! Please check your inbox and verify your email to continue.");
+
+        setSuccessMessage(
+          "Verification email sent! Please check your inbox and verify your email to continue."
+        );
       } else {
         // Handle sign in
         const { error } = await signIn(email, password);
         if (error) throw error;
-        
+
         // Redirect to dashboard on successful login
-        navigate('/dashboard');
+        navigate("/dashboard");
       }
     } catch (error: unknown) {
       if (error instanceof Error) {
@@ -84,18 +88,18 @@ export const Auth = () => {
             <Bot className="h-12 w-12 text-blue-600" />
           </div>
           <h2 className="mt-6 text-3xl font-extrabold text-gray-900">
-            {isResetPassword 
-              ? "Reset your password" 
-              : isSignUp 
-                ? "Create your account" 
-                : "Sign in to your account"}
+            {isResetPassword
+              ? "Reset your password"
+              : isSignUp
+              ? "Create your account"
+              : "Sign in to your account"}
           </h2>
           <p className="mt-2 text-sm text-gray-600">
             {isResetPassword
               ? "Enter your email to receive reset instructions"
               : isSignUp
-                ? "Start building AI-powered chatbots today"
-                : "Welcome back to ChatterWise"}
+              ? "Start building AI-powered chatbots today"
+              : "Welcome back to ChatterWise"}
           </p>
         </div>
 
@@ -143,12 +147,16 @@ export const Auth = () => {
                     id="password"
                     name="password"
                     type="password"
-                    autoComplete={isSignUp ? "new-password" : "current-password"}
+                    autoComplete={
+                      isSignUp ? "new-password" : "current-password"
+                    }
                     required
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     className="appearance-none relative block w-full px-3 py-2 pl-10 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-                    placeholder={isSignUp ? "Create a password" : "Enter your password"}
+                    placeholder={
+                      isSignUp ? "Create a password" : "Enter your password"
+                    }
                   />
                   <Lock className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
                 </div>
@@ -194,8 +202,8 @@ export const Auth = () => {
                   {isResetPassword
                     ? "Send Reset Instructions"
                     : isSignUp
-                      ? "Create Account"
-                      : "Sign In"}
+                    ? "Create Account"
+                    : "Sign In"}
                 </>
               )}
             </button>
