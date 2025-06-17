@@ -7,6 +7,46 @@ const corsHeaders = {
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
 };
 
+// Simple rate limiting using in-memory store
+const rateLimitStore = new Map<string, { count: number; resetTime: number }>();
+
+function checkRateLimit(identifier: string, maxRequests: number = 2, windowMs: number = 1000): boolean {
+  const now = Date.now();
+  const key = identifier;
+  
+  const current = rateLimitStore.get(key);
+  
+  if (!current || now > current.resetTime) {
+    rateLimitStore.set(key, { count: 1, resetTime: now + windowMs });
+    return true;
+  }
+  
+  if (current.count >= maxRequests) {
+    return false;
+  }
+  
+  current.count++;
+  return true;
+}
+
+// Simple audit logging function
+async function logAuditEvent(supabaseClient: any, email: string, action: string, details: any, success: boolean = true) {
+  try {
+    await supabaseClient
+      .from('audit_logs')
+      .insert({
+        user_id: null, // No user ID for signup confirmation
+        action,
+        resource_type: 'email',
+        details: { ...details, email },
+        success
+      });
+  } catch (error) {
+    console.error('Failed to log audit event:', error);
+    // Don't fail the main operation if audit logging fails
+  }
+}
+
 Deno.serve(async (req: Request) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -20,6 +60,27 @@ Deno.serve(async (req: Request) => {
       return new Response(
         JSON.stringify({ error: 'Email is required' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Rate limiting check
+    const clientIP = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || 'unknown';
+    const rateLimitKey = `confirm-signup:${clientIP}:${email}`;
+    
+    if (!checkRateLimit(rateLimitKey, 2, 2000)) { // 2 requests per 2 seconds
+      return new Response(
+        JSON.stringify({ 
+          error: 'Rate limit exceeded. Please wait a moment before trying again.',
+          retryAfter: 2
+        }),
+        { 
+          status: 429, 
+          headers: { 
+            ...corsHeaders, 
+            'Content-Type': 'application/json',
+            'Retry-After': '2'
+          } 
+        }
       );
     }
 
@@ -50,6 +111,12 @@ Deno.serve(async (req: Request) => {
     
     if (error) {
       console.error('Error generating signup link:', error);
+      
+      // Log failed signup link generation
+      await logAuditEvent(supabase, email, 'signup_link_generation_failed', {
+        error: error.message
+      }, false);
+      
       return new Response(
         JSON.stringify({ error: 'Failed to generate confirmation link' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -68,11 +135,23 @@ Deno.serve(async (req: Request) => {
 
     if (emailResult.error) {
       console.error('Error sending confirmation email:', emailResult.error);
+      
+      // Log failed email send
+      await logAuditEvent(supabase, email, 'confirmation_email_failed', {
+        error: emailResult.error
+      }, false);
+      
       return new Response(
         JSON.stringify({ error: 'Failed to send confirmation email', details: emailResult.error }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
+
+    // Log successful email send
+    await logAuditEvent(supabase, email, 'confirmation_email_sent', {
+      email_id: emailResult.data?.id,
+      signup_link_generated: true
+    });
 
     return new Response(
       JSON.stringify({ 

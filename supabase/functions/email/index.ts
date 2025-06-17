@@ -11,60 +11,77 @@ import {
   AuthenticationError,
 } from "../_shared/middleware/authentication.ts";
 import { AuditLogger } from "../_shared/middleware/auditLogging.ts";
+
 const resend = new Resend(Deno.env.get("RESEND_API_KEY") || "");
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return createCorsResponse();
   }
+
   const url = new URL(req.url);
   const path = url.pathname.replace("/email", "");
+
   const supabaseClient = createClient(
     Deno.env.get("SUPABASE_URL") ?? "",
     Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
   );
+
   const auditLogger = new AuditLogger(
     Deno.env.get("SUPABASE_URL") ?? "",
     Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
   );
+
   const clientIP =
     req.headers.get("x-forwarded-for")?.split(",")[0] || "unknown";
   const userAgent = req.headers.get("user-agent") || "unknown";
+
   try {
     // Public endpoints (no auth required)
     if (path === "/confirm-signup" && req.method === "POST") {
       const { email, confirmUrl } = await req.json();
+
       if (!email || !confirmUrl) {
         return createErrorResponse("Email and confirmUrl are required", 400);
       }
+
       const { data, error } = await resend.emails.send({
         from: "ChatterWise <team@email.chatterwise.io>",
         to: email,
         subject: "Confirm Your ChatterWise Account",
         html: getConfirmSignupTemplate(email, confirmUrl),
       });
+
       if (error) throw error;
+
       return createSuccessResponse({
         message: "Confirmation email sent",
         id: data?.id,
       });
     }
+
     if (path === "/reset-password" && req.method === "POST") {
       const { email, resetUrl } = await req.json();
+
       if (!email || !resetUrl) {
         return createErrorResponse("Email and resetUrl are required", 400);
       }
+
       const { data, error } = await resend.emails.send({
         from: "ChatterWise <team@email.chatterwise.io>",
         to: email,
         subject: "Reset Your ChatterWise Password",
         html: getResetPasswordTemplate(email, resetUrl),
       });
+
       if (error) throw error;
+
       return createSuccessResponse({
         message: "Password reset email sent",
         id: data?.id,
       });
     }
+
     // Authenticated endpoints
     let authContext;
     try {
@@ -81,6 +98,7 @@ serve(async (req) => {
       }
       throw error;
     }
+
     // Check usage limits for authenticated endpoints
     const { data: usageCheck, error: usageError } = await supabaseClient.rpc(
       "check_usage_limit",
@@ -89,10 +107,12 @@ serve(async (req) => {
         p_metric_name: "emails_per_month",
       }
     );
+
     if (usageError) {
       console.error("Usage check error:", usageError);
       return createErrorResponse("Failed to check email usage limits", 500);
     }
+
     if (!usageCheck.allowed) {
       return createErrorResponse("Email limit reached", 403, {
         limit: usageCheck.limit,
@@ -100,12 +120,14 @@ serve(async (req) => {
         percentage_used: usageCheck.percentage_used,
       });
     }
+
     // Get user email settings
     const { data: userSettings } = await supabaseClient
       .from("user_email_settings")
       .select("*")
       .eq("user_id", authContext.userId)
       .maybeSingle();
+
     const emailSettings = userSettings || {
       enable_notifications: true,
       daily_digest: false,
@@ -113,52 +135,72 @@ serve(async (req) => {
       chatbot_alerts: true,
       marketing_emails: false,
     };
+
     // Send welcome email
     if (path === "/welcome" && req.method === "POST") {
+      // Try to get user from users table, fallback to auth context
       const { data: user } = await supabaseClient
         .from("users")
         .select("email, full_name")
         .eq("id", authContext.userId)
-        .single();
+        .maybeSingle();
+
+      // Use fallback data if user not found in users table
+      const userData = user || {
+        email: authContext.user?.email || "user@example.com",
+        full_name: authContext.user?.user_metadata?.full_name || null,
+      };
+
+      if (!userData.email) {
+        return createErrorResponse("User email not found", 400);
+      }
+
       const { data, error } = await resend.emails.send({
         from: "ChatterWise <team@email.chatterwise.io>",
-        to: user.email,
+        to: userData.email,
         subject: "Welcome to ChatterWise!",
-        html: getWelcomeTemplate(user.full_name || user.email),
+        html: getWelcomeTemplate(userData.full_name || userData.email),
       });
+
       if (error) throw error;
+
       // Track email usage
       await supabaseClient.rpc("increment_usage", {
         p_user_id: authContext.userId,
         p_metric_name: "emails_per_month",
         p_increment: 1,
       });
+
       await auditLogger.logAction(
         authContext.userId,
         "send_welcome_email",
         "email",
         data?.id,
         {
-          recipient: user.email,
+          recipient: userData.email,
         },
         clientIP,
         userAgent,
         true
       );
+
       return createSuccessResponse({
         message: "Welcome email sent",
         id: data?.id,
       });
     }
+
     // Send new chatbot notification
     if (path === "/new-chatbot" && req.method === "POST") {
       const { chatbotId, chatbotName } = await req.json();
+
       if (!chatbotId || !chatbotName) {
         return createErrorResponse(
           "ChatbotId and chatbotName are required",
           400
         );
       }
+
       // Check if notifications are enabled
       if (
         !emailSettings.enable_notifications ||
@@ -169,35 +211,46 @@ serve(async (req) => {
           sent: false,
         });
       }
+
       const { data: user } = await supabaseClient
         .from("users")
         .select("email, full_name")
         .eq("id", authContext.userId)
-        .single();
+        .maybeSingle();
+
+      // Use fallback data if user not found in users table
+      const userData = user || {
+        email: authContext.user?.email || "user@example.com",
+        full_name: authContext.user?.user_metadata?.full_name || null,
+      };
+
       const { data, error } = await resend.emails.send({
         from: "ChatterWise <team@email.chatterwise.io>",
-        to: user.email,
+        to: userData.email,
         subject: `Your New Chatbot "${chatbotName}" is Ready!`,
         html: getNewChatbotTemplate(
-          user.full_name || user.email,
+          userData.full_name || userData.email,
           chatbotName,
           chatbotId
         ),
       });
+
       if (error) throw error;
+
       // Track email usage
       await supabaseClient.rpc("increment_usage", {
         p_user_id: authContext.userId,
         p_metric_name: "emails_per_month",
         p_increment: 1,
       });
+
       await auditLogger.logAction(
         authContext.userId,
         "send_new_chatbot_email",
         "email",
         data?.id,
         {
-          recipient: user.email,
+          recipient: userData.email,
           chatbot_id: chatbotId,
           chatbot_name: chatbotName,
         },
@@ -205,11 +258,13 @@ serve(async (req) => {
         userAgent,
         true
       );
+
       return createSuccessResponse({
         message: "New chatbot email sent",
         id: data?.id,
       });
     }
+
     // Send daily digest
     if (path === "/daily-digest" && req.method === "POST") {
       // Check if daily digest is enabled
@@ -219,20 +274,31 @@ serve(async (req) => {
           sent: false,
         });
       }
+
       const { data: user } = await supabaseClient
         .from("users")
         .select("email, full_name")
         .eq("id", authContext.userId)
-        .single();
+        .maybeSingle();
+
+      // Use fallback data if user not found in users table
+      const userData = user || {
+        email: authContext.user?.email || "user@example.com",
+        full_name: authContext.user?.user_metadata?.full_name || null,
+      };
+
       // Get chatbot activity for the last 24 hours
       const yesterday = new Date();
       yesterday.setDate(yesterday.getDate() - 1);
+
       const { data: chatbots } = await supabaseClient
         .from("chatbots")
         .select("id, name")
         .eq("user_id", authContext.userId);
+
       let totalMessages = 0;
       const chatbotStats = [];
+
       for (const chatbot of chatbots || []) {
         const { count } = await supabaseClient
           .from("chat_messages")
@@ -242,8 +308,10 @@ serve(async (req) => {
           })
           .eq("chatbot_id", chatbot.id)
           .gte("created_at", yesterday.toISOString());
+
         const messageCount = count || 0;
         totalMessages += messageCount;
+
         if (messageCount > 0) {
           chatbotStats.push({
             name: chatbot.name,
@@ -251,38 +319,43 @@ serve(async (req) => {
           });
         }
       }
+
       // Only send if there's activity
       if (totalMessages > 0) {
         const { data, error } = await resend.emails.send({
           from: "ChatterWise <team@email.chatterwise.io>",
-          to: user.email,
+          to: userData.email,
           subject: "Your ChatterWise Daily Digest",
           html: getDailyDigestTemplate(
-            user.full_name || user.email,
+            userData.full_name || userData.email,
             totalMessages,
             chatbotStats
           ),
         });
+
         if (error) throw error;
+
         // Track email usage
         await supabaseClient.rpc("increment_usage", {
           p_user_id: authContext.userId,
           p_metric_name: "emails_per_month",
           p_increment: 1,
         });
+
         await auditLogger.logAction(
           authContext.userId,
           "send_daily_digest",
           "email",
           data?.id,
           {
-            recipient: user.email,
+            recipient: userData.email,
             total_messages: totalMessages,
           },
           clientIP,
           userAgent,
           true
         );
+
         return createSuccessResponse({
           message: "Daily digest sent",
           id: data?.id,
@@ -294,6 +367,7 @@ serve(async (req) => {
         });
       }
     }
+
     // Send weekly report
     if (path === "/weekly-report" && req.method === "POST") {
       // Check if weekly report is enabled
@@ -303,31 +377,45 @@ serve(async (req) => {
           sent: false,
         });
       }
+
       const { data: user } = await supabaseClient
         .from("users")
         .select("email, full_name")
         .eq("id", authContext.userId)
-        .single();
+        .maybeSingle();
+
+      // Use fallback data if user not found in users table
+      const userData = user || {
+        email: authContext.user?.email || "user@example.com",
+        full_name: authContext.user?.user_metadata?.full_name || null,
+      };
+
       // Get chatbot activity for the last 7 days
       const lastWeek = new Date();
       lastWeek.setDate(lastWeek.getDate() - 7);
+
       const { data: chatbots } = await supabaseClient
         .from("chatbots")
         .select("id, name")
         .eq("user_id", authContext.userId);
+
       let totalMessages = 0;
       let totalUniqueUsers = 0;
       const chatbotStats = [];
+
       for (const chatbot of chatbots || []) {
         const { data: messages } = await supabaseClient
           .from("chat_messages")
           .select("id, user_ip")
           .eq("chatbot_id", chatbot.id)
           .gte("created_at", lastWeek.toISOString());
+
         const messageCount = messages?.length || 0;
         totalMessages += messageCount;
+
         const uniqueUsers = new Set(messages?.map((m) => m.user_ip)).size || 0;
         totalUniqueUsers += uniqueUsers;
+
         if (messageCount > 0) {
           chatbotStats.push({
             name: chatbot.name,
@@ -336,39 +424,44 @@ serve(async (req) => {
           });
         }
       }
+
       // Only send if there's activity
       if (totalMessages > 0) {
         const { data, error } = await resend.emails.send({
           from: "ChatterWise <team@email.chatterwise.io>",
-          to: user.email,
+          to: userData.email,
           subject: "Your ChatterWise Weekly Report",
           html: getWeeklyReportTemplate(
-            user.full_name || user.email,
+            userData.full_name || userData.email,
             totalMessages,
             totalUniqueUsers,
             chatbotStats
           ),
         });
+
         if (error) throw error;
+
         // Track email usage
         await supabaseClient.rpc("increment_usage", {
           p_user_id: authContext.userId,
           p_metric_name: "emails_per_month",
           p_increment: 1,
         });
+
         await auditLogger.logAction(
           authContext.userId,
           "send_weekly_report",
           "email",
           data?.id,
           {
-            recipient: user.email,
+            recipient: userData.email,
             total_messages: totalMessages,
           },
           clientIP,
           userAgent,
           true
         );
+
         return createSuccessResponse({
           message: "Weekly report sent",
           id: data?.id,
@@ -380,15 +473,18 @@ serve(async (req) => {
         });
       }
     }
+
     // Send custom email
     if (path === "/send" && req.method === "POST") {
       const { to, subject, html, text } = await req.json();
+
       if (!to || !subject || (!html && !text)) {
         return createErrorResponse(
           "To, subject, and either html or text are required",
           400
         );
       }
+
       const { data, error } = await resend.emails.send({
         from: "ChatterWise <team@email.chatterwise.io>",
         to,
@@ -396,7 +492,9 @@ serve(async (req) => {
         html,
         text,
       });
+
       if (error) throw error;
+
       // Track email usage
       const recipientCount = Array.isArray(to) ? to.length : 1;
       await supabaseClient.rpc("increment_usage", {
@@ -404,6 +502,7 @@ serve(async (req) => {
         p_metric_name: "emails_per_month",
         p_increment: recipientCount,
       });
+
       await auditLogger.logAction(
         authContext.userId,
         "send_custom_email",
@@ -417,14 +516,17 @@ serve(async (req) => {
         userAgent,
         true
       );
+
       return createSuccessResponse({
         message: "Email sent successfully",
         id: data?.id,
       });
     }
+
     // Update email settings
     if (path === "/settings" && req.method === "PUT") {
       const settings = await req.json();
+
       const { error } = await supabaseClient.from("user_email_settings").upsert(
         {
           user_id: authContext.userId,
@@ -434,7 +536,9 @@ serve(async (req) => {
           onConflict: "user_id",
         }
       );
+
       if (error) throw error;
+
       await auditLogger.logAction(
         authContext.userId,
         "update_email_settings",
@@ -445,11 +549,13 @@ serve(async (req) => {
         userAgent,
         true
       );
+
       return createSuccessResponse({
         message: "Email settings updated",
         settings,
       });
     }
+
     // Get email settings
     if (path === "/settings" && req.method === "GET") {
       const { data, error } = await supabaseClient
@@ -457,7 +563,9 @@ serve(async (req) => {
         .select("*")
         .eq("user_id", authContext.userId)
         .maybeSingle();
+
       if (error) throw error;
+
       // Return default settings if none exist
       const settings = data || {
         user_id: authContext.userId,
@@ -467,10 +575,12 @@ serve(async (req) => {
         chatbot_alerts: true,
         marketing_emails: false,
       };
+
       return createSuccessResponse({
         settings,
       });
     }
+
     return createErrorResponse("Endpoint not found", 404);
   } catch (error) {
     console.error("Email error:", error);
@@ -479,6 +589,7 @@ serve(async (req) => {
     });
   }
 });
+
 // Email templates
 function getConfirmSignupTemplate(email, confirmUrl) {
   return `
@@ -524,6 +635,7 @@ function getConfirmSignupTemplate(email, confirmUrl) {
     </html>
   `;
 }
+
 function getResetPasswordTemplate(email, resetUrl) {
   return `
     <!DOCTYPE html>
@@ -568,6 +680,7 @@ function getResetPasswordTemplate(email, resetUrl) {
     </html>
   `;
 }
+
 function getWelcomeTemplate(name) {
   return `
     <!DOCTYPE html>
@@ -588,7 +701,7 @@ function getWelcomeTemplate(name) {
         <!-- Greeting -->
         <p style="font-size:16px; line-height:1.6;">Hi ${name},</p>
         <p style="font-size:16px; line-height:1.6;">
-          Welcome to <strong>ChatterWise</strong> — we're thrilled to have you! Here’s how to get started:
+          Welcome to <strong>ChatterWise</strong> — we're thrilled to have you! Here's how to get started:
         </p>
 
         <!-- Steps -->
@@ -692,6 +805,7 @@ function getNewChatbotTemplate(name, chatbotName, chatbotId) {
     </html>
   `;
 }
+
 function getDailyDigestTemplate(name, totalMessages, chatbotStats) {
   return `
     <!DOCTYPE html>
@@ -768,6 +882,7 @@ function getDailyDigestTemplate(name, totalMessages, chatbotStats) {
     </html>
   `;
 }
+
 function getWeeklyReportTemplate(
   name,
   totalMessages,
