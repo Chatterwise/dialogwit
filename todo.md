@@ -1,0 +1,1 @@
+- [] Fix Stripe pricings to include annual subscriptions

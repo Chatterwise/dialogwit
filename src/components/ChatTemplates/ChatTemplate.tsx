@@ -13,7 +13,7 @@ interface ChatTemplateProps {
   botId: string
   apiUrl?: string
   apiKey?: string
-  template?: 'modern' | 'minimal' | 'bubble' | 'professional' | 'gaming' | 'elegant'
+  template?: 'modern' | 'minimal' | 'bubble' | 'professional' | 'gaming' | 'elegant' | 'corporate' | 'healthcare' | 'education' | 'retail'
   theme?: 'light' | 'dark' | 'auto'
   primaryColor?: string
   botName?: string
@@ -184,6 +184,38 @@ export const ChatTemplate = ({
         message: {
           user: `bg-gradient-to-r from-purple-500 to-indigo-500 text-white rounded-2xl`,
           bot: `${theme === 'dark' ? 'bg-purple-800/30 border-purple-500' : 'bg-purple-100 border-purple-200'} rounded-2xl border`
+        }
+      },
+      corporate: {
+        container: `rounded-lg shadow-lg border ${theme === 'dark' ? 'border-gray-600' : 'border-gray-300'} bg-white`,
+        header: `bg-gradient-to-r from-gray-700 to-gray-800 text-white rounded-t-lg`,
+        message: {
+          user: `bg-gray-700 text-white rounded-lg`,
+          bot: `${theme === 'dark' ? 'bg-gray-700' : 'bg-gray-50 border-gray-200'} rounded-lg border`
+        }
+      },
+      healthcare: {
+        container: `rounded-2xl shadow-xl border-2 ${theme === 'dark' ? 'border-teal-600' : 'border-teal-200'} bg-gradient-to-b ${theme === 'dark' ? 'from-teal-900 to-gray-900' : 'from-teal-50 to-white'}`,
+        header: `bg-gradient-to-r from-teal-600 to-cyan-600 text-white rounded-t-2xl`,
+        message: {
+          user: `bg-gradient-to-r from-teal-500 to-cyan-500 text-white rounded-2xl`,
+          bot: `${theme === 'dark' ? 'bg-teal-800/30 border-teal-500' : 'bg-teal-50 border-teal-200'} rounded-2xl border`
+        }
+      },
+      education: {
+        container: `rounded-2xl shadow-xl border-2 ${theme === 'dark' ? 'border-amber-600' : 'border-amber-200'} bg-gradient-to-b ${theme === 'dark' ? 'from-amber-900 to-gray-900' : 'from-amber-50 to-white'}`,
+        header: `bg-gradient-to-r from-amber-600 to-orange-600 text-white rounded-t-2xl`,
+        message: {
+          user: `bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-2xl`,
+          bot: `${theme === 'dark' ? 'bg-amber-800/30 border-amber-500' : 'bg-amber-50 border-amber-200'} rounded-2xl border`
+        }
+      },
+      retail: {
+        container: `rounded-2xl shadow-xl border-2 ${theme === 'dark' ? 'border-rose-600' : 'border-rose-200'} bg-gradient-to-b ${theme === 'dark' ? 'from-rose-900 to-gray-900' : 'from-rose-50 to-white'}`,
+        header: `bg-gradient-to-r from-rose-600 to-pink-600 text-white rounded-t-2xl`,
+        message: {
+          user: `bg-gradient-to-r from-rose-500 to-pink-500 text-white rounded-2xl`,
+          bot: `${theme === 'dark' ? 'bg-rose-800/30 border-rose-500' : 'bg-rose-50 border-rose-200'} rounded-2xl border`
         }
       }
     }

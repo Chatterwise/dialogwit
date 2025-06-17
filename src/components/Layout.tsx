@@ -11,16 +11,27 @@ import {
   LogOut,
   Menu,
   X,
+  BarChart3,
+  Code,
+  Shield,
+  TestTube,
+  CreditCard,
 } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
+import { TrialNotifications } from "./TrialNotifications";
 
 const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { name: "Chatbots", href: "/chatbots", icon: Bot },
   { name: "Knowledge Base", href: "/knowledge-base", icon: BookOpen },
+  { name: "Analytics", href: "/analytics", icon: BarChart3 },
   { name: "Templates", href: "/templates", icon: Palette },
   { name: "Integrations", href: "/integrations", icon: Puzzle },
+  { name: "API", href: "/api", icon: Code },
+  { name: "Security", href: "/security", icon: Shield },
+  { name: "Testing", href: "/testing", icon: TestTube },
   { name: "Setup Wizard", href: "/wizard", icon: Zap },
+  { name: "Billing", href: "/billing", icon: CreditCard },
   { name: "Settings", href: "/settings", icon: Settings },
 ];
 
@@ -31,8 +42,15 @@ export const Layout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const handleSignOut = async () => {
-    await signOut();
-    navigate("/auth");
+    try {
+      await signOut();
+    } catch (error) {
+      // Even if signOut fails, we still want to redirect to auth page
+      console.error('Sign out error:', error);
+    } finally {
+      // Always navigate to auth page regardless of signOut success/failure
+      navigate("/auth");
+    }
   };
 
   return (
@@ -212,6 +230,7 @@ export const Layout = () => {
         <main className="flex-1 relative overflow-y-auto focus:outline-none bg-gradient-to-br from-white via-primary-50 to-accent-50">
           <div className="py-8">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
+              <TrialNotifications />
               <Outlet />
             </div>
           </div>

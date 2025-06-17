@@ -1,0 +1,5 @@
+dist/*
+public/*
+components/ChatTemplates/*
+supabase/functions/_shared/*
+supabase/migrations/*

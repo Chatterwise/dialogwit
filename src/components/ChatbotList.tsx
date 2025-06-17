@@ -3,12 +3,32 @@ import { Bot, Plus, MessageCircle, Settings, Trash2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import { useChatbots, useDeleteChatbot } from "../hooks/useChatbots";
+import { useSubscriptionStatus } from "../hooks/useStripe";
+import { useUsageLimitCheck } from "./ChatbotLimitGuard";
 
 export const ChatbotList = () => {
   const { user } = useAuth();
   const { data: chatbots = [], isLoading } = useChatbots(user?.id || "");
   const deleteChatbot = useDeleteChatbot();
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const { hasActiveSubscription } = useSubscriptionStatus();
+  const { checkLimit } = useUsageLimitCheck();
+  const [canCreateChatbot, setCanCreateChatbot] = useState(true);
+
+  // Check if user can create more chatbots
+  useState(() => {
+    const checkChatbotLimit = async () => {
+      if (!user) return;
+      try {
+        const allowed = await checkLimit('chatbots');
+        setCanCreateChatbot(allowed);
+      } catch (error) {
+        console.error('Failed to check chatbot limit:', error);
+      }
+    };
+    
+    checkChatbotLimit();
+  });
 
   const handleDelete = async (chatbotId: string, chatbotName: string) => {
     if (
@@ -19,6 +39,9 @@ export const ChatbotList = () => {
       setDeletingId(chatbotId);
       try {
         await deleteChatbot.mutateAsync(chatbotId);
+        // After successful deletion, check if user can create more chatbots
+        const allowed = await checkLimit('chatbots');
+        setCanCreateChatbot(allowed);
       } catch (error) {
         console.error("Error deleting chatbot:", error);
         alert("Failed to delete chatbot. Please try again.");
@@ -42,12 +65,44 @@ export const ChatbotList = () => {
         </div>
         <Link
           to="/chatbots/new"
-          className="inline-flex items-center px-5 py-2.5 border border-transparent text-sm font-semibold rounded-xl shadow-card text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-400 transition-colors duration-200"
+          className={`inline-flex items-center px-5 py-2.5 border border-transparent text-sm font-semibold rounded-xl shadow-card text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-400 transition-colors duration-200 ${
+            !canCreateChatbot ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''
+          }`}
+          onClick={(e) => {
+            if (!canCreateChatbot) {
+              e.preventDefault();
+              alert("You've reached your chatbot limit. Please upgrade your plan to create more chatbots.");
+            }
+          }}
         >
           <Plus className="h-4 w-4 mr-2" />
           New Chatbot
         </Link>
       </div>
+
+      {/* Plan Limit Warning */}
+      {!canCreateChatbot && (
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+          <div className="flex items-start">
+            <Bot className="h-5 w-5 text-yellow-600 mt-0.5 mr-3" />
+            <div>
+              <h3 className="text-sm font-medium text-yellow-800">Chatbot Limit Reached</h3>
+              <p className="text-sm text-yellow-700 mt-1">
+                You've reached the maximum number of chatbots allowed on your current plan.
+                {!hasActiveSubscription && " Consider upgrading to create more chatbots."}
+              </p>
+              {!hasActiveSubscription && (
+                <Link
+                  to="/pricing"
+                  className="mt-2 inline-flex items-center text-sm font-medium text-yellow-800 hover:text-yellow-900"
+                >
+                  View upgrade options →
+                </Link>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Chatbots Grid */}
       {isLoading ? (
@@ -67,7 +122,15 @@ export const ChatbotList = () => {
           <div className="mt-6">
             <Link
               to="/chatbots/new"
-              className="inline-flex items-center px-5 py-2.5 border border-transparent shadow-card text-sm font-semibold rounded-xl text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-400 transition-colors duration-200"
+              className={`inline-flex items-center px-5 py-2.5 border border-transparent shadow-card text-sm font-semibold rounded-xl text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-400 transition-colors duration-200 ${
+                !canCreateChatbot ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''
+              }`}
+              onClick={(e) => {
+                if (!canCreateChatbot) {
+                  e.preventDefault();
+                  alert("You've reached your chatbot limit. Please upgrade your plan to create more chatbots.");
+                }
+              }}
             >
               <Plus className="h-4 w-4 mr-2" />
               Create Chatbot

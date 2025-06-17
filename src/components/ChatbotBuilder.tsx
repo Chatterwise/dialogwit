@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Bot,
@@ -8,11 +8,16 @@ import {
   Zap,
   Brain,
   Database,
+  AlertTriangle,
 } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
 import { useCreateChatbot } from "../hooks/useChatbots";
 import { useAddKnowledgeBase } from "../hooks/useKnowledgeBase";
 import { useTrainChatbot } from "../hooks/useTraining";
+import { useUsageLimitCheck } from "./ChatbotLimitGuard";
+import { useSubscriptionStatus } from "../hooks/useStripe";
+import { useEmail } from "../hooks/useEmail";
+import { Link } from "react-router-dom";
 
 export const ChatbotBuilder = () => {
   const navigate = useNavigate();
@@ -20,6 +25,9 @@ export const ChatbotBuilder = () => {
   const createChatbot = useCreateChatbot();
   const addKnowledgeBase = useAddKnowledgeBase();
   const trainChatbot = useTrainChatbot();
+  const { checkLimit, isLoading: checkingLimits } = useUsageLimitCheck();
+  const { hasActiveSubscription } = useSubscriptionStatus();
+  const { sendNewChatbotEmail } = useEmail();
 
   const [step, setStep] = useState(1);
   const [createdChatbotId, setCreatedChatbotId] = useState<string>("");
@@ -31,6 +39,23 @@ export const ChatbotBuilder = () => {
     useOpenAI: true,
     openAIModel: "gpt-3.5-turbo",
   });
+  const [limitReached, setLimitReached] = useState(false);
+
+  // Check chatbot limit when component mounts
+  useEffect(() => {
+    const checkChatbotLimit = async () => {
+      if (!user) return;
+      
+      try {
+        const allowed = await checkLimit('chatbots');
+        setLimitReached(!allowed);
+      } catch (error) {
+        console.error('Failed to check chatbot limit:', error);
+      }
+    };
+    
+    checkChatbotLimit();
+  }, [user]);
 
   const handleNext = () => {
     if (step < 5) {
@@ -47,7 +72,14 @@ export const ChatbotBuilder = () => {
   const handleSubmit = async () => {
     if (!user) return;
 
+    // Check chatbot limit before creating
     try {
+      const allowed = await checkLimit('chatbots');
+      if (!allowed) {
+        setLimitReached(true);
+        return;
+      }
+      
       // Create chatbot
       const chatbot = await createChatbot.mutateAsync({
         name: formData.name,
@@ -83,6 +115,12 @@ export const ChatbotBuilder = () => {
       // Simulate final processing
       setTimeout(() => {
         setStep(5); // Move to completion step
+        
+        // Send notification email about new chatbot
+        sendNewChatbotEmail.mutate({
+          chatbotId: chatbot.id,
+          chatbotName: formData.name
+        });
       }, 3000);
     } catch (error) {
       console.error("Error creating chatbot:", error);
@@ -92,6 +130,33 @@ export const ChatbotBuilder = () => {
   const handleFinish = () => {
     navigate(`/chatbots/${createdChatbotId}`);
   };
+
+  if (limitReached) {
+    return (
+      <div className="max-w-3xl mx-auto">
+        <div className="bg-red-50 border border-red-200 rounded-lg p-6">
+          <div className="flex items-start">
+            <AlertTriangle className="h-6 w-6 text-red-600 mt-1 mr-3" />
+            <div>
+              <h3 className="text-lg font-medium text-red-900">Chatbot Limit Reached</h3>
+              <p className="text-red-700 mt-1">
+                You've reached the maximum number of chatbots allowed on your current plan.
+              </p>
+              <div className="mt-4">
+                <Link
+                  to="/pricing"
+                  className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg text-sm font-medium text-white bg-red-600 hover:bg-red-700"
+                >
+                  <Zap className="h-4 w-4 mr-2" />
+                  Upgrade Plan
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-3xl mx-auto">
@@ -435,7 +500,8 @@ export const ChatbotBuilder = () => {
               disabled={
                 (step === 1 && (!formData.name || !formData.description)) ||
                 (step === 2 && !formData.knowledgeBase) ||
-                createChatbot.isPending
+                createChatbot.isPending ||
+                checkingLimits
               }
               className="px-5 py-2.5 text-sm font-semibold text-white bg-primary-600 border border-transparent rounded-xl shadow-card hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
             >

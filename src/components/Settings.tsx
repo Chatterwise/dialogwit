@@ -1,17 +1,21 @@
 import { useState } from "react";
-import { User, Bell, Shield, Trash2, Save, Eye, EyeOff } from "lucide-react";
+import { User, Bell, Shield, Trash2, Save, Eye, EyeOff, Mail } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
+import { EmailSettings } from "./EmailSettings";
+import { ProfileSettings } from "./ProfileSettings";
 
 export const Settings = () => {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<
-    "profile" | "notifications" | "security" | "danger"
+    "profile" | "notifications" | "security" | "danger" | "email"
   >("profile");
   const [showApiKey, setShowApiKey] = useState(false);
   const [settings, setSettings] = useState({
     emailNotifications: true,
-    chatNotifications: false,
-    weeklyReports: true,
+    dailyDigest: false,
+    weeklyReport: true,
+    chatbotAlerts: true,
+    marketingEmails: false,
     apiKey: "sk-1234567890abcdef...",
     twoFactorEnabled: false,
   });
@@ -19,6 +23,7 @@ export const Settings = () => {
   const tabs = [
     { id: "profile", name: "Profile", icon: User },
     { id: "notifications", name: "Notifications", icon: Bell },
+    { id: "email", name: "Email Settings", icon: Mail },
     { id: "security", name: "Security", icon: Shield },
     { id: "danger", name: "Danger Zone", icon: Trash2 },
   ];
@@ -67,6 +72,7 @@ export const Settings = () => {
                         | "notifications"
                         | "security"
                         | "danger"
+                        | "email"
                     )
                   }
                   className={`w-full flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-colors duration-200 ${
@@ -88,80 +94,7 @@ export const Settings = () => {
           <div className="bg-white/95 rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
             {activeTab === "profile" && (
               <div className="p-8">
-                <h3 className="text-xl font-semibold text-gray-900 mb-8">
-                  Profile Information
-                </h3>
-                <div className="space-y-8">
-                  <div className="flex items-center space-x-8">
-                    <div className="h-24 w-24 rounded-full bg-primary-600 flex items-center justify-center shadow-inner">
-                      <span className="text-3xl font-medium text-white">
-                        {user?.email?.charAt(0).toUpperCase()}
-                      </span>
-                    </div>
-                    <div>
-                      <button className="px-5 py-2 border border-gray-300 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors duration-200">
-                        Change Avatar
-                      </button>
-                      <p className="text-xs text-gray-500 mt-2">
-                        JPG, GIF or PNG. 1MB max.
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Email Address
-                      </label>
-                      <input
-                        type="email"
-                        value={user?.email || ""}
-                        disabled
-                        className="w-full px-4 py-2 border border-gray-300 rounded-xl bg-gray-50 text-gray-500"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Full Name
-                      </label>
-                      <input
-                        type="text"
-                        placeholder="Enter your full name"
-                        className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-primary-400 transition"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Company
-                      </label>
-                      <input
-                        type="text"
-                        placeholder="Your company name"
-                        className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-primary-400 transition"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Time Zone
-                      </label>
-                      <select className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-primary-400 transition">
-                        <option>UTC-8 (Pacific Time)</option>
-                        <option>UTC-5 (Eastern Time)</option>
-                        <option>UTC+0 (GMT)</option>
-                        <option>UTC+1 (Central European Time)</option>
-                      </select>
-                    </div>
-                  </div>
-                  <div className="flex justify-end">
-                    <button
-                      onClick={handleSave}
-                      className="inline-flex items-center px-5 py-2.5 border border-transparent text-sm font-semibold rounded-xl shadow-card text-white bg-primary-600 hover:bg-primary-700 transition-colors duration-200"
-                    >
-                      <Save className="h-4 w-4 mr-2" />
-                      Save Changes
-                    </button>
-                  </div>
-                </div>
+                <ProfileSettings />
               </div>
             )}
 
@@ -233,11 +166,11 @@ export const Settings = () => {
                     <label className="relative inline-flex items-center cursor-pointer">
                       <input
                         type="checkbox"
-                        checked={settings.weeklyReports}
+                        checked={settings.weeklyReport}
                         onChange={(e) =>
                           setSettings({
                             ...settings,
-                            weeklyReports: e.target.checked,
+                            weeklyReport: e.target.checked,
                           })
                         }
                         className="sr-only peer"
@@ -256,6 +189,12 @@ export const Settings = () => {
                     </button>
                   </div>
                 </div>
+              </div>
+            )}
+
+            {activeTab === "email" && (
+              <div className="p-8">
+                <EmailSettings />
               </div>
             )}
 

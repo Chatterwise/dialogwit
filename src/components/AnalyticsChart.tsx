@@ -9,10 +9,34 @@ interface ChartData {
 interface AnalyticsChartProps {
   data: ChartData[]
   title: string
+  loading?: boolean
 }
 
-export const AnalyticsChart = ({ data, title }: AnalyticsChartProps) => {
+export const AnalyticsChart = ({ data, title, loading = false }: AnalyticsChartProps) => {
   const maxValue = Math.max(...data.map(d => d.messages), 1)
+
+  if (loading) {
+    return (
+      <div className="bg-white rounded-lg shadow border border-gray-200 p-6">
+        <div className="flex items-center justify-between mb-6">
+          <h3 className="text-lg font-medium text-gray-900">{title}</h3>
+          <BarChart3 className="h-5 w-5 text-gray-400" />
+        </div>
+        <div className="h-40 flex items-center justify-center">
+          <div className="animate-pulse space-y-4 w-full">
+            <div className="flex items-end space-x-2 h-32">
+              {[...Array(7)].map((_, i) => (
+                <div key={i} className="flex-1 flex flex-col items-center">
+                  <div className="w-full bg-gray-200 rounded-t" style={{ height: `${Math.random() * 100}px` }}></div>
+                  <div className="mt-2 w-12 h-4 bg-gray-200 rounded"></div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="bg-white rounded-lg shadow border border-gray-200 p-6">

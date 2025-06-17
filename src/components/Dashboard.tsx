@@ -1,3 +1,4 @@
+import React, { useState, useEffect } from "react";
 import {
   Bot,
   Plus,
@@ -5,31 +6,159 @@ import {
   BookOpen,
   Zap,
   TrendingUp,
+  CreditCard,
+  Loader,
+  BarChart3
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import { useChatbots } from "../hooks/useChatbots";
+import { useSubscriptionStatus } from "../hooks/useStripe";
+import { useChatAnalytics } from "../hooks/useChatAnalytics";
 import { AnalyticsChart } from "./AnalyticsChart";
+import { SubscriptionStatus } from "./SubscriptionStatus";
+import { useUsageLimitCheck } from "./ChatbotLimitGuard";
+import { supabase } from "../lib/supabase";
+import { useUserSubscription } from "../hooks/useBilling";
 
 export const Dashboard = () => {
   const { user } = useAuth();
   const { data: chatbots = [], isLoading } = useChatbots(user?.id || "");
+  const { hasActiveSubscription } = useSubscriptionStatus();
+  const { checkLimit } = useUsageLimitCheck();
+  const [canCreateChatbot, setCanCreateChatbot] = useState(true);
+  const [checkingLimits, setCheckingLimits] = useState(false);
+  const { data: subscriptionData } = useUserSubscription(user?.id || "");
+  const [recentActivity, setRecentActivity] = useState<any[]>([]);
+  const [loadingActivity, setLoadingActivity] = useState(false);
+
+  // Check if user can create more chatbots
+  useEffect(() => {
+    const checkChatbotLimit = async () => {
+      if (!user) return;
+      
+      try {
+        setCheckingLimits(true);
+        const allowed = await checkLimit('chatbots');
+        setCanCreateChatbot(allowed);
+      } catch (error) {
+        console.error('Failed to check chatbot limit:', error);
+      } finally {
+        setCheckingLimits(false);
+      }
+    };
+    
+    checkChatbotLimit();
+  }, [user, checkLimit]);
 
   const activeBots = chatbots.filter((bot) => bot.status === "ready").length;
   const processingBots = chatbots.filter(
     (bot) => bot.status === "processing"
   ).length;
 
-  // Mock analytics data for demo
-  const mockChartData = [
-    { date: "Mon", messages: 12 },
-    { date: "Tue", messages: 19 },
-    { date: "Wed", messages: 8 },
-    { date: "Thu", messages: 25 },
-    { date: "Fri", messages: 22 },
-    { date: "Sat", messages: 15 },
-    { date: "Sun", messages: 18 },
-  ];
+  // Get analytics data for all chatbots
+  const { data: analyticsData, isLoading: analyticsLoading } = useChatAnalytics('all');
+
+  // Get knowledge base count
+  const [knowledgeBaseCount, setKnowledgeBaseCount] = useState(0);
+  const [loadingKnowledgeBase, setLoadingKnowledgeBase] = useState(false);
+  
+  useEffect(() => {
+    const fetchKnowledgeBaseCount = async () => {
+      if (!user) return;
+      
+      try {
+        setLoadingKnowledgeBase(true);
+        
+        // Only query if we have chatbot IDs
+        if (chatbots.length === 0) {
+          setKnowledgeBaseCount(0);
+          return;
+        }
+        
+        const chatbotIds = chatbots.map(bot => bot.id);
+        const query = chatbotIds.map(id => `chatbot_id.eq.${id}`).join(',');
+        
+        const { count, error } = await supabase
+          .from('knowledge_base')
+          .select('id', { count: 'exact', head: true })
+          .or(query);
+          
+        if (error) {
+          console.error('Failed to fetch knowledge base count:', error);
+          setKnowledgeBaseCount(0);
+        } else {
+          setKnowledgeBaseCount(count || 0);
+        }
+      } catch (error) {
+        console.error('Failed to fetch knowledge base count:', error);
+        setKnowledgeBaseCount(0);
+      } finally {
+        setLoadingKnowledgeBase(false);
+      }
+    };
+    
+    if (chatbots.length > 0) {
+      fetchKnowledgeBaseCount();
+    } else {
+      setKnowledgeBaseCount(0);
+    }
+  }, [user, chatbots]);
+
+  // Fetch recent activity
+  useEffect(() => {
+    const fetchRecentActivity = async () => {
+      if (!user) return;
+      
+      try {
+        setLoadingActivity(true);
+        
+        // Get recent chat messages
+        const { data: messages, error } = await supabase
+          .from('chat_messages')
+          .select(`
+            id, 
+            message, 
+            created_at,
+            chatbots(name)
+          `)
+          .order('created_at', { ascending: false })
+          .limit(5);
+          
+        if (error) {
+          console.error('Failed to fetch recent activity:', error);
+          return;
+        }
+        
+        const formattedActivity = messages.map(msg => ({
+          id: msg.id,
+          type: 'message',
+          content: msg.message.substring(0, 50) + (msg.message.length > 50 ? '...' : ''),
+          chatbot: msg.chatbots?.name || 'Unknown',
+          timestamp: new Date(msg.created_at).toLocaleString()
+        }));
+        
+        setRecentActivity(formattedActivity);
+      } catch (error) {
+        console.error('Failed to fetch recent activity:', error);
+      } finally {
+        setLoadingActivity(false);
+      }
+    };
+    
+    fetchRecentActivity();
+  }, [user]);
+
+  // Get token usage from subscription data
+  const getTokenUsage = () => {
+    if (!subscriptionData) return 0;
+    
+    const tokenUsage = subscriptionData.usage.find(
+      item => item.metric_name === 'tokens_per_month'
+    );
+    
+    return tokenUsage?.metric_value || 0;
+  };
 
   const stats = [
     {
@@ -47,18 +176,18 @@ export const Dashboard = () => {
       change: `${processingBots} processing`,
     },
     {
-      name: "Total Messages",
-      value: "2.4k",
+      name: "Total Tokens Used",
+      value: getTokenUsage().toLocaleString(),
       icon: MessageCircle,
       color: "text-purple-600 bg-purple-100",
-      change: "+12% from last week",
+      change: `${analyticsData?.todayMessages || 0} today`,
     },
     {
       name: "Knowledge Base Items",
-      value: "47",
+      value: knowledgeBaseCount,
       icon: BookOpen,
       color: "text-accent-600 bg-accent-100",
-      change: "+5 this week",
+      change: "Across all chatbots",
     },
   ];
 
@@ -71,17 +200,39 @@ export const Dashboard = () => {
             Dashboard
           </h1>
           <p className="text-gray-500">
-            Welcome back! Here’s what’s happening with your chatbots.
+            Welcome back! Here's what's happening with your chatbots.
           </p>
         </div>
-        <Link
-          to="/chatbots/new"
-          className="inline-flex items-center px-5 py-2.5 border border-transparent text-sm font-semibold rounded-xl shadow-card text-white bg-primary-500 hover:bg-primary-600 focus:outline-none focus:ring-2 focus:ring-primary-400 transition-colors duration-200"
-        >
-          <Plus className="h-4 w-4 mr-2" />
-          New Chatbot
-        </Link>
+        <div className="flex space-x-3">
+          {!hasActiveSubscription && (
+            <Link
+              to="/pricing"
+              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-semibold rounded-xl shadow-card text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-400 transition-colors duration-200"
+            >
+              <CreditCard className="h-4 w-4 mr-2" />
+              Upgrade Now
+            </Link>
+          )}
+          <Link
+            to="/chatbots/new"
+            className={`inline-flex items-center px-5 py-2.5 border border-transparent text-sm font-semibold rounded-xl shadow-card text-white bg-primary-500 hover:bg-primary-600 focus:outline-none focus:ring-2 focus:ring-primary-400 transition-colors duration-200 ${
+              !canCreateChatbot ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''
+            }`}
+            onClick={(e) => {
+              if (!canCreateChatbot) {
+                e.preventDefault();
+                alert("You've reached your chatbot limit. Please upgrade your plan to create more chatbots.");
+              }
+            }}
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            New Chatbot
+          </Link>
+        </div>
       </div>
+
+      {/* Subscription Status */}
+      <SubscriptionStatus />
 
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -101,7 +252,11 @@ export const Dashboard = () => {
                     {stat.name}
                   </p>
                   <p className="text-2xl font-extrabold text-gray-900">
-                    {stat.value}
+                    {loadingKnowledgeBase && stat.name === "Knowledge Base Items" ? (
+                      <span className="text-lg">Loading...</span>
+                    ) : (
+                      stat.value
+                    )}
                   </p>
                 </div>
               </div>
@@ -114,7 +269,18 @@ export const Dashboard = () => {
       {/* Charts and Recent Activity */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Analytics Chart */}
-        <AnalyticsChart data={mockChartData} title="Messages This Week" />
+        {analyticsLoading ? (
+          <AnalyticsChart data={[]} title="Messages This Week" loading={true} />
+        ) : analyticsData ? (
+          <AnalyticsChart data={analyticsData.chartData} title="Messages This Week" />
+        ) : (
+          <div className="bg-white/90 rounded-2xl shadow-xl border border-gray-100 p-6">
+            <div className="text-center py-8">
+              <BarChart3 className="h-12 w-12 text-gray-300 mx-auto mb-2" />
+              <p className="text-sm text-gray-500">No analytics data available</p>
+            </div>
+          </div>
+        )}
 
         {/* Recent Activity */}
         <div className="bg-white/90 rounded-2xl shadow-xl border border-gray-100">
@@ -122,50 +288,39 @@ export const Dashboard = () => {
             <h3 className="text-lg font-bold text-gray-900">Recent Activity</h3>
           </div>
           <div className="p-6 space-y-5">
-            <div className="flex items-center space-x-3">
-              <div className="h-8 w-8 bg-green-100 rounded-full flex items-center justify-center">
-                <Bot className="h-4 w-4 text-green-600" />
+            {isLoading || loadingActivity ? (
+              <div className="flex items-center justify-center py-8">
+                <Loader className="h-8 w-8 text-primary-600 animate-spin" />
               </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-gray-900">
-                  Customer Support Bot created
-                </p>
-                <p className="text-xs text-gray-500">2 hours ago</p>
-              </div>
-            </div>
-            <div className="flex items-center space-x-3">
-              <div className="h-8 w-8 bg-primary-100 rounded-full flex items-center justify-center">
-                <MessageCircle className="h-4 w-4 text-primary-600" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-gray-900">
-                  25 new messages received
-                </p>
-                <p className="text-xs text-gray-500">4 hours ago</p>
-              </div>
-            </div>
-            <div className="flex items-center space-x-3">
-              <div className="h-8 w-8 bg-accent-100 rounded-full flex items-center justify-center">
-                <BookOpen className="h-4 w-4 text-accent-600" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-gray-900">
-                  Knowledge base updated
-                </p>
-                <p className="text-xs text-gray-500">1 day ago</p>
-              </div>
-            </div>
-            <div className="flex items-center space-x-3">
-              <div className="h-8 w-8 bg-orange-100 rounded-full flex items-center justify-center">
-                <TrendingUp className="h-4 w-4 text-orange-600" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-gray-900">
-                  Weekly report generated
-                </p>
-                <p className="text-xs text-gray-500">2 days ago</p>
-              </div>
-            </div>
+            ) : (
+              <>
+                {recentActivity.length > 0 ? (
+                  recentActivity.map((activity, index) => (
+                    <div key={activity.id} className="flex items-center space-x-3">
+                      <div className="h-8 w-8 bg-primary-100 rounded-full flex items-center justify-center">
+                        <MessageCircle className="h-4 w-4 text-primary-600" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-semibold text-gray-900">
+                          Message in {activity.chatbot}
+                        </p>
+                        <p className="text-xs text-gray-500 truncate">
+                          {activity.content}
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          {activity.timestamp}
+                        </p>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-center py-8">
+                    <Bot className="h-12 w-12 text-gray-300 mx-auto mb-2" />
+                    <p className="text-sm text-gray-500">No recent activity</p>
+                  </div>
+                )}
+              </>
+            )}
           </div>
         </div>
       </div>
@@ -199,7 +354,15 @@ export const Dashboard = () => {
               <div className="mt-6">
                 <Link
                   to="/chatbots/new"
-                  className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-semibold rounded-xl text-white bg-primary-500 hover:bg-primary-600"
+                  className={`inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-semibold rounded-xl text-white bg-primary-500 hover:bg-primary-600 ${
+                    !canCreateChatbot ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''
+                  }`}
+                  onClick={(e) => {
+                    if (!canCreateChatbot) {
+                      e.preventDefault();
+                      alert("You've reached your chatbot limit. Please upgrade your plan to create more chatbots.");
+                    }
+                  }}
                 >
                   <Plus className="h-4 w-4 mr-2" />
                   New Chatbot
@@ -258,7 +421,15 @@ export const Dashboard = () => {
         <div className="px-6 py-6 grid grid-cols-1 md:grid-cols-3 gap-4">
           <Link
             to="/chatbots/new"
-            className="p-4 border border-gray-100 rounded-xl hover:bg-primary-50 transition-colors duration-200 group"
+            className={`p-4 border border-gray-100 rounded-xl hover:bg-primary-50 transition-colors duration-200 group ${
+              !canCreateChatbot ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''
+            }`}
+            onClick={(e) => {
+              if (!canCreateChatbot) {
+                e.preventDefault();
+                alert("You've reached your chatbot limit. Please upgrade your plan to create more chatbots.");
+              }
+            }}
           >
             <div className="flex items-center">
               <Plus className="h-6 w-6 text-primary-600 group-hover:text-primary-700" />

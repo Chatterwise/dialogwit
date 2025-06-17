@@ -29,7 +29,10 @@ export const useAuth = () => {
       email,
       password,
       options: {
-        emailRedirectTo: window.location.origin
+        emailRedirectTo: window.location.origin + '/auth/confirm',
+        data: {
+          full_name: email.split('@')[0]
+        }
       }
     })
     return { data, error }
