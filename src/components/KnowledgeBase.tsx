@@ -10,14 +10,14 @@ import {
 import { FileUpload } from "./FileUpload";
 
 interface ProcessedFile {
-  file: File
-  id: string
-  name: string
-  size: number
-  type: string
-  content?: string
-  status: 'pending' | 'processing' | 'completed' | 'error'
-  error?: string
+  file: File;
+  id: string;
+  name: string;
+  size: number;
+  type: string;
+  content?: string;
+  status: "pending" | "processing" | "completed" | "error";
+  error?: string;
 }
 
 export const KnowledgeBase = () => {
@@ -68,7 +68,7 @@ export const KnowledgeBase = () => {
       setNewContent({ content: "", contentType: "text", filename: "" });
       setShowAddModal(false);
     } catch (error) {
-      console.error("Error adding knowledge base:", error);
+      console.error("Error adding Bot Knowledge:", error);
     }
   };
 
@@ -76,7 +76,7 @@ export const KnowledgeBase = () => {
     if (!selectedChatbot) return;
 
     for (const file of files) {
-      if (file.status === 'completed' && file.content) {
+      if (file.status === "completed" && file.content) {
         try {
           await addKnowledgeBase.mutateAsync({
             chatbot_id: selectedChatbot,
@@ -86,7 +86,7 @@ export const KnowledgeBase = () => {
             processed: false,
           });
         } catch (error) {
-          console.error("Error adding file to knowledge base:", error);
+          console.error("Error adding file to Bot Knowledge:", error);
         }
       }
     }
@@ -94,35 +94,35 @@ export const KnowledgeBase = () => {
   };
 
   const handleDelete = async (id: string) => {
-    if (confirm("Are you sure you want to delete this knowledge base item?")) {
+    if (confirm("Are you sure you want to delete this Bot Knowledge item?")) {
       try {
         await deleteKnowledgeBase.mutateAsync(id);
       } catch (error) {
-        console.error("Error deleting knowledge base:", error);
+        console.error("Error deleting Bot Knowledge:", error);
       }
     }
   };
 
   const handleBulkDelete = async () => {
     if (selectedItems.length === 0) return;
-    
-    if (confirm(`Are you sure you want to delete ${selectedItems.length} items?`)) {
+
+    if (
+      confirm(`Are you sure you want to delete ${selectedItems.length} items?`)
+    ) {
       try {
         await Promise.all(
-          selectedItems.map(id => deleteKnowledgeBase.mutateAsync(id))
+          selectedItems.map((id) => deleteKnowledgeBase.mutateAsync(id))
         );
         setSelectedItems([]);
       } catch (error) {
-        console.error("Error bulk deleting knowledge base items:", error);
+        console.error("Error bulk deleting Bot Knowledge items:", error);
       }
     }
   };
 
   const toggleItemSelection = (id: string) => {
-    setSelectedItems(prev => 
-      prev.includes(id) 
-        ? prev.filter(item => item !== id)
-        : [...prev, id]
+    setSelectedItems((prev) =>
+      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
     );
   };
 
@@ -130,7 +130,7 @@ export const KnowledgeBase = () => {
     if (selectedItems.length === filteredKnowledge.length) {
       setSelectedItems([]);
     } else {
-      setSelectedItems(filteredKnowledge.map(item => item.id));
+      setSelectedItems(filteredKnowledge.map((item) => item.id));
     }
   };
 
@@ -140,7 +140,7 @@ export const KnowledgeBase = () => {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-extrabold text-gray-900 font-display tracking-tight mb-1">
-            Knowledge Base
+            Bot Knowledge
           </h1>
           <p className="text-gray-500">
             Manage the content that powers your chatbots.
@@ -197,20 +197,20 @@ export const KnowledgeBase = () => {
               No chatbots found
             </h3>
             <p className="text-gray-400">
-              Create a chatbot first to manage its knowledge base.
+              Create a chatbot first to manage its Bot Knowledge.
             </p>
           </div>
         )}
       </div>
 
-      {/* Knowledge Base Content */}
+      {/* Bot Knowledge Content */}
       {selectedChatbot && (
         <div className="bg-white/80 rounded-2xl shadow-xl border border-gray-100">
           {/* Filters */}
           <div className="px-8 py-5 border-b border-gray-100 bg-gradient-to-r from-primary-50 via-white to-accent-50 rounded-t-2xl">
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-bold text-gray-900">
-                Knowledge Base Items
+                Bot Knowledge Items
               </h3>
               <div className="flex items-center space-x-4">
                 <div className="relative">
@@ -234,7 +234,7 @@ export const KnowledgeBase = () => {
                 </select>
               </div>
             </div>
-            
+
             {/* Bulk Actions */}
             {filteredKnowledge.length > 0 && (
               <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-100">
@@ -242,7 +242,10 @@ export const KnowledgeBase = () => {
                   <label className="flex items-center">
                     <input
                       type="checkbox"
-                      checked={selectedItems.length === filteredKnowledge.length && filteredKnowledge.length > 0}
+                      checked={
+                        selectedItems.length === filteredKnowledge.length &&
+                        filteredKnowledge.length > 0
+                      }
                       onChange={toggleSelectAll}
                       className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
                     />
@@ -256,7 +259,7 @@ export const KnowledgeBase = () => {
                     </span>
                   )}
                 </div>
-                
+
                 {selectedItems.length > 0 && (
                   <button
                     onClick={handleBulkDelete}
@@ -269,14 +272,14 @@ export const KnowledgeBase = () => {
               </div>
             )}
           </div>
-          
+
           {/* Content List */}
           <div className="p-8">
             {isLoading ? (
               <div className="text-center py-8">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-500 mx-auto"></div>
                 <p className="mt-2 text-sm text-gray-400">
-                  Loading knowledge base...
+                  Loading Bot Knowledge...
                 </p>
               </div>
             ) : filteredKnowledge.length === 0 ? (
@@ -285,7 +288,7 @@ export const KnowledgeBase = () => {
                 <h3 className="text-lg font-bold text-gray-900">
                   {searchTerm || filterType !== "all"
                     ? "No matching items"
-                    : "No knowledge base items"}
+                    : "No Bot Knowledge items"}
                 </h3>
                 <p className="text-gray-400">
                   {searchTerm || filterType !== "all"
@@ -363,7 +366,7 @@ export const KnowledgeBase = () => {
           <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full mx-4 border border-gray-100 max-h-[90vh] overflow-y-auto">
             <div className="px-8 py-5 border-b border-gray-100">
               <h3 className="text-lg font-bold text-gray-900">
-                Upload Files to Knowledge Base
+                Upload Files to Bot Knowledge
               </h3>
             </div>
             <div className="p-8">
@@ -387,7 +390,7 @@ export const KnowledgeBase = () => {
           <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full mx-4 border border-gray-100">
             <div className="px-8 py-5 border-b border-gray-100">
               <h3 className="text-lg font-bold text-gray-900">
-                Add Knowledge Base Content
+                Add Bot Knowledge Content
               </h3>
             </div>
             <div className="p-8 space-y-5">

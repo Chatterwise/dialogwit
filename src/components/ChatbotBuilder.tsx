@@ -45,15 +45,15 @@ export const ChatbotBuilder = () => {
   useEffect(() => {
     const checkChatbotLimit = async () => {
       if (!user) return;
-      
+
       try {
-        const allowed = await checkLimit('chatbots');
+        const allowed = await checkLimit("chatbots");
         setLimitReached(!allowed);
       } catch (error) {
-        console.error('Failed to check chatbot limit:', error);
+        console.error("Failed to check chatbot limit:", error);
       }
     };
-    
+
     checkChatbotLimit();
   }, [user]);
 
@@ -74,12 +74,12 @@ export const ChatbotBuilder = () => {
 
     // Check chatbot limit before creating
     try {
-      const allowed = await checkLimit('chatbots');
+      const allowed = await checkLimit("chatbots");
       if (!allowed) {
         setLimitReached(true);
         return;
       }
-      
+
       // Create chatbot
       const chatbot = await createChatbot.mutateAsync({
         name: formData.name,
@@ -115,11 +115,11 @@ export const ChatbotBuilder = () => {
       // Simulate final processing
       setTimeout(() => {
         setStep(5); // Move to completion step
-        
+
         // Send notification email about new chatbot
         sendNewChatbotEmail.mutate({
           chatbotId: chatbot.id,
-          chatbotName: formData.name
+          chatbotName: formData.name,
         });
       }, 3000);
     } catch (error) {
@@ -138,9 +138,12 @@ export const ChatbotBuilder = () => {
           <div className="flex items-start">
             <AlertTriangle className="h-6 w-6 text-red-600 mt-1 mr-3" />
             <div>
-              <h3 className="text-lg font-medium text-red-900">Chatbot Limit Reached</h3>
+              <h3 className="text-lg font-medium text-red-900">
+                Chatbot Limit Reached
+              </h3>
               <p className="text-red-700 mt-1">
-                You've reached the maximum number of chatbots allowed on your current plan.
+                You've reached the maximum number of chatbots allowed on your
+                current plan.
               </p>
               <div className="mt-4">
                 <Link
@@ -231,7 +234,7 @@ export const ChatbotBuilder = () => {
             <div className="text-center">
               <FileText className="h-16 w-16 text-primary-600 mx-auto" />
               <h2 className="mt-4 text-2xl font-bold text-gray-900 font-display tracking-tight">
-                Add Knowledge Base
+                Add Bot Knowledge
               </h2>
               <p className="mt-2 text-gray-600">
                 Upload documents or add text that your chatbot will use to
@@ -326,7 +329,7 @@ export const ChatbotBuilder = () => {
                     }
                     rows={8}
                     className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-primary-400 transition"
-                    placeholder="Paste your knowledge base content here..."
+                    placeholder="Paste your Bot Knowledge content here..."
                   />
                 </div>
               </div>
@@ -339,7 +342,7 @@ export const ChatbotBuilder = () => {
             <div className="text-center">
               <Database className="h-16 w-16 text-primary-600 mx-auto animate-pulse" />
               <h2 className="mt-4 text-2xl font-bold text-gray-900 font-display tracking-tight">
-                Processing Knowledge Base
+                Processing Bot Knowledge
               </h2>
               <p className="mt-2 text-gray-600">
                 Chunking content and creating vector embeddings for optimal

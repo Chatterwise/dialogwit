@@ -1,5 +1,14 @@
 import { useState } from "react";
-import { User, Bell, Shield, Trash2, Save, Eye, EyeOff, Mail } from "lucide-react";
+import {
+  User,
+  Bell,
+  Shield,
+  Trash2,
+  Save,
+  Eye,
+  EyeOff,
+  Mail,
+} from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
 import { EmailSettings } from "./EmailSettings";
 import { ProfileSettings } from "./ProfileSettings";
@@ -316,7 +325,7 @@ export const Settings = () => {
                       Export Data
                     </h4>
                     <p className="text-sm text-yellow-700 mb-6">
-                      Download all your data including chatbots, knowledge base,
+                      Download all your data including chatbots, Bot Knowledge,
                       and chat logs.
                     </p>
                     <button className="px-5 py-2.5 bg-yellow-600 text-white text-sm font-semibold rounded-xl hover:bg-yellow-700 transition-colors duration-200">

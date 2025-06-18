@@ -301,7 +301,7 @@ export const PublicChat = () => {
       {/* Footer */}
       <div className="text-center py-8">
         <p className="text-sm text-gray-500">
-          This chatbot is powered by AI and trained on custom knowledge base
+          This chatbot is powered by AI and trained on custom Bot Knowledge
         </p>
       </div>
     </div>

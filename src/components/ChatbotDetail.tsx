@@ -55,7 +55,7 @@ export const ChatbotDetail = () => {
 
     if (
       confirm(
-        `Are you sure you want to delete "${chatbot.name}"? This action cannot be undone and will also delete all associated knowledge base content and chat messages.`
+        `Are you sure you want to delete "${chatbot.name}"? This action cannot be undone and will also delete all associated Bot Training Data and chat messages.`
       )
     ) {
       setIsDeleting(true);
@@ -102,7 +102,7 @@ export const ChatbotDetail = () => {
   const tabs = [
     { id: "overview", name: "Overview", icon: BarChart3 },
     { id: "chat", name: "Test Chat", icon: MessageCircle },
-    { id: "knowledge", name: "Knowledge Base", icon: FileText },
+    { id: "knowledge", name: "Bot Knowledge", icon: FileText },
     { id: "analytics", name: "Analytics", icon: TrendingUp },
   ];
 
@@ -310,7 +310,9 @@ export const ChatbotDetail = () => {
             <div className="bg-white/90 rounded-2xl shadow-xl border border-gray-100 p-6">
               <div className="text-center py-8">
                 <BarChart3 className="h-12 w-12 text-gray-300 mx-auto mb-2" />
-                <p className="text-sm text-gray-500">No analytics data available</p>
+                <p className="text-sm text-gray-500">
+                  No analytics data available
+                </p>
               </div>
             </div>
           )}
@@ -384,14 +386,14 @@ export const ChatbotDetail = () => {
           <div className="bg-white/90 rounded-2xl shadow-xl border border-gray-100">
             <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
               <h3 className="text-lg font-bold text-gray-900">
-                Knowledge Base Items
+                Bot Knowledge Items
               </h3>
               <div className="flex items-center space-x-4">
                 <span className="text-sm text-gray-500">
                   {knowledgeBase.length} items
                 </span>
                 <Link
-                  to="/knowledge-base"
+                  to="/bot-knowledge"
                   className="text-sm text-primary-600 hover:text-primary-500 font-medium"
                 >
                   Manage All
@@ -403,20 +405,20 @@ export const ChatbotDetail = () => {
                 <div className="text-center py-8">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mx-auto"></div>
                   <p className="mt-2 text-sm text-gray-500">
-                    Loading knowledge base...
+                    Loading Bot Knowledge...
                   </p>
                 </div>
               ) : knowledgeBase.length === 0 ? (
                 <div className="text-center py-8">
                   <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                   <h3 className="text-lg font-semibold text-gray-900">
-                    No knowledge base items
+                    No Bot Knowledge items
                   </h3>
                   <p className="text-gray-500">
                     Add content to help your chatbot answer questions.
                   </p>
                   <Link
-                    to="/knowledge-base"
+                    to="/bot-knowledge"
                     className="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-semibold rounded-xl text-white bg-primary-600 hover:bg-primary-700"
                   >
                     Add Content
@@ -457,7 +459,7 @@ export const ChatbotDetail = () => {
                   {knowledgeBase.length > 3 && (
                     <div className="text-center">
                       <Link
-                        to="/knowledge-base"
+                        to="/bot-knowledge"
                         className="text-sm text-primary-600 hover:text-primary-500 font-medium"
                       >
                         View all {knowledgeBase.length} items
@@ -517,7 +519,7 @@ export const ChatbotDetail = () => {
                     </div>
                     <div className="flex justify-between">
                       <span className="text-sm text-gray-600">
-                        Knowledge Base Size
+                        Bot Knowledge Size
                       </span>
                       <span className="text-sm font-semibold">
                         {knowledgeBase.length} items

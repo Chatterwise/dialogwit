@@ -1,32 +1,34 @@
 /** @type {import('tailwindcss').Config} */
 export default {
+  darkMode: "class",
   content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
   theme: {
     extend: {
       fontFamily: {
+        // Headings: Montserrat, UI: Inter (both are modern, geometric, and highly legible)
         sans: ["Inter", "system-ui", "sans-serif"],
-        display: ["Poppins", "Inter", "system-ui", "sans-serif"],
+        display: ["Montserrat", "Inter", "system-ui", "sans-serif"],
       },
       colors: {
         primary: {
-          50: "#eff6ff",
-          100: "#dbeafe",
-          200: "#bfdbfe",
-          300: "#93c5fd",
-          400: "#60a5fa",
-          500: "#3b82f6",
-          600: "#2563eb",
-          700: "#1d4ed8",
-          800: "#1e40af",
-          900: "#1e3a8a",
+          50: "#fff5f2",
+          100: "#ffe4db",
+          200: "#ffc7b0",
+          300: "#ffa085",
+          400: "#ff7a5c",
+          500: "#ff5233", // Main Chatterwise orange
+          600: "#e64422",
+          700: "#b52e14",
+          800: "#8c210c",
+          900: "#701909",
         },
         accent: {
-          50: "#f5f3ff",
-          100: "#ede9fe",
-          200: "#ddd6fe",
-          300: "#c4b5fd",
-          400: "#a78bfa",
-          500: "#8b5cf6",
+          50: "#f3f8fd",
+          100: "#e1f0fa",
+          200: "#b8def2",
+          300: "#7fc6e6",
+          400: "#4faedb",
+          500: "#2497cf", // Vibrant blue accent
         },
         gray: {
           50: "#f9fafb",
@@ -40,14 +42,26 @@ export default {
           800: "#1f2937",
           900: "#111827",
         },
+        // Optional: Success, warning, error for UI feedback
+        success: "#22c55e",
+        warning: "#facc15",
+        error: "#ef4444",
+      },
+      fontSize: {
+        // Bigger, bolder headings for modern UI
+        "display-2xl": ["3rem", { lineHeight: "1.1", fontWeight: "800" }],
+        "display-xl": ["2.25rem", { lineHeight: "1.15", fontWeight: "800" }],
+        "display-lg": ["1.875rem", { lineHeight: "1.2", fontWeight: "700" }],
+        "display-md": ["1.5rem", { lineHeight: "1.25", fontWeight: "700" }],
       },
       boxShadow: {
         subtle: "0 1px 4px 0 rgba(31, 41, 55, 0.05)",
-        card: "0 2px 8px 0 rgba(59, 130, 246, 0.06)",
+        card: "0 2px 8px 0 rgba(255, 82, 51, 0.06)", // subtle orange shadow
       },
       borderRadius: {
         xl: "1rem",
         "2xl": "1.5rem",
+        "3xl": "2rem",
       },
       transitionProperty: {
         colors:

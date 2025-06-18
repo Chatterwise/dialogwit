@@ -83,7 +83,7 @@ function AppContent() {
                     path="/chatbots/:id/knowledge"
                     element={<KnowledgeBase />}
                   />
-                  <Route path="/knowledge-base" element={<KnowledgeBase />} />
+                  <Route path="/bot-knowledge" element={<KnowledgeBase />} />
                   <Route path="/analytics" element={<AdvancedAnalytics />} />
                   <Route path="/integrations" element={<Integrations />} />
                   <Route path="/templates" element={<TemplateGallery />} />
