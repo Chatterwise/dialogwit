@@ -29,9 +29,11 @@ export const useSendMessage = () => {
     mutationFn: async ({
       chatbotId,
       message,
+      userId,
     }: {
       chatbotId: string;
       message: string;
+      userId: string;
     }) => {
       // Call the chat edge function
       const response = await fetch(
@@ -43,9 +45,9 @@ export const useSendMessage = () => {
             Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
           },
           body: JSON.stringify({
-            botId: chatbotId,
+            chatbot_id: chatbotId,
             message,
-            userIp: "demo-ip",
+            user_ip: userId,
           }),
         }
       );

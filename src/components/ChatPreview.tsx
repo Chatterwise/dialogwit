@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Send, Bot, User, Loader } from "lucide-react";
 import { useSendMessage } from "../hooks/useChatMessages";
+import { useAuth } from "../hooks/useAuth";
 
 interface Message {
   id: string;
@@ -19,6 +20,7 @@ export const ChatPreview = ({ botId }: { botId?: string }) => {
       timestamp: new Date(),
     },
   ]);
+  const { user } = useAuth();
   const [inputValue, setInputValue] = useState("");
   const sendMessage = useSendMessage();
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -58,6 +60,7 @@ export const ChatPreview = ({ botId }: { botId?: string }) => {
       const response = await sendMessage.mutateAsync({
         chatbotId: botId,
         message: inputValue,
+        userId: user?.id || "NO_USER",
       });
 
       // Replace loading message with actual response

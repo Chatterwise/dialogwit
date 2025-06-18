@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { useChatbot } from "../hooks/useChatbots";
 import { useSendMessage } from "../hooks/useChatMessages";
+import { useAuth } from "../hooks/useAuth";
 
 interface Message {
   id: string;
@@ -24,7 +25,7 @@ export const PublicChat = () => {
   const { botId } = useParams<{ botId: string }>();
   const { data: chatbot, isLoading: chatbotLoading } = useChatbot(botId || "");
   const sendMessage = useSendMessage();
-
+  const { user } = useAuth();
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState("");
   const [isMinimized, setIsMinimized] = useState(false);
@@ -77,6 +78,7 @@ export const PublicChat = () => {
       const response = await sendMessage.mutateAsync({
         chatbotId: botId,
         message: inputValue,
+        userId: user?.id || "NO_USER",
       });
       setMessages((prev) =>
         prev.map((msg) =>
