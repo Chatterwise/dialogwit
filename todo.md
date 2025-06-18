@@ -1,2 +1,3 @@
 - [] Fix Stripe pricings to include annual subscriptions
 - [] add validation on login-signup forms
+- [] password reset email not being send
