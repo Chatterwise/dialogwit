@@ -1,27 +1,12 @@
 import { Sun, Moon, LogOut, Bell, Bot } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
 import { useAuth } from "../../hooks/useAuth";
+import { useTheme } from "../../hooks/useTheme";
 
 export const Header = () => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
-  const [isDark, setIsDark] = useState(
-    document.documentElement.classList.contains("dark")
-  );
-
-  const toggleDarkMode = () => {
-    const html = document.documentElement;
-    const isDark = html.classList.contains("dark");
-    if (isDark) {
-      html.classList.remove("dark");
-      localStorage.setItem("theme", "light");
-    } else {
-      html.classList.add("dark");
-      localStorage.setItem("theme", "dark");
-    }
-    setIsDark(!isDark);
-  };
+  const { theme, toggleTheme } = useTheme();
 
   const handleSignOut = async () => {
     try {
@@ -37,8 +22,6 @@ export const Header = () => {
       <div className="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
         <div className="flex items-center space-x-4">
           <div className="flex items-center">
-            {/* Use your SVG logo here if available, otherwise use Bot icon */}
-            {/* <img src="/logo.svg" alt="ChatterWise" className="h-7 w-7 drop-shadow" /> */}
             <Bot className="h-7 w-7 text-primary-500 drop-shadow" />
             <span className="ml-2 text-lg font-extrabold text-gray-900 dark:text-gray-100 font-display tracking-tight">
               ChatterWise
@@ -54,11 +37,11 @@ export const Header = () => {
             <Bell className="w-5 h-5" />
           </button>
           <button
-            onClick={toggleDarkMode}
+            onClick={toggleTheme}
             className="p-2 rounded-full text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
             title="Toggle dark/light mode"
           >
-            {isDark ? (
+            {theme === "dark" ? (
               <Sun className="w-5 h-5" />
             ) : (
               <Moon className="w-5 h-5" />
