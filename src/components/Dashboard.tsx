@@ -22,7 +22,7 @@ import { supabase } from "../lib/supabase";
 import { useUserSubscription } from "../hooks/useBilling";
 
 export const Dashboard = () => {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const { data: chatbots = [], isLoading } = useChatbots(user?.id || "");
   const { hasActiveSubscription } = useSubscriptionStatus();
   const { checkLimit } = useUsageLimitCheck();
@@ -35,7 +35,7 @@ export const Dashboard = () => {
   // Check if user can create more chatbots
   useEffect(() => {
     const checkChatbotLimit = async () => {
-      if (!user) return;
+      if (!user || authLoading) return;
       
       try {
         setCheckingLimits(true);
@@ -43,13 +43,17 @@ export const Dashboard = () => {
         setCanCreateChatbot(allowed);
       } catch (error) {
         console.error('Failed to check chatbot limit:', error);
+        // Allow by default on error to prevent blocking
+        setCanCreateChatbot(true);
       } finally {
         setCheckingLimits(false);
       }
     };
     
-    checkChatbotLimit();
-  }, [user, checkLimit]);
+    if (!authLoading) {
+      checkChatbotLimit();
+    }
+  }, [user, authLoading, checkLimit]);
 
   const activeBots = chatbots.filter((bot) => bot.status === "ready").length;
   const processingBots = chatbots.filter(
@@ -65,7 +69,7 @@ export const Dashboard = () => {
   
   useEffect(() => {
     const fetchKnowledgeBaseCount = async () => {
-      if (!user) return;
+      if (!user || authLoading) return;
       
       try {
         setLoadingKnowledgeBase(true);
@@ -98,17 +102,17 @@ export const Dashboard = () => {
       }
     };
     
-    if (chatbots.length > 0) {
+    if (!authLoading && chatbots.length > 0) {
       fetchKnowledgeBaseCount();
-    } else {
+    } else if (!authLoading) {
       setKnowledgeBaseCount(0);
     }
-  }, [user, chatbots]);
+  }, [user, authLoading, chatbots]);
 
   // Fetch recent activity
   useEffect(() => {
     const fetchRecentActivity = async () => {
-      if (!user) return;
+      if (!user || authLoading) return;
       
       try {
         setLoadingActivity(true);
@@ -146,8 +150,10 @@ export const Dashboard = () => {
       }
     };
     
-    fetchRecentActivity();
-  }, [user]);
+    if (!authLoading) {
+      fetchRecentActivity();
+    }
+  }, [user, authLoading]);
 
   // Get token usage from subscription data
   const getTokenUsage = () => {
@@ -190,6 +196,18 @@ export const Dashboard = () => {
       change: "Across all chatbots",
     },
   ];
+
+  // Show loading state while auth is loading
+  if (authLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <Loader className="h-8 w-8 text-primary-600 animate-spin mx-auto mb-4" />
+          <p className="text-gray-500">Loading dashboard...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8">

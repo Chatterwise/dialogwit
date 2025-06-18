@@ -35,7 +35,7 @@ const navigation = [
   { name: "Settings", href: "/settings", icon: Settings },
 ];
 
-export const Layout = () => {
+export const Layout = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
@@ -46,7 +46,7 @@ export const Layout = () => {
       await signOut();
     } catch (error) {
       // Even if signOut fails, we still want to redirect to auth page
-      console.error('Sign out error:', error);
+      console.error("Sign out error:", error);
     } finally {
       // Always navigate to auth page regardless of signOut success/failure
       navigate("/auth");
@@ -231,6 +231,7 @@ export const Layout = () => {
           <div className="py-8">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
               <TrialNotifications />
+              {children}
               <Outlet />
             </div>
           </div>

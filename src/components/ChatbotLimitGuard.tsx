@@ -22,7 +22,10 @@ export const ChatbotLimitGuard: React.FC<ChatbotLimitGuardProps> = ({
 
   useEffect(() => {
     const checkChatbotLimit = async () => {
-      if (!user) return;
+      if (!user) {
+        setChecking(false)
+        return
+      }
       
       setChecking(true)
       try {
@@ -34,7 +37,7 @@ export const ChatbotLimitGuard: React.FC<ChatbotLimitGuardProps> = ({
         }
       } catch (error) {
         console.error('Failed to check chatbot limit:', error)
-        setChatbotsAllowed(false)
+        setChatbotsAllowed(true) // Allow by default on error to prevent blocking
       } finally {
         setChecking(false)
       }
@@ -42,8 +45,10 @@ export const ChatbotLimitGuard: React.FC<ChatbotLimitGuardProps> = ({
     
     if (user) {
       checkChatbotLimit()
+    } else {
+      setChecking(false)
     }
-  }, [user])
+  }, [user, checkLimit, onLimitReached])
 
   if (checking || isLoading) {
     return <>{children}</>
@@ -83,11 +88,18 @@ export const ChatbotLimitGuard: React.FC<ChatbotLimitGuardProps> = ({
 
 // Hook to check usage limits before performing actions
 export const useUsageLimitCheck = () => {
+  const { user, session } = useAuth()
   const usageCheck = useUsageCheck()
   const [lastCheckTime, setLastCheckTime] = useState<Record<string, number>>({})
   const THROTTLE_TIME = 60000; // 1 minute in milliseconds
 
   const checkLimit = async (metricName: string): Promise<boolean> => {
+    // Return true if no user or session to prevent blocking
+    if (!user || !session) {
+      console.log('No user or session, allowing action by default')
+      return true
+    }
+
     try {
       const now = Date.now();
       const lastCheck = lastCheckTime[metricName] || 0;

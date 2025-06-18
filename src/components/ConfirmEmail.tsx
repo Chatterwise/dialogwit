@@ -1,126 +1,188 @@
 import React, { useEffect, useState } from 'react';
-import { CheckCircle, AlertTriangle, ArrowRight } from 'lucide-react';
-import { Link, useSearchParams, useNavigate } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
+import { CheckCircle, XCircle, Loader2, Mail } from 'lucide-react';
 
-export const ConfirmEmail: React.FC = () => {
+export default function ConfirmEmail() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  
-  const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
-  const [error, setError] = useState<string | null>(null);
-  
+  const [status, setStatus] = useState<'loading' | 'success' | 'error' | 'invalid'>('loading');
+  const [message, setMessage] = useState('');
+  const [details, setDetails] = useState('');
+
   useEffect(() => {
-    const confirmUserEmail = async () => {
+    const confirmEmail = async () => {
+      const tokenHash = searchParams.get('token_hash');
+      const type = searchParams.get('type');
+
+      // Check if we have the required parameters
+      if (!tokenHash) {
+        setStatus('invalid');
+        setMessage('Invalid confirmation link');
+        setDetails('The confirmation link is missing required parameters. Please check your email for the correct link.');
+        return;
+      }
+
+      // If type is missing, add it as 'email' (common case)
+      const confirmationType = type || 'email';
+
       try {
-        // Get the hash from the URL
-        const hash = window.location.hash.substring(1);
-        
-        if (!hash) {
-          setStatus('error');
-          setError('Invalid or missing confirmation token');
-          return;
-        }
-        
-        // Parse the hash to get the access_token and type
-        const params = new URLSearchParams(hash);
-        const accessToken = params.get('access_token');
-        const tokenType = params.get('type');
-        
-        if (!accessToken || tokenType !== 'signup') {
-          setStatus('error');
-          setError('Invalid confirmation link');
-          return;
-        }
-        
-        // Verify the token
-        const { error } = await supabase.auth.verifyOtp({
-          token_hash: accessToken,
-          type: 'signup',
+        console.log('Confirming email with token hash:', tokenHash, 'type:', confirmationType);
+
+        // Use Supabase's verifyOtp method for email confirmation
+        const { data, error } = await supabase.auth.verifyOtp({
+          token_hash: tokenHash,
+          type: confirmationType as any
         });
-        
+
         if (error) {
-          throw error;
+          console.error('Email confirmation error:', error);
+          setStatus('error');
+          setMessage('Email confirmation failed');
+          setDetails(error.message || 'The confirmation link may be expired or invalid. Please try signing up again.');
+          return;
         }
-        
-        setStatus('success');
-        
-        // Redirect to login after 3 seconds
-        setTimeout(() => {
-          navigate('/auth');
-        }, 3000);
-      } catch (err) {
-        console.error('Error confirming email:', err);
+
+        if (data.user) {
+          console.log('Email confirmed successfully for user:', data.user.id);
+          setStatus('success');
+          setMessage('Email confirmed successfully!');
+          setDetails('Your account has been activated. You will be redirected to the dashboard shortly.');
+
+          // Redirect to dashboard after a short delay
+          setTimeout(() => {
+            navigate('/dashboard');
+          }, 3000);
+        } else {
+          setStatus('error');
+          setMessage('Email confirmation failed');
+          setDetails('No user data received. Please try the confirmation process again.');
+        }
+
+      } catch (error) {
+        console.error('Unexpected error during email confirmation:', error);
         setStatus('error');
-        setError('Failed to confirm email. The link may have expired.');
+        setMessage('An unexpected error occurred');
+        setDetails('Please try again or contact support if the problem persists.');
       }
     };
-    
-    confirmUserEmail();
-  }, [navigate]);
-  
+
+    confirmEmail();
+  }, [searchParams, navigate]);
+
+  const handleResendConfirmation = () => {
+    navigate('/auth?mode=signup');
+  };
+
+  const handleGoToLogin = () => {
+    navigate('/auth');
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8 text-center">
-        {status === 'loading' && (
-          <div>
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-            <h2 className="text-2xl font-extrabold text-gray-900">
-              Confirming your email...
-            </h2>
-            <p className="mt-2 text-sm text-gray-600">
-              Please wait while we verify your email address.
-            </p>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
+      <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8">
+        <div className="text-center">
+          {/* Status Icon */}
+          <div className="mx-auto w-16 h-16 mb-6 flex items-center justify-center rounded-full">
+            {status === 'loading' && (
+              <div className="bg-blue-100 w-full h-full rounded-full flex items-center justify-center">
+                <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
+              </div>
+            )}
+            {status === 'success' && (
+              <div className="bg-green-100 w-full h-full rounded-full flex items-center justify-center">
+                <CheckCircle className="w-8 h-8 text-green-600" />
+              </div>
+            )}
+            {(status === 'error' || status === 'invalid') && (
+              <div className="bg-red-100 w-full h-full rounded-full flex items-center justify-center">
+                <XCircle className="w-8 h-8 text-red-600" />
+              </div>
+            )}
           </div>
-        )}
-        
-        {status === 'success' && (
-          <div>
-            <CheckCircle className="h-12 w-12 text-green-600 mx-auto mb-4" />
-            <h2 className="text-2xl font-extrabold text-gray-900">
-              Email Confirmed!
-            </h2>
-            <p className="mt-2 text-sm text-gray-600">
-              Your email has been successfully confirmed. You will be redirected to the login page in a few seconds.
-            </p>
-            <Link
-              to="/auth"
-              className="mt-6 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700"
-            >
-              <ArrowRight className="h-4 w-4 mr-2" />
-              Go to Login
-            </Link>
-          </div>
-        )}
-        
-        {status === 'error' && (
-          <div>
-            <AlertTriangle className="h-12 w-12 text-red-600 mx-auto mb-4" />
-            <h2 className="text-2xl font-extrabold text-gray-900">
-              Confirmation Failed
-            </h2>
-            <p className="mt-2 text-sm text-gray-600">
-              {error || 'There was an error confirming your email.'}
-            </p>
-            <div className="mt-6 space-y-3">
-              <Link
-                to="/auth"
-                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700"
-              >
-                Go to Login
-              </Link>
-              <div>
+
+          {/* Title */}
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">
+            {status === 'loading' && 'Confirming Your Email...'}
+            {status === 'success' && 'Email Confirmed!'}
+            {(status === 'error' || status === 'invalid') && 'Confirmation Failed'}
+          </h1>
+
+          {/* Message */}
+          <p className="text-gray-600 mb-2">{message}</p>
+          
+          {/* Details */}
+          {details && (
+            <p className="text-sm text-gray-500 mb-6">{details}</p>
+          )}
+
+          {/* Action Buttons */}
+          <div className="space-y-3">
+            {status === 'success' && (
+              <div className="space-y-3">
                 <button
-                  onClick={() => window.location.reload()}
-                  className="text-sm text-blue-600 hover:text-blue-500"
+                  onClick={() => navigate('/dashboard')}
+                  className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-blue-700 transition-colors"
                 >
-                  Try Again
+                  Go to Dashboard
+                </button>
+                <p className="text-xs text-gray-500">
+                  You will be automatically redirected in a few seconds...
+                </p>
+              </div>
+            )}
+
+            {status === 'error' && (
+              <div className="space-y-3">
+                <button
+                  onClick={handleResendConfirmation}
+                  className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
+                >
+                  <Mail className="w-4 h-4" />
+                  Resend Confirmation Email
+                </button>
+                <button
+                  onClick={handleGoToLogin}
+                  className="w-full bg-gray-100 text-gray-700 py-3 px-4 rounded-lg font-medium hover:bg-gray-200 transition-colors"
+                >
+                  Back to Login
                 </button>
               </div>
-            </div>
+            )}
+
+            {status === 'invalid' && (
+              <div className="space-y-3">
+                <button
+                  onClick={handleResendConfirmation}
+                  className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
+                >
+                  <Mail className="w-4 h-4" />
+                  Get New Confirmation Email
+                </button>
+                <button
+                  onClick={handleGoToLogin}
+                  className="w-full bg-gray-100 text-gray-700 py-3 px-4 rounded-lg font-medium hover:bg-gray-200 transition-colors"
+                >
+                  Back to Login
+                </button>
+              </div>
+            )}
+
+            {status === 'loading' && (
+              <div className="text-sm text-gray-500">
+                Please wait while we confirm your email address...
+              </div>
+            )}
           </div>
-        )}
+
+          {/* Help Text */}
+          <div className="mt-8 pt-6 border-t border-gray-200">
+            <p className="text-xs text-gray-500">
+              Having trouble? Contact our support team for assistance.
+            </p>
+          </div>
+        </div>
       </div>
     </div>
   );
-};
+}

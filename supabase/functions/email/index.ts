@@ -21,7 +21,7 @@ serve(async (req) => {
 
   const url = new URL(req.url);
   const path = url.pathname.replace("/email", "");
-
+  
   const supabaseClient = createClient(
     Deno.env.get("SUPABASE_URL") ?? "",
     Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
@@ -37,52 +37,7 @@ serve(async (req) => {
   const userAgent = req.headers.get("user-agent") || "unknown";
 
   try {
-    // Public endpoints (no auth required)
-    if (path === "/confirm-signup" && req.method === "POST") {
-      const { email, confirmUrl } = await req.json();
-
-      if (!email || !confirmUrl) {
-        return createErrorResponse("Email and confirmUrl are required", 400);
-      }
-
-      const { data, error } = await resend.emails.send({
-        from: "ChatterWise <team@email.chatterwise.io>",
-        to: email,
-        subject: "Confirm Your ChatterWise Account",
-        html: getConfirmSignupTemplate(email, confirmUrl),
-      });
-
-      if (error) throw error;
-
-      return createSuccessResponse({
-        message: "Confirmation email sent",
-        id: data?.id,
-      });
-    }
-
-    if (path === "/reset-password" && req.method === "POST") {
-      const { email, resetUrl } = await req.json();
-
-      if (!email || !resetUrl) {
-        return createErrorResponse("Email and resetUrl are required", 400);
-      }
-
-      const { data, error } = await resend.emails.send({
-        from: "ChatterWise <team@email.chatterwise.io>",
-        to: email,
-        subject: "Reset Your ChatterWise Password",
-        html: getResetPasswordTemplate(email, resetUrl),
-      });
-
-      if (error) throw error;
-
-      return createSuccessResponse({
-        message: "Password reset email sent",
-        id: data?.id,
-      });
-    }
-
-    // Authenticated endpoints
+    // Authenticated endpoints only - removed duplicate welcome handler
     let authContext;
     try {
       authContext = await authenticateRequest(
@@ -136,60 +91,6 @@ serve(async (req) => {
       marketing_emails: false,
     };
 
-    // Send welcome email
-    if (path === "/welcome" && req.method === "POST") {
-      // Try to get user from users table, fallback to auth context
-      const { data: user } = await supabaseClient
-        .from("users")
-        .select("email, full_name")
-        .eq("id", authContext.userId)
-        .maybeSingle();
-
-      // Use fallback data if user not found in users table
-      const userData = user || {
-        email: authContext.user?.email || "user@example.com",
-        full_name: authContext.user?.user_metadata?.full_name || null,
-      };
-
-      if (!userData.email) {
-        return createErrorResponse("User email not found", 400);
-      }
-
-      const { data, error } = await resend.emails.send({
-        from: "ChatterWise <team@email.chatterwise.io>",
-        to: userData.email,
-        subject: "Welcome to ChatterWise!",
-        html: getWelcomeTemplate(userData.full_name || userData.email),
-      });
-
-      if (error) throw error;
-
-      // Track email usage
-      await supabaseClient.rpc("increment_usage", {
-        p_user_id: authContext.userId,
-        p_metric_name: "emails_per_month",
-        p_increment: 1,
-      });
-
-      await auditLogger.logAction(
-        authContext.userId,
-        "send_welcome_email",
-        "email",
-        data?.id,
-        {
-          recipient: userData.email,
-        },
-        clientIP,
-        userAgent,
-        true
-      );
-
-      return createSuccessResponse({
-        message: "Welcome email sent",
-        id: data?.id,
-      });
-    }
-
     // Send new chatbot notification
     if (path === "/new-chatbot" && req.method === "POST") {
       const { chatbotId, chatbotName } = await req.json();
@@ -221,11 +122,11 @@ serve(async (req) => {
       // Use fallback data if user not found in users table
       const userData = user || {
         email: authContext.user?.email || "user@example.com",
-        full_name: authContext.user?.user_metadata?.full_name || null,
+        full_name: authContext.user?.user_metadata?.full_name || null
       };
 
       const { data, error } = await resend.emails.send({
-        from: "ChatterWise <team@email.chatterwise.io>",
+        from: "ChatterWise <noreply@email.chatterwise.io>",
         to: userData.email,
         subject: `Your New Chatbot "${chatbotName}" is Ready!`,
         html: getNewChatbotTemplate(
@@ -284,7 +185,7 @@ serve(async (req) => {
       // Use fallback data if user not found in users table
       const userData = user || {
         email: authContext.user?.email || "user@example.com",
-        full_name: authContext.user?.user_metadata?.full_name || null,
+        full_name: authContext.user?.user_metadata?.full_name || null
       };
 
       // Get chatbot activity for the last 24 hours
@@ -323,7 +224,7 @@ serve(async (req) => {
       // Only send if there's activity
       if (totalMessages > 0) {
         const { data, error } = await resend.emails.send({
-          from: "ChatterWise <team@email.chatterwise.io>",
+          from: "ChatterWise <noreply@email.chatterwise.io>",
           to: userData.email,
           subject: "Your ChatterWise Daily Digest",
           html: getDailyDigestTemplate(
@@ -387,7 +288,7 @@ serve(async (req) => {
       // Use fallback data if user not found in users table
       const userData = user || {
         email: authContext.user?.email || "user@example.com",
-        full_name: authContext.user?.user_metadata?.full_name || null,
+        full_name: authContext.user?.user_metadata?.full_name || null
       };
 
       // Get chatbot activity for the last 7 days
@@ -428,7 +329,7 @@ serve(async (req) => {
       // Only send if there's activity
       if (totalMessages > 0) {
         const { data, error } = await resend.emails.send({
-          from: "ChatterWise <team@email.chatterwise.io>",
+          from: "ChatterWise <noreply@email.chatterwise.io>",
           to: userData.email,
           subject: "Your ChatterWise Weekly Report",
           html: getWeeklyReportTemplate(
@@ -486,7 +387,7 @@ serve(async (req) => {
       }
 
       const { data, error } = await resend.emails.send({
-        from: "ChatterWise <team@email.chatterwise.io>",
+        from: "ChatterWise <noreply@email.chatterwise.io>",
         to,
         subject,
         html,
@@ -591,163 +492,6 @@ serve(async (req) => {
 });
 
 // Email templates
-function getConfirmSignupTemplate(email, confirmUrl) {
-  return `
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <meta charset="utf-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Confirm Your ChatterWise Account</title>
-      <style>
-        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; }
-        .header { text-align: center; margin-bottom: 30px; }
-        .logo { font-size: 24px; font-weight: bold; color: #3B82F6; }
-        .button { display: inline-block; background-color: #3B82F6; color: white; text-decoration: none; padding: 12px 24px; border-radius: 4px; font-weight: bold; margin: 20px 0; }
-        .footer { margin-top: 40px; font-size: 12px; color: #666; text-align: center; }
-      </style>
-    </head>
-    <body>
-      <div class="header">
-        <div class="logo">ChatterWise</div>
-      </div>
-      
-      <p>Hello,</p>
-      
-      <p>Thank you for signing up for ChatterWise! Please confirm your email address by clicking the button below:</p>
-      
-      <div style="text-align: center;">
-        <a href="${confirmUrl}" class="button">Confirm Email Address</a>
-      </div>
-      
-      <p>Or copy and paste this URL into your browser:</p>
-      <p>${confirmUrl}</p>
-      
-      <p>If you didn't sign up for ChatterWise, you can safely ignore this email.</p>
-      
-      <p>Best regards,<br>The ChatterWise Team</p>
-      
-      <div class="footer">
-        <p>© 2025 ChatterWise. All rights reserved.</p>
-        <p>This email was sent to ${email}</p>
-      </div>
-    </body>
-    </html>
-  `;
-}
-
-function getResetPasswordTemplate(email, resetUrl) {
-  return `
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <meta charset="utf-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Reset Your ChatterWise Password</title>
-      <style>
-        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; }
-        .header { text-align: center; margin-bottom: 30px; }
-        .logo { font-size: 24px; font-weight: bold; color: #3B82F6; }
-        .button { display: inline-block; background-color: #3B82F6; color: white; text-decoration: none; padding: 12px 24px; border-radius: 4px; font-weight: bold; margin: 20px 0; }
-        .footer { margin-top: 40px; font-size: 12px; color: #666; text-align: center; }
-      </style>
-    </head>
-    <body>
-      <div class="header">
-        <div class="logo">ChatterWise</div>
-      </div>
-      
-      <p>Hello,</p>
-      
-      <p>We received a request to reset your ChatterWise password. Click the button below to create a new password:</p>
-      
-      <div style="text-align: center;">
-        <a href="${resetUrl}" class="button">Reset Password</a>
-      </div>
-      
-      <p>Or copy and paste this URL into your browser:</p>
-      <p>${resetUrl}</p>
-      
-      <p>If you didn't request a password reset, you can safely ignore this email.</p>
-      
-      <p>Best regards,<br>The ChatterWise Team</p>
-      
-      <div class="footer">
-        <p>© 2025 ChatterWise. All rights reserved.</p>
-        <p>This email was sent to ${email}</p>
-      </div>
-    </body>
-    </html>
-  `;
-}
-
-function getWelcomeTemplate(name) {
-  return `
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <meta charset="utf-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Welcome to ChatterWise!</title>
-    </head>
-    <body style="margin:0; padding:0; font-family: 'Helvetica Neue', Arial, sans-serif; background-color: #f9fafb; color: #333;">
-      <div style="max-width:600px; margin:0 auto; background-color:#ffffff; padding:40px 30px; border-radius:8px; box-shadow:0 0 10px rgba(0,0,0,0.05);">
-        
-        <!-- Header -->
-        <div style="text-align:center; margin-bottom:32px;">
-          <h1 style="color:#3B82F6; font-size:28px; margin:0;">ChatterWise</h1>
-        </div>
-
-        <!-- Greeting -->
-        <p style="font-size:16px; line-height:1.6;">Hi ${name},</p>
-        <p style="font-size:16px; line-height:1.6;">
-          Welcome to <strong>ChatterWise</strong> — we're thrilled to have you! Here's how to get started:
-        </p>
-
-        <!-- Steps -->
-        <div style="margin-top:30px;">
-          <div style="margin-bottom:20px;">
-            <div style="font-size:16px; font-weight:bold; color:#111;">1. Create your first chatbot</div>
-            <p style="margin:6px 0 0; font-size:14px; color:#555;">Build a custom AI chatbot in minutes with our intuitive interface.</p>
-          </div>
-
-          <div style="margin-bottom:20px;">
-            <div style="font-size:16px; font-weight:bold; color:#111;">2. Add your knowledge base</div>
-            <p style="margin:6px 0 0; font-size:14px; color:#555;">Upload files or text to train your chatbot with your unique data.</p>
-          </div>
-
-          <div style="margin-bottom:20px;">
-            <div style="font-size:16px; font-weight:bold; color:#111;">3. Integrate & deploy</div>
-            <p style="margin:6px 0 0; font-size:14px; color:#555;">Embed on your site or use our API to launch anywhere.</p>
-          </div>
-        </div>
-
-        <!-- CTA Button -->
-        <div style="text-align:center; margin-top:40px;">
-          <a href="https://app.chatterwise.ai/dashboard" 
-             style="background-color:#3B82F6; color:#ffffff; text-decoration:none; padding:12px 24px; border-radius:6px; font-size:16px; font-weight:bold; display:inline-block;">
-            Go to Dashboard
-          </a>
-        </div>
-
-        <!-- Extra Info -->
-        <p style="margin-top:30px; font-size:14px; color:#666; text-align:center;">
-          Need help? Check out our <a href="https://docs.chatterwise.ai" style="color:#3B82F6;">documentation</a> or contact support.
-        </p>
-
-        <!-- Signature -->
-        <p style="font-size:14px; color:#555; margin-top:20px;">– The ChatterWise Team</p>
-      </div>
-
-      <!-- Footer -->
-      <div style="text-align:center; font-size:12px; color:#999; margin-top:20px;">
-        © 2025 ChatterWise. All rights reserved.
-      </div>
-    </body>
-    </html>
-  `;
-}
-
 function getNewChatbotTemplate(name, chatbotName, chatbotId) {
   return `
     <!DOCTYPE html>
