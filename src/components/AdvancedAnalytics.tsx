@@ -1,10 +1,10 @@
-import React, { useState } from 'react'
-import { 
-  BarChart3, 
-  TrendingUp, 
-  Users, 
-  MessageCircle, 
-  Clock, 
+import React, { useState } from "react";
+import {
+  BarChart3,
+  TrendingUp,
+  Users,
+  MessageCircle,
+  Clock,
   Download,
   Calendar,
   Filter,
@@ -12,158 +12,178 @@ import {
   ThumbsUp,
   ThumbsDown,
   Zap,
-  Loader
-} from 'lucide-react'
-import { useAuth } from '../hooks/useAuth'
-import { useChatbots } from '../hooks/useChatbots'
-import { useRealTimeAnalytics } from '../hooks/useRealTimeAnalytics'
+  Loader,
+} from "lucide-react";
+import { useAuth } from "../hooks/useAuth";
+import { useChatbots } from "../hooks/useChatbots";
+import { useRealTimeAnalytics } from "../hooks/useRealTimeAnalytics";
 
 interface MetricCard {
-  title: string
-  value: string | number
-  change: string
-  trend: 'up' | 'down' | 'neutral'
-  icon: React.ComponentType<any>
-  color: string
+  title: string;
+  value: string | number;
+  change: string;
+  trend: "up" | "down" | "neutral";
+  icon: React.ComponentType<any>;
+  color: string;
+  darkColor: string;
 }
 
 export const AdvancedAnalytics = () => {
-  const { user } = useAuth()
-  const { data: chatbots = [] } = useChatbots(user?.id || '')
-  const [selectedChatbot, setSelectedChatbot] = useState<string>('all')
-  const [dateRange, setDateRange] = useState<'7d' | '30d' | '90d'>('30d')
-  const [isExporting, setIsExporting] = useState(false)
+  const { user } = useAuth();
+  const { data: chatbots = [] } = useChatbots(user?.id || "");
+  const [selectedChatbot, setSelectedChatbot] = useState<string>("all");
+  const [dateRange, setDateRange] = useState<"7d" | "30d" | "90d">("30d");
+  const [isExporting, setIsExporting] = useState(false);
 
-  const { 
-    data: analytics, 
-    isLoading, 
-    refetch 
-  } = useRealTimeAnalytics(selectedChatbot, dateRange)
+  const {
+    data: analytics,
+    isLoading,
+    refetch,
+  } = useRealTimeAnalytics(selectedChatbot, dateRange);
 
-  const handleExport = async (format: 'csv' | 'json') => {
+  const handleExport = async (format: "csv" | "json") => {
     if (!analytics) return;
-    
-    setIsExporting(true)
+    setIsExporting(true);
     try {
-      const exportData = analytics.exportData || []
-      
-      if (format === 'csv') {
-        const csv = convertToCSV(exportData)
-        downloadFile(csv, `analytics-${dateRange}.csv`, 'text/csv')
+      const exportData = analytics.exportData || [];
+      if (format === "csv") {
+        const csv = convertToCSV(exportData);
+        downloadFile(csv, `analytics-${dateRange}.csv`, "text/csv");
       } else {
-        const json = JSON.stringify(exportData, null, 2)
-        downloadFile(json, `analytics-${dateRange}.json`, 'application/json')
+        const json = JSON.stringify(exportData, null, 2);
+        downloadFile(json, `analytics-${dateRange}.json`, "application/json");
       }
     } catch (error) {
-      console.error('Export failed:', error)
+      console.error("Export failed:", error);
     } finally {
-      setIsExporting(false)
+      setIsExporting(false);
     }
-  }
-
+  };
+  console.log(analytics);
   const convertToCSV = (data: any[]) => {
-    if (!data.length) return ''
-    
-    const headers = Object.keys(data[0]).join(',')
-    const rows = data.map(row => 
-      Object.values(row).map(value => 
-        typeof value === 'string' ? `"${value}"` : value
-      ).join(',')
-    ).join('\n')
-    
-    return `${headers}\n${rows}`
-  }
+    if (!data.length) return "";
+    const headers = Object.keys(data[0]).join(",");
+    const rows = data
+      .map((row) =>
+        Object.values(row)
+          .map((value) => (typeof value === "string" ? `"${value}"` : value))
+          .join(",")
+      )
+      .join("\n");
+    return `${headers}\n${rows}`;
+  };
 
-  const downloadFile = (content: string, filename: string, mimeType: string) => {
-    const blob = new Blob([content], { type: mimeType })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = filename
-    document.body.appendChild(a)
-    a.click()
-    document.body.removeChild(a)
-    URL.revokeObjectURL(url)
-  }
+  const downloadFile = (
+    content: string,
+    filename: string,
+    mimeType: string
+  ) => {
+    const blob = new Blob([content], { type: mimeType });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
 
   if (isLoading || !analytics) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="flex flex-col items-center">
-          <Loader className="h-8 w-8 text-primary-600 animate-spin mb-4" />
-          <p className="text-gray-600">Loading analytics data...</p>
+          <Loader className="h-8 w-8 text-primary-600 dark:text-primary-400 animate-spin mb-4" />
+          <p className="text-gray-600 dark:text-gray-400">
+            Loading analytics data...
+          </p>
         </div>
       </div>
-    )
+    );
   }
 
   const metrics: MetricCard[] = [
     {
-      title: 'Total Conversations',
+      title: "Total Conversations",
       value: analytics.totalConversations,
-      change: `${analytics.conversationGrowth >= 0 ? '+' : ''}${analytics.conversationGrowth}%`,
-      trend: analytics.conversationGrowth >= 0 ? 'up' : 'down',
+      change: `${analytics.conversationGrowth >= 0 ? "+" : ""}${
+        analytics.conversationGrowth
+      }%`,
+      trend: analytics.conversationGrowth >= 0 ? "up" : "down",
       icon: MessageCircle,
-      color: 'text-blue-600 bg-blue-100'
+      color: "text-blue-600 bg-blue-100",
+      darkColor: "text-blue-400 bg-blue-900/20",
     },
     {
-      title: 'Unique Users',
+      title: "Unique Users",
       value: analytics.uniqueUsers,
-      change: `${analytics.userGrowth >= 0 ? '+' : ''}${analytics.userGrowth}%`,
-      trend: analytics.userGrowth >= 0 ? 'up' : 'down',
+      change: `${analytics.userGrowth >= 0 ? "+" : ""}${analytics.userGrowth}%`,
+      trend: analytics.userGrowth >= 0 ? "up" : "down",
       icon: Users,
-      color: 'text-green-600 bg-green-100'
+      color: "text-green-600 bg-green-100",
+      darkColor: "text-green-400 bg-green-900/20",
     },
     {
-      title: 'Avg Response Time',
+      title: "Avg Response Time",
       value: `${analytics.avgResponseTime}ms`,
-      change: `${analytics.responseTimeImprovement >= 0 ? '-' : '+'}${Math.abs(analytics.responseTimeImprovement)}%`,
-      trend: analytics.responseTimeImprovement >= 0 ? 'up' : 'down',
+      change: `${analytics.responseTimeImprovement >= 0 ? "-" : "+"}${Math.abs(
+        analytics.responseTimeImprovement
+      )}%`,
+      trend: analytics.responseTimeImprovement >= 0 ? "up" : "down",
       icon: Clock,
-      color: 'text-purple-600 bg-purple-100'
+      color: "text-purple-600 bg-purple-100",
+      darkColor: "text-purple-400 bg-purple-900/20",
     },
     {
-      title: 'Satisfaction Rate',
+      title: "Satisfaction Rate",
       value: `${analytics.satisfactionRate}%`,
-      change: `${analytics.satisfactionGrowth >= 0 ? '+' : ''}${analytics.satisfactionGrowth}%`,
-      trend: analytics.satisfactionGrowth >= 0 ? 'up' : 'down',
+      change: `${analytics.satisfactionGrowth >= 0 ? "+" : ""}${
+        analytics.satisfactionGrowth
+      }%`,
+      trend: analytics.satisfactionGrowth >= 0 ? "up" : "down",
       icon: ThumbsUp,
-      color: 'text-emerald-600 bg-emerald-100'
+      color: "text-emerald-600 bg-emerald-100",
+      darkColor: "text-emerald-400 bg-emerald-900/20",
     },
     {
-      title: 'Resolution Rate',
+      title: "Resolution Rate",
       value: `${analytics.resolutionRate}%`,
-      change: `${analytics.resolutionGrowth >= 0 ? '+' : ''}${analytics.resolutionGrowth}%`,
-      trend: analytics.resolutionGrowth >= 0 ? 'up' : 'down',
+      change: `${analytics.resolutionGrowth >= 0 ? "+" : ""}${
+        analytics.resolutionGrowth
+      }%`,
+      trend: analytics.resolutionGrowth >= 0 ? "up" : "down",
       icon: Zap,
-      color: 'text-orange-600 bg-orange-100'
+      color: "text-orange-600 bg-orange-100",
+      darkColor: "text-orange-400 bg-orange-900/20",
     },
     {
-      title: 'Peak Usage Hour',
-      value: analytics.peakHour || 'N/A',
-      change: 'Most active',
-      trend: 'neutral',
+      title: "Peak Usage Hour",
+      value: analytics.peakHour || "N/A",
+      change: "Most active",
+      trend: "neutral",
       icon: TrendingUp,
-      color: 'text-indigo-600 bg-indigo-100'
-    }
-  ]
+      color: "text-indigo-600 bg-indigo-100",
+      darkColor: "text-indigo-400 bg-indigo-900/20",
+    },
+  ];
 
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-extrabold text-gray-900 font-display tracking-tight mb-1">
+          <h1 className="text-3xl font-extrabold text-gray-900 dark:text-gray-100 font-display tracking-tight mb-1">
             Advanced Analytics
           </h1>
-          <p className="text-gray-600">
-            Comprehensive insights into your chatbot performance and user engagement.
+          <p className="text-gray-600 dark:text-gray-400">
+            Comprehensive insights into your chatbot performance and user
+            engagement.
           </p>
         </div>
-        <div className="flex items-center space-x-3">
+        <div className="flex flex-wrap items-center gap-3">
           <button
             onClick={() => refetch()}
-            className="inline-flex items-center px-3 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors"
+            className="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
           >
             <RefreshCw className="h-4 w-4 mr-2" />
             Refresh
@@ -172,7 +192,7 @@ export const AdvancedAnalytics = () => {
             <select
               value={selectedChatbot}
               onChange={(e) => setSelectedChatbot(e.target.value)}
-              className="appearance-none bg-white border border-gray-300 rounded-lg px-4 py-2 pr-8 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary-500"
+              className="appearance-none bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg px-4 py-2 pr-8 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary-500"
             >
               <option value="all">All Chatbots</option>
               {chatbots.map((bot) => (
@@ -181,19 +201,19 @@ export const AdvancedAnalytics = () => {
                 </option>
               ))}
             </select>
-            <Filter className="absolute right-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
+            <Filter className="absolute right-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-gray-600 pointer-events-none" />
           </div>
           <div className="relative">
             <select
               value={dateRange}
               onChange={(e) => setDateRange(e.target.value as any)}
-              className="appearance-none bg-white border border-gray-300 rounded-lg px-4 py-2 pr-8 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary-500"
+              className="appearance-none bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg px-4 py-2 pr-8 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary-500"
             >
               <option value="7d">Last 7 days</option>
               <option value="30d">Last 30 days</option>
               <option value="90d">Last 90 days</option>
             </select>
-            <Calendar className="absolute right-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
+            <Calendar className="absolute right-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-gray-600 pointer-events-none" />
           </div>
         </div>
       </div>
@@ -201,95 +221,148 @@ export const AdvancedAnalytics = () => {
       {/* Metrics Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {metrics.map((metric, index) => {
-          const Icon = metric.icon
+          const Icon = metric.icon;
           return (
             <div
               key={index}
-              className="bg-white/95 rounded-2xl shadow-xl border border-gray-100 p-6"
+              className="bg-white/95 dark:bg-gray-800/95 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-700 p-6"
             >
               <div className="flex items-center justify-between">
-                <div className={`rounded-xl p-3 ${metric.color}`}>
+                <div
+                  className={`rounded-xl p-3 ${metric.color} dark:${metric.darkColor}`}
+                >
                   <Icon className="h-6 w-6" />
                 </div>
                 <div className="text-right">
-                  <p className="text-2xl font-bold text-gray-900">{metric.value}</p>
-                  <p className={`text-sm ${
-                    metric.trend === 'up' ? 'text-green-600' : 
-                    metric.trend === 'down' ? 'text-red-600' : 'text-gray-500'
-                  }`}>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                    {metric.value}
+                  </p>
+                  <p
+                    className={`text-sm ${
+                      metric.trend === "up"
+                        ? "text-green-600 dark:text-green-400"
+                        : metric.trend === "down"
+                        ? "text-red-600 dark:text-red-400"
+                        : "text-gray-500 dark:text-gray-400"
+                    }`}
+                  >
                     {metric.change}
                   </p>
                 </div>
               </div>
               <div className="mt-4">
-                <h3 className="text-sm font-medium text-gray-600">{metric.title}</h3>
+                <h3 className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                  {metric.title}
+                </h3>
               </div>
             </div>
-          )
+          );
         })}
       </div>
 
       {/* Charts Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Message Volume Chart */}
-        <div className="bg-white/95 rounded-2xl shadow-xl border border-gray-100 p-6">
+        <div className="bg-white/95 dark:bg-gray-800/95 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-700 p-6">
           <div className="flex items-center justify-between mb-6">
-            <h3 className="text-lg font-bold text-gray-900">Message Volume</h3>
-            <BarChart3 className="h-5 w-5 text-gray-400" />
+            <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">
+              Message Volume
+            </h3>
+            <BarChart3 className="h-5 w-5 text-gray-400 dark:text-gray-600" />
           </div>
-          <div className="h-64 flex items-center justify-center">
-            {analytics.messageVolumeChart && analytics.messageVolumeChart.length > 0 ? (
-              <div className="w-full h-full">
-                <div className="flex items-end space-x-2 h-full">
-                  {analytics.messageVolumeChart.map((data, index) => (
-                    <div key={index} className="flex-1 flex flex-col items-center">
+          <div className="relative">
+            <div className="absolute  flex items-center justify-between pointer-events-none">
+              <div className="bg-gradient-to-r from-white dark:from-gray-800 to-transparent w-8 h-full" />
+              <div className="bg-gradient-to-l from-white dark:from-gray-800 to-transparent w-8 h-full" />
+            </div>
+            <div className="h-64 flex items-center justify-center">
+              {analytics.messageVolumeChart &&
+              analytics.messageVolumeChart.length > 0 ? (
+                <div className="w-full h-full overflow-x-auto">
+                  <div className="flex items-end space-x-2 h-full min-w-max">
+                    {analytics.messageVolumeChart.map((data, index) => (
                       <div
-                        className="w-full bg-primary-500 rounded-t transition-all duration-300"
-                        style={{
-                          height: `${(data.value / Math.max(...analytics.messageVolumeChart.map(d => d.value) || 1)) * 200}px`
-                        }}
-                      />
-                      <span className="text-xs text-gray-500 mt-2">{data.label}</span>
-                    </div>
-                  ))}
+                        key={index}
+                        className="flex-1 flex flex-col items-center min-w-[2rem]"
+                      >
+                        <div
+                          className={`w-full bg-primary-500 dark:bg-primary-400 rounded-t transition-all duration-300 ${
+                            data.value > 0
+                              ? "ring-1 ring-primary-700 dark:ring-primary-600"
+                              : ""
+                          }`}
+                          style={{
+                            height: `${
+                              (data.value /
+                                Math.max(
+                                  ...analytics.messageVolumeChart.map(
+                                    (d) => d.value
+                                  ),
+                                  1
+                                )) *
+                              200
+                            }px`,
+                          }}
+                        />
+                        <span className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                          {data.label.split(" ")[1]} {/* Just day number */}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            ) : (
-              <div className="text-center">
-                <BarChart3 className="h-12 w-12 text-gray-300 mx-auto mb-2" />
-                <p className="text-sm text-gray-500">No data available</p>
-              </div>
-            )}
+              ) : (
+                <div className="text-center">
+                  <BarChart3 className="h-12 w-12 text-gray-300 dark:text-gray-600 mx-auto mb-2" />
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    No data available
+                  </p>
+                </div>
+              )}
+            </div>
+            <p className="text-xs text-center text-gray-400 dark:text-gray-500 mt-1">
+              ← Scroll to see more →
+            </p>
           </div>
         </div>
 
         {/* User Satisfaction Chart */}
-        <div className="bg-white/95 rounded-2xl shadow-xl border border-gray-100 p-6">
+        <div className="bg-white/95 dark:bg-gray-800/95 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-700 p-6">
           <div className="flex items-center justify-between mb-6">
-            <h3 className="text-lg font-bold text-gray-900">User Satisfaction</h3>
-            <TrendingUp className="h-5 w-5 text-gray-400" />
+            <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">
+              User Satisfaction
+            </h3>
+            <TrendingUp className="h-5 w-5 text-gray-400 dark:text-gray-600" />
           </div>
           <div className="h-64 flex items-center justify-center">
             <div className="text-center">
               <div className="flex items-center justify-center space-x-8 mb-6">
                 <div className="text-center">
-                  <div className="flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mb-2">
-                    <ThumbsUp className="h-8 w-8 text-green-600" />
+                  <div className="flex items-center justify-center w-16 h-16 bg-green-100 dark:bg-green-900/20 rounded-full mb-2">
+                    <ThumbsUp className="h-8 w-8 text-green-600 dark:text-green-400" />
                   </div>
-                  <p className="text-2xl font-bold text-gray-900">{analytics.positiveRating}%</p>
-                  <p className="text-sm text-gray-500">Positive</p>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                    {analytics.positiveRating}%
+                  </p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    Positive
+                  </p>
                 </div>
                 <div className="text-center">
-                  <div className="flex items-center justify-center w-16 h-16 bg-red-100 rounded-full mb-2">
-                    <ThumbsDown className="h-8 w-8 text-red-600" />
+                  <div className="flex items-center justify-center w-16 h-16 bg-red-100 dark:bg-red-900/20 rounded-full mb-2">
+                    <ThumbsDown className="h-8 w-8 text-red-600 dark:text-red-400" />
                   </div>
-                  <p className="text-2xl font-bold text-gray-900">{analytics.negativeRating}%</p>
-                  <p className="text-sm text-gray-500">Negative</p>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                    {analytics.negativeRating}%
+                  </p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    Negative
+                  </p>
                 </div>
               </div>
-              <div className="w-full bg-gray-200 rounded-full h-2">
-                <div 
-                  className="bg-green-500 h-2 rounded-full transition-all duration-300"
+              <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                <div
+                  className="bg-green-500 dark:bg-green-400 h-2 rounded-full transition-all duration-300"
                   style={{ width: `${analytics.positiveRating}%` }}
                 />
               </div>
@@ -299,60 +372,79 @@ export const AdvancedAnalytics = () => {
       </div>
 
       {/* Export Section */}
-      <div className="bg-white/95 rounded-2xl shadow-xl border border-gray-100 p-6">
-        <div className="flex items-center justify-between mb-6">
+      <div className="bg-white/95 dark:bg-gray-800/95 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-700 p-6">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
           <div>
-            <h3 className="text-lg font-bold text-gray-900">Export Data</h3>
-            <p className="text-sm text-gray-600">Download your analytics data and chat logs</p>
+            <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">
+              Export Data
+            </h3>
+            <p className="text-sm text-gray-600 dark:text-gray-400">
+              Download your analytics data and chat logs
+            </p>
           </div>
-          <div className="flex space-x-3">
+          <div className="flex flex-wrap gap-3 mt-4 md:mt-0">
             <button
-              onClick={() => handleExport('csv')}
+              onClick={() => handleExport("csv")}
               disabled={isExporting || !analytics.exportData.length}
-              className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 transition-colors"
+              className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 transition-colors"
             >
               <Download className="h-4 w-4 mr-2" />
               Export CSV
             </button>
             <button
-              onClick={() => handleExport('json')}
+              onClick={() => handleExport("json")}
               disabled={isExporting || !analytics.exportData.length}
-              className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 disabled:opacity-50 transition-colors"
+              className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg text-sm font-medium text-white bg-primary-600 dark:bg-primary-500 hover:bg-primary-700 dark:hover:bg-primary-600 disabled:opacity-50 transition-colors"
             >
               <Download className="h-4 w-4 mr-2" />
               Export JSON
             </button>
           </div>
         </div>
-        
+
         {isExporting && (
           <div className="flex items-center justify-center py-4">
-            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary-600 mr-3"></div>
-            <span className="text-sm text-gray-600">Preparing export...</span>
+            <Loader className="h-6 w-6 text-primary-600 dark:text-primary-400 animate-spin mr-3" />
+            <span className="text-sm text-gray-600 dark:text-gray-400">
+              Preparing export...
+            </span>
           </div>
         )}
       </div>
 
       {/* Recent Activity */}
-      <div className="bg-white/95 rounded-2xl shadow-xl border border-gray-100 p-6">
-        <h3 className="text-lg font-bold text-gray-900 mb-6">Recent Activity</h3>
+      <div className="bg-white/95 dark:bg-gray-800/95 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-700 p-6">
+        <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-6">
+          Recent Activity
+        </h3>
         <div className="space-y-4">
           {analytics.recentActivity && analytics.recentActivity.length > 0 ? (
             analytics.recentActivity.map((activity, index) => (
-              <div key={index} className="flex items-center space-x-4 p-4 bg-gray-50 rounded-lg">
+              <div
+                key={index}
+                className="flex items-center space-x-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg"
+              >
                 <div className="flex-shrink-0">
-                  <MessageCircle className="h-5 w-5 text-gray-400" />
+                  <MessageCircle className="h-5 w-5 text-gray-400 dark:text-gray-600" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-900">{activity.message}</p>
-                  <p className="text-sm text-gray-500">{activity.timestamp}</p>
+                  <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                    {activity.message}
+                  </p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    {activity.timestamp}
+                  </p>
                 </div>
                 <div className="flex-shrink-0">
-                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                    activity.type === 'success' ? 'bg-green-100 text-green-800' :
-                    activity.type === 'warning' ? 'bg-yellow-100 text-yellow-800' :
-                    'bg-gray-100 text-gray-800'
-                  }`}>
+                  <span
+                    className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                      activity.type === "success"
+                        ? "bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-300"
+                        : activity.type === "warning"
+                        ? "bg-yellow-100 dark:bg-yellow-900/20 text-yellow-800 dark:text-yellow-300"
+                        : "bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300"
+                    }`}
+                  >
                     {activity.type}
                   </span>
                 </div>
@@ -360,12 +452,14 @@ export const AdvancedAnalytics = () => {
             ))
           ) : (
             <div className="text-center py-8">
-              <MessageCircle className="h-12 w-12 text-gray-300 mx-auto mb-2" />
-              <p className="text-sm text-gray-500">No recent activity</p>
+              <MessageCircle className="h-12 w-12 text-gray-300 dark:text-gray-600 mx-auto mb-2" />
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                No recent activity
+              </p>
             </div>
           )}
         </div>
       </div>
     </div>
-  )
-}
+  );
+};

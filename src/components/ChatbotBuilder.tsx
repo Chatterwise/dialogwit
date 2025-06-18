@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Bot,
@@ -11,6 +11,9 @@ import {
   AlertTriangle,
   ChevronLeft,
   ChevronRight,
+  X,
+  Loader,
+  AlertCircle,
 } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
 import { useCreateChatbot } from "../hooks/useChatbots";
@@ -20,6 +23,260 @@ import { useUsageLimitCheck } from "./ChatbotLimitGuard";
 import { useSubscriptionStatus } from "../hooks/useStripe";
 import { useEmail } from "../hooks/useEmail";
 import { Link } from "react-router-dom";
+
+function EnhancedTrainingDataDropzone({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (value: string) => void;
+}) {
+  const [isDragOver, setIsDragOver] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [uploadedFiles, setUploadedFiles] = useState<
+    {
+      id: string;
+      name: string;
+      size: number;
+      type: string;
+      status: "pending" | "processing" | "completed" | "error";
+      error?: string;
+    }[]
+  >([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(true);
+  }, []);
+
+  const handleDragLeave = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(false);
+  }, []);
+
+  const handleDrop = useCallback(
+    async (e: React.DragEvent) => {
+      e.preventDefault();
+      setIsDragOver(false);
+
+      const items = e.dataTransfer.items;
+      let files: File[] = [];
+
+      if (items && items.length > 0 && items[0].webkitGetAsEntry) {
+        // Handle directory drop (Chrome, Edge, Opera)
+        const entries = Array.from(items).map((item) =>
+          item.webkitGetAsEntry()
+        );
+        for (const entry of entries) {
+          const newFiles = await processFileEntry(entry);
+          files.push(...newFiles);
+        }
+      } else if (e.dataTransfer.files) {
+        // Handle file drop
+        files = Array.from(e.dataTransfer.files);
+      }
+
+      processFiles(files);
+    },
+    [onChange]
+  );
+
+  const processFileEntry = async (entry: any): Promise<File[]> => {
+    if (entry.isDirectory) {
+      return readDirectory(entry);
+    } else {
+      const file = await getFile(entry);
+      return [file];
+    }
+  };
+
+  const readDirectory = async (dir: any): Promise<File[]> => {
+    const files: File[] = [];
+    const reader = dir.createReader();
+
+    return new Promise((resolve) => {
+      const readEntries = async () => {
+        const entries = await new Promise<any[]>((resolve) => {
+          reader.readEntries(resolve);
+        });
+        if (entries.length === 0) {
+          resolve(files);
+          return;
+        }
+        for (const entry of entries) {
+          const newFiles = await processFileEntry(entry);
+          files.push(...newFiles);
+        }
+        await readEntries();
+      };
+      readEntries();
+    });
+  };
+
+  const getFile = (entry: any): Promise<File> => {
+    return new Promise((resolve) => {
+      entry.file(resolve);
+    });
+  };
+
+  const processFiles = async (files: File[]) => {
+    setIsProcessing(true);
+    const newUploadedFiles = files.map((file) => ({
+      id: Math.random().toString(36).substr(2, 9),
+      name: file.name,
+      size: file.size,
+      type: file.type,
+      status: "pending",
+    }));
+    setUploadedFiles(newUploadedFiles);
+
+    // For text files, read and append to textarea
+    const textFiles = files.filter((file) => file.type === "text/plain");
+    for (const file of textFiles) {
+      try {
+        const content = await file.text();
+        onChange(value + (value ? "\n\n" : "") + content);
+      } catch (error) {
+        console.error("Failed to read file:", error);
+      }
+    }
+
+    // For other files, just show them as uploaded (you can process them later)
+    setIsProcessing(false);
+  };
+
+  const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      processFiles(Array.from(e.target.files));
+    }
+  };
+
+  const removeFile = (id: string) => {
+    setUploadedFiles((prev) => prev.filter((file) => file.id !== id));
+  };
+
+  const formatFileSize = (bytes: number) => {
+    if (bytes === 0) return "0 Bytes";
+    const k = 1024;
+    const sizes = ["Bytes", "KB", "MB", "GB"];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
+  };
+
+  return (
+    <div className="space-y-4">
+      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+        Bot Training Data Content
+      </label>
+      <div
+        onDrop={handleDrop}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        className={`border-2 border-dashed rounded-xl p-6 text-center transition-all duration-200 ${
+          isDragOver
+            ? "border-primary-500 bg-primary-50/50"
+            : "border-gray-300 dark:border-gray-700 hover:border-primary-400"
+        }`}
+      >
+        {isDragOver && (
+          <div className="absolute inset-0 bg-primary-50/50 backdrop-blur-sm rounded-xl" />
+        )}
+        <div
+          className={`transform transition-transform duration-200 ${
+            isDragOver ? "scale-105" : "scale-100"
+          }`}
+        >
+          <Upload
+            className={`h-10 w-10 mx-auto mb-4 ${
+              isDragOver
+                ? "text-primary-600 animate-pulse"
+                : "text-gray-400 dark:text-gray-500"
+            }`}
+          />
+          <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
+            Upload documents or paste your content below
+          </p>
+        </div>
+        <textarea
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          rows={8}
+          className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-primary-400 transition"
+          placeholder="Paste your Bot Training Data content here..."
+        />
+        <input
+          type="file"
+          ref={fileInputRef}
+          multiple
+          onChange={handleFileInputChange}
+          className="hidden"
+          id="file-upload"
+        />
+        <label
+          htmlFor="file-upload"
+          className="inline-flex items-center px-6 py-2 mt-4 border border-transparent text-sm font-medium rounded-lg text-white bg-primary-600 hover:bg-primary-700 cursor-pointer transition-colors"
+        >
+          <Upload className="h-4 w-4 mr-2" />
+          Choose Files
+        </label>
+        <div className="mt-4 text-xs text-gray-500">
+          <p>Drag and drop files or folders, or click to browse</p>
+          <p>Supported: Text, PDF, Word, Excel, PowerPoint, Images</p>
+        </div>
+      </div>
+
+      {/* Uploaded Files List */}
+      {uploadedFiles.length > 0 && (
+        <div className="space-y-2">
+          <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100">
+            Uploaded Files ({uploadedFiles.length})
+          </h4>
+          <div className="space-y-2">
+            {uploadedFiles.map((file) => (
+              <div
+                key={file.id}
+                className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700"
+              >
+                <div className="flex items-center space-x-3">
+                  <FileText className="h-5 w-5 text-gray-400" />
+                  <div>
+                    <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                      {file.name}
+                    </p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                      {formatFileSize(file.size)}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center space-x-3">
+                  {file.status === "processing" && (
+                    <Loader className="h-4 w-4 animate-spin text-primary-600" />
+                  )}
+                  {file.status === "completed" && (
+                    <CheckCircle className="h-4 w-4 text-green-600" />
+                  )}
+                  {file.status === "error" && (
+                    <AlertCircle
+                      className="h-4 w-4 text-red-600"
+                      title={file.error}
+                    />
+                  )}
+                  <button
+                    onClick={() => removeFile(file.id)}
+                    className="p-1 text-gray-400 hover:text-red-600 transition-colors"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 export const ChatbotBuilder = () => {
   const navigate = useNavigate();
@@ -224,7 +481,6 @@ export const ChatbotBuilder = () => {
                 answer questions.
               </p>
             </div>
-
             <div className="space-y-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -293,26 +549,12 @@ export const ChatbotBuilder = () => {
                 </div>
               )}
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Bot Training Data Content
-                </label>
-                <div className="border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-xl p-6 text-center">
-                  <Upload className="h-10 w-10 text-gray-400 dark:text-gray-500 mx-auto mb-4" />
-                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
-                    Upload documents or paste your content below
-                  </p>
-                  <textarea
-                    value={formData.trainingData}
-                    onChange={(e) =>
-                      setFormData({ ...formData, trainingData: e.target.value })
-                    }
-                    rows={8}
-                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-primary-400 transition"
-                    placeholder="Paste your Bot Training Data content here..."
-                  />
-                </div>
-              </div>
+              <EnhancedTrainingDataDropzone
+                value={formData.trainingData}
+                onChange={(value) =>
+                  setFormData({ ...formData, trainingData: value })
+                }
+              />
             </div>
           </div>
         )}
@@ -329,7 +571,6 @@ export const ChatbotBuilder = () => {
                 retrieval.
               </p>
             </div>
-
             <div className="space-y-4">
               <div className="bg-primary-50/80 dark:bg-primary-900/20 rounded-xl p-6">
                 <div className="flex items-center">
@@ -405,7 +646,6 @@ export const ChatbotBuilder = () => {
                 ready to use.
               </p>
             </div>
-
             <div className="space-y-4">
               <div className="bg-green-50/80 dark:bg-green-900/20 rounded-xl p-6">
                 <div className="flex items-center">

@@ -21,7 +21,7 @@ export const Header = () => {
     <header className="sticky top-0 z-10 w-full bg-white/90 dark:bg-gray-900/90 backdrop-blur-lg border-b border-gray-200 dark:border-gray-800 shadow-sm">
       <div className="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
         <div className="flex items-center space-x-4">
-          <div className="flex items-center">
+          <div className="flex items-center md:hidden">
             <Bot className="h-7 w-7 text-primary-500 drop-shadow" />
             <span className="ml-2 text-lg font-extrabold text-gray-900 dark:text-gray-100 font-display tracking-tight">
               ChatterWise

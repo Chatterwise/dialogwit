@@ -5,6 +5,7 @@ import { useAuth } from "../hooks/useAuth";
 import { useChatbots, useDeleteChatbot } from "../hooks/useChatbots";
 import { useSubscriptionStatus } from "../hooks/useStripe";
 import { useUsageLimitCheck } from "./ChatbotLimitGuard";
+import { ActionModal } from "./ActionModal";
 
 export const ChatbotList = () => {
   const { user } = useAuth();
@@ -14,6 +15,11 @@ export const ChatbotList = () => {
   const { hasActiveSubscription } = useSubscriptionStatus();
   const { checkLimit } = useUsageLimitCheck();
   const [canCreateChatbot, setCanCreateChatbot] = useState(true);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [chatbotToDelete, setChatbotToDelete] = useState<{
+    id: string;
+    name: string;
+  } | null>(null);
 
   // Check if user can create more chatbots
   useState(() => {
@@ -30,24 +36,26 @@ export const ChatbotList = () => {
     checkChatbotLimit();
   });
 
-  const handleDelete = async (chatbotId: string, chatbotName: string) => {
-    if (
-      confirm(
-        `Are you sure you want to delete "${chatbotName}"? This action cannot be undone and will also delete all associated knowledge base content and chat messages.`
-      )
-    ) {
-      setDeletingId(chatbotId);
-      try {
-        await deleteChatbot.mutateAsync(chatbotId);
-        // After successful deletion, check if user can create more chatbots
-        const allowed = await checkLimit("chatbots");
-        setCanCreateChatbot(allowed);
-      } catch (error) {
-        console.error("Error deleting chatbot:", error);
-        alert("Failed to delete chatbot. Please try again.");
-      } finally {
-        setDeletingId(null);
-      }
+  const handleDeleteClick = (chatbotId: string, chatbotName: string) => {
+    setChatbotToDelete({ id: chatbotId, name: chatbotName });
+    setShowDeleteModal(true);
+  };
+
+  const handleDeleteConfirmed = async () => {
+    if (!chatbotToDelete) return;
+    setDeletingId(chatbotToDelete.id);
+    try {
+      await deleteChatbot.mutateAsync(chatbotToDelete.id);
+      // After successful deletion, check if user can create more chatbots
+      const allowed = await checkLimit("chatbots");
+      setCanCreateChatbot(allowed);
+    } catch (error) {
+      console.error("Error deleting chatbot:", error);
+      alert("Failed to delete chatbot. Please try again.");
+    } finally {
+      setDeletingId(null);
+      setChatbotToDelete(null);
+      setShowDeleteModal(false);
     }
   };
 
@@ -208,7 +216,7 @@ export const ChatbotList = () => {
                     <Settings className="h-4 w-4" />
                   </Link>
                   <button
-                    onClick={() => handleDelete(chatbot.id, chatbot.name)}
+                    onClick={() => handleDeleteClick(chatbot.id, chatbot.name)}
                     disabled={deletingId === chatbot.id}
                     className="flex items-center justify-center px-3 py-2 border border-red-300 dark:border-red-900 text-red-600 dark:text-red-400 rounded-xl hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                     title={`Delete ${chatbot.name}`}
@@ -225,6 +233,28 @@ export const ChatbotList = () => {
           ))}
         </div>
       )}
+      {/* Delete Confirmation Modal */}
+      <ActionModal
+        isOpen={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        action={{
+          title: "Delete Chatbot",
+          description:
+            "This action cannot be undone. All associated data will be permanently deleted:",
+          affectedItems: [
+            "Chatbot configuration and settings",
+            "All chat history and analytics",
+            "Connected Bot Knowledge content",
+            "Integration configurations",
+          ],
+          onConfirm: handleDeleteConfirmed,
+          actionLabel: "Delete Chatbot",
+          actionColor: "red",
+          requireType: true,
+          confirmationWord: "DELETE",
+          actionIcon: <Trash2 className="h-4 w-4 mr-2" />,
+        }}
+      />
     </div>
   );
 };

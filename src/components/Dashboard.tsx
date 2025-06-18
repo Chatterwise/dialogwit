@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import {
-  Bot,
   Plus,
   MessageCircle,
   BookOpen,
@@ -8,6 +7,7 @@ import {
   CreditCard,
   Loader,
   BarChart3,
+  Bot,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
@@ -19,6 +19,7 @@ import { SubscriptionStatus } from "./SubscriptionStatus";
 import { useUsageLimitCheck } from "./ChatbotLimitGuard";
 import { supabase } from "../lib/supabase";
 import { useUserSubscription } from "../hooks/useBilling";
+import TokenUsageWidget from "./TokenUsageWidget";
 
 type RecentActivity = {
   id: string;
@@ -231,7 +232,6 @@ export const Dashboard = () => {
         <div className="flex items-center space-x-4">
           {/* Use your SVG logo here if available, otherwise use Bot icon */}
           {/* <img src={logo} alt="ChatterWise" className="h-8 w-8" /> */}
-          <Bot className="h-8 w-8 text-primary-600 drop-shadow" />
           <div>
             <h1 className="text-3xl font-extrabold text-gray-900 dark:text-gray-100 font-display tracking-tight">
               Dashboard
@@ -315,11 +315,19 @@ export const Dashboard = () => {
         })}
       </div>
 
+      {/* Token esage widget */}
+      <TokenUsageWidget className="col-span-1" showDetails={true} />
+
       {/* Charts and Recent Activity */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Analytics Chart */}
         {analyticsLoading ? (
-          <AnalyticsChart data={[]} title="Messages This Week" loading={true} />
+          // <AnalyticsChart data={[]} title="Messages This Week" loading={true} />
+          <div className="bg-white/90 dark:bg-gray-900/90 backdrop-blur-lg rounded-2xl shadow-xl border border-gray-200 dark:border-gray-800 p-6">
+            <div className="flex items-center justify-center py-8">
+              <Loader className="h-8 w-8 text-primary-600 animate-spin" />
+            </div>
+          </div>
         ) : analyticsData ? (
           <AnalyticsChart
             data={analyticsData.chartData}
@@ -345,8 +353,10 @@ export const Dashboard = () => {
           </div>
           <div className="p-6 space-y-5">
             {isLoading || loadingActivity ? (
-              <div className="flex items-center justify-center py-8">
-                <Loader className="h-8 w-8 text-primary-600 animate-spin" />
+              <div className="bg-white/90 dark:bg-gray-900/90 backdrop-blur-lg rounded-2xl shadow-xl border border-gray-200 dark:border-gray-800 p-6">
+                <div className="flex items-center justify-center py-8">
+                  <Loader className="h-8 w-8 text-primary-600 animate-spin" />
+                </div>
               </div>
             ) : (
               <>

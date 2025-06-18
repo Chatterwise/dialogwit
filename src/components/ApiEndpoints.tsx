@@ -1,6 +1,5 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import {
-  Code,
   Copy,
   Check,
   Key,

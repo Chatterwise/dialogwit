@@ -48,6 +48,64 @@ const ACCEPTED_TYPES = {
   "text/plain": { icon: FileText, label: "Text" },
 };
 
+// Helper to process a file entry (file or directory)
+const processFileEntry = async (entry: any): Promise<File[]> => {
+  if (entry.isDirectory) {
+    return readDirectory(entry);
+  } else {
+    const file = await getFile(entry);
+    return [file];
+  }
+};
+
+const readDirectory = async (dir: any): Promise<File[]> => {
+  const files: File[] = [];
+  const reader = dir.createReader();
+
+  return new Promise((resolve) => {
+    const readEntries = async () => {
+      const entries = await new Promise<any[]>((resolve) => {
+        reader.readEntries(resolve);
+      });
+      if (entries.length === 0) {
+        resolve(files);
+        return;
+      }
+      for (const entry of entries) {
+        const newFiles = await processFileEntry(entry);
+        files.push(...newFiles);
+      }
+      await readEntries();
+    };
+    readEntries();
+  });
+};
+
+const getFile = (entry: any): Promise<File> => {
+  return new Promise((resolve) => {
+    entry.file(resolve);
+  });
+};
+
+// Custom FileList wrapper for directory drops
+class FileListWrapper {
+  private files: File[];
+  constructor(files: File[]) {
+    this.files = files;
+  }
+  get length() {
+    return this.files.length;
+  }
+  item(index: number) {
+    return this.files[index];
+  }
+  *[Symbol.iterator]() {
+    for (const file of this.files) {
+      yield file;
+    }
+  }
+}
+
 export const FileUpload: React.FC<FileUploadProps> = ({
   onFilesSelected,
   maxFiles = 10,
@@ -70,26 +128,21 @@ export const FileUpload: React.FC<FileUploadProps> = ({
 
     try {
       let content = "";
-
       if (file.type === "text/plain") {
         content = await file.text();
       } else if (file.type === "application/pdf") {
-        // For PDF files, we'll need to implement PDF parsing
-        // For now, we'll use a placeholder
         content = `[PDF Content] ${file.name} - ${(
           file.size /
           1024 /
           1024
         ).toFixed(2)}MB`;
       } else if (file.type.includes("image/")) {
-        // For images, we'll implement OCR later
         content = `[Image Content] ${file.name} - ${(
           file.size /
           1024 /
           1024
         ).toFixed(2)}MB`;
       } else if (file.type.includes("officedocument")) {
-        // For Office documents, we'll need to implement parsing
         content = `[Document Content] ${file.name} - ${(
           file.size /
           1024 /
@@ -115,7 +168,7 @@ export const FileUpload: React.FC<FileUploadProps> = ({
   };
 
   const handleFiles = useCallback(
-    async (fileList: FileList) => {
+    async (fileList: FileList | File[]) => {
       const newFiles = Array.from(fileList);
 
       // Validate file count
@@ -127,17 +180,11 @@ export const FileUpload: React.FC<FileUploadProps> = ({
       // Validate file types and sizes
       const validFiles = newFiles.filter((file) => {
         if (!acceptedTypes.includes(file.type)) {
-          alert(`File type ${file.type} is not supported`);
           return false;
         }
-
         if (file.size > maxSizePerFile * 1024 * 1024) {
-          alert(
-            `File ${file.name} is too large. Maximum size is ${maxSizePerFile}MB`
-          );
           return false;
         }
-
         return true;
       });
 
@@ -159,11 +206,25 @@ export const FileUpload: React.FC<FileUploadProps> = ({
   );
 
   const handleDrop = useCallback(
-    (e: React.DragEvent) => {
+    async (e: React.DragEvent) => {
       e.preventDefault();
+      e.stopPropagation();
       setIsDragOver(false);
 
-      if (e.dataTransfer.files) {
+      const items = e.dataTransfer.items;
+      if (items && items.length > 0 && items[0].webkitGetAsEntry) {
+        // Handle directory drop (Chrome, Edge, Opera)
+        const entries = Array.from(items).map((item) =>
+          item.webkitGetAsEntry()
+        );
+        const allFiles: File[] = [];
+        for (const entry of entries) {
+          const files = await processFileEntry(entry);
+          allFiles.push(...files);
+        }
+        handleFiles(new FileListWrapper(allFiles));
+      } else if (e.dataTransfer.files) {
+        // Handle file drop
         handleFiles(e.dataTransfer.files);
       }
     },
@@ -206,26 +267,34 @@ export const FileUpload: React.FC<FileUploadProps> = ({
         onDrop={handleDrop}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
-        className={`border-2 border-dashed rounded-xl p-8 text-center transition-all duration-200 ${
+        className={`relative border-4 border-dashed rounded-xl p-8 text-center transition-all duration-200 ${
           isDragOver
-            ? "border-primary-500 bg-primary-50"
-            : "border-gray-300 hover:border-primary-400 hover:bg-primary-25"
+            ? "border-primary-500 bg-primary-50/50"
+            : "border-gray-300 hover:border-primary-400"
         }`}
+        role="region"
+        aria-label="File upload drop zone"
       >
-        <Upload
-          className={`h-12 w-12 mx-auto mb-4 ${
-            isDragOver ? "text-primary-600" : "text-gray-400"
+        {isDragOver && (
+          <div className="absolute inset-0 bg-primary-50/50 backdrop-blur-sm rounded-xl" />
+        )}
+        <div
+          className={`transform transition-transform duration-200 ${
+            isDragOver ? "scale-105" : "scale-100"
           }`}
-        />
-
-        <h3 className="text-lg font-medium text-gray-900 mb-2">
-          Upload Bot Knowledge Files
-        </h3>
-
-        <p className="text-sm text-gray-600 mb-6">
-          Drag and drop files here, or click to browse
-        </p>
-
+        >
+          <Upload
+            className={`h-12 w-12 mx-auto mb-4 ${
+              isDragOver ? "text-primary-600 animate-pulse" : "text-gray-400"
+            }`}
+          />
+          <h3 className="text-lg font-medium text-gray-900 mb-2">
+            {isDragOver ? "Drop files here" : "Upload Bot Knowledge Files"}
+          </h3>
+          <p className="text-sm text-gray-600 mb-6">
+            Drag and drop files or folders here, or click to browse
+          </p>
+        </div>
         <input
           type="file"
           multiple
@@ -234,7 +303,6 @@ export const FileUpload: React.FC<FileUploadProps> = ({
           className="hidden"
           id="file-upload"
         />
-
         <label
           htmlFor="file-upload"
           className="inline-flex items-center px-6 py-3 border border-transparent text-sm font-medium rounded-lg text-white bg-primary-600 hover:bg-primary-700 cursor-pointer transition-colors"
@@ -242,7 +310,6 @@ export const FileUpload: React.FC<FileUploadProps> = ({
           <Upload className="h-4 w-4 mr-2" />
           Choose Files
         </label>
-
         <div className="mt-4 text-xs text-gray-500">
           <p>Supported formats: PDF, Word, Excel, PowerPoint, Images, Text</p>
           <p>
@@ -265,44 +332,38 @@ export const FileUpload: React.FC<FileUploadProps> = ({
           <h4 className="text-sm font-medium text-gray-900">
             Uploaded Files ({files.length})
           </h4>
-
           <div className="space-y-2">
             {files.map((file) => {
               const Icon = getFileIcon(file.type);
-
               return (
                 <div
                   key={file.id}
-                  className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200"
+                  className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700"
                 >
                   <div className="flex items-center space-x-3">
                     <Icon className="h-5 w-5 text-gray-400" />
                     <div>
-                      <p className="text-sm font-medium text-gray-900">
+                      <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
                         {file.name}
                       </p>
-                      <p className="text-xs text-gray-500">
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
                         {formatFileSize(file.size)}
                       </p>
                     </div>
                   </div>
-
                   <div className="flex items-center space-x-3">
                     {file.status === "processing" && (
                       <Loader className="h-4 w-4 animate-spin text-primary-600" />
                     )}
-
                     {file.status === "completed" && (
                       <CheckCircle className="h-4 w-4 text-green-600" />
                     )}
-
                     {file.status === "error" && (
                       <AlertCircle
                         className="h-4 w-4 text-red-600"
                         title={file.error}
                       />
                     )}
-
                     <button
                       onClick={() => removeFile(file.id)}
                       className="p-1 text-gray-400 hover:text-red-600 transition-colors"

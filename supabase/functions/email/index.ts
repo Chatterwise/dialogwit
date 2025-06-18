@@ -21,7 +21,7 @@ serve(async (req) => {
 
   const url = new URL(req.url);
   const path = url.pathname.replace("/email", "");
-  
+
   const supabaseClient = createClient(
     Deno.env.get("SUPABASE_URL") ?? "",
     Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
@@ -122,7 +122,7 @@ serve(async (req) => {
       // Use fallback data if user not found in users table
       const userData = user || {
         email: authContext.user?.email || "user@example.com",
-        full_name: authContext.user?.user_metadata?.full_name || null
+        full_name: authContext.user?.user_metadata?.full_name || null,
       };
 
       const { data, error } = await resend.emails.send({
@@ -185,7 +185,7 @@ serve(async (req) => {
       // Use fallback data if user not found in users table
       const userData = user || {
         email: authContext.user?.email || "user@example.com",
-        full_name: authContext.user?.user_metadata?.full_name || null
+        full_name: authContext.user?.user_metadata?.full_name || null,
       };
 
       // Get chatbot activity for the last 24 hours
@@ -288,7 +288,7 @@ serve(async (req) => {
       // Use fallback data if user not found in users table
       const userData = user || {
         email: authContext.user?.email || "user@example.com",
-        full_name: authContext.user?.user_metadata?.full_name || null
+        full_name: authContext.user?.user_metadata?.full_name || null,
       };
 
       // Get chatbot activity for the last 7 days
@@ -496,56 +496,124 @@ function getNewChatbotTemplate(name, chatbotName, chatbotId) {
   return `
     <!DOCTYPE html>
     <html>
-    <head>
-      <meta charset="utf-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Your New Chatbot is Ready!</title>
-      <style>
-        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; }
-        .header { text-align: center; margin-bottom: 30px; }
-        .logo { font-size: 24px; font-weight: bold; color: #3B82F6; }
-        .button { display: inline-block; background-color: #3B82F6; color: white; text-decoration: none; padding: 12px 24px; border-radius: 4px; font-weight: bold; margin: 20px 0; }
-        .chatbot-card { border: 1px solid #E5E7EB; border-radius: 8px; padding: 20px; margin: 20px 0; background-color: #F9FAFB; }
-        .chatbot-name { font-size: 18px; font-weight: bold; color: #3B82F6; margin-bottom: 10px; }
-        .next-steps { background-color: #EFF6FF; border-radius: 8px; padding: 15px; margin: 20px 0; }
-        .footer { margin-top: 40px; font-size: 12px; color: #666; text-align: center; }
-      </style>
-    </head>
-    <body>
-      <div class="header">
-        <div class="logo">ChatterWise</div>
-      </div>
-      
-      <p>Hello ${name},</p>
-      
-      <p>Great news! Your new chatbot <strong>${chatbotName}</strong> is ready to use.</p>
-      
-      <div class="chatbot-card">
-        <div class="chatbot-name">${chatbotName}</div>
-        <p>Your chatbot is now ready to answer questions based on the knowledge base you provided.</p>
-        <div style="text-align: center;">
-          <a href="https://app.chatterwise.ai/chatbots/${chatbotId}" class="button">View Chatbot</a>
+      <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Your New Chatbot is Ready!</title>
+        <style>
+          body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: linear-gradient(to bottom right, #fff8f5, #fff);
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 24px;
+          }
+          .header {
+            text-align: center;
+            padding-bottom: 16px;
+            border-bottom: 2px solid #ffe6e0;
+          }
+          .logo {
+            font-size: 28px;
+            font-weight: 900;
+            color: #ff5233;
+          }
+          .title {
+            font-size: 22px;
+            font-weight: 700;
+            color: #111;
+            margin-top: 32px;
+          }
+          .chatbot-card {
+            background-color: #fff0eb;
+            border: 1px solid #ffd5c8;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 24px 0;
+          }
+          .chatbot-name {
+            font-size: 20px;
+            font-weight: bold;
+            color: #ff5233;
+            margin-bottom: 10px;
+          }
+          .button {
+            display: inline-block;
+            background-color: #ff5233;
+            color: white;
+            text-decoration: none;
+            padding: 14px 28px;
+            border-radius: 6px;
+            font-weight: 600;
+            margin-top: 20px;
+          }
+          .next-steps {
+            background-color: #fff8f5;
+            border: 1px solid #ffe0d6;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+          }
+          .next-steps ul {
+            padding-left: 20px;
+            margin: 12px 0;
+          }
+          .next-steps li {
+            margin-bottom: 8px;
+          }
+          .footer {
+            text-align: center;
+            font-size: 12px;
+            color: #888;
+            margin-top: 40px;
+            border-top: 1px solid #eee;
+            padding-top: 16px;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <div class="logo">ChatterWise</div>
         </div>
-      </div>
-      
-      <div class="next-steps">
-        <strong>Next Steps:</strong>
-        <ul>
-          <li>Test your chatbot with different questions</li>
-          <li>Add more content to the knowledge base</li>
-          <li>Integrate the chatbot with your website</li>
-          <li>Monitor analytics to improve performance</li>
-        </ul>
-      </div>
-      
-      <p>If you need any help, our support team is always available.</p>
-      
-      <p>Best regards,<br>The ChatterWise Team</p>
-      
-      <div class="footer">
-        <p>© 2025 ChatterWise. All rights reserved.</p>
-      </div>
-    </body>
+
+        <p class="title">🚀 Your New Chatbot is Ready!</p>
+
+        <p>Hey ${name},</p>
+
+        <p>
+          Exciting news — your chatbot <strong>${chatbotName}</strong> is now live and ready to help.
+        </p>
+
+        <div class="chatbot-card">
+          <div class="chatbot-name">${chatbotName}</div>
+          <p>Your assistant is ready to answer questions based on your knowledge base and grow smarter over time.</p>
+          <div style="text-align: center;">
+            <a href="https://app.chatterwise.ai/chatbots/${chatbotId}" class="button">View Chatbot</a>
+          </div>
+        </div>
+
+        <div class="next-steps">
+          <strong style="color: #ff5233;">Next Steps</strong>
+          <ul>
+            <li>✅ Test your chatbot with real-world questions</li>
+            <li>📚 Add more knowledge base content</li>
+            <li>🌐 Embed it on your website or app</li>
+            <li>📊 Monitor analytics to optimize performance</li>
+          </ul>
+        </div>
+
+        <p>
+          Need help? Our support team is here for you — anytime.
+        </p>
+
+        <p>Welcome aboard, and happy building!<br />— The ChatterWise Team</p>
+
+        <div class="footer">
+          © 2025 ChatterWise. All rights reserved.<br />
+          <a href="https://chatterwise.ai" style="color: #ff5233; text-decoration: none;">Visit our site</a>
+        </div>
+      </body>
     </html>
   `;
 }

@@ -30,6 +30,7 @@ import { ResetPasswordForm } from "./components/ResetPasswordForm";
 import { EmailConfirmationRequired } from "./components/EmailConfirmationRequired";
 import { Loader2 } from "lucide-react";
 import ConfirmEmail from "./components/ConfirmEmail";
+import { TokenUsageDashboard } from "./components/TokenUsageDashboard";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -84,6 +85,7 @@ function AppContent() {
                     element={<KnowledgeBase />}
                   />
                   <Route path="/bot-knowledge" element={<KnowledgeBase />} />
+                  <Route path="/usage" element={<TokenUsageDashboard />} />
                   <Route path="/analytics" element={<AdvancedAnalytics />} />
                   <Route path="/integrations" element={<Integrations />} />
                   <Route path="/templates" element={<TemplateGallery />} />
