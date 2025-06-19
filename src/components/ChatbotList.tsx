@@ -4,8 +4,8 @@ import { Link } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import { useChatbots, useDeleteChatbot } from "../hooks/useChatbots";
 import { useSubscriptionStatus } from "../hooks/useStripe";
-import { useUsageLimitCheck } from "./ChatbotLimitGuard";
 import { ActionModal } from "./ActionModal";
+import { useUsageLimitCheck } from "../hooks/useUsageLimitCheck";
 
 export const ChatbotList = () => {
   const { user } = useAuth();

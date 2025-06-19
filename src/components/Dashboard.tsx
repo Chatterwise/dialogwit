@@ -16,10 +16,10 @@ import { useSubscriptionStatus } from "../hooks/useStripe";
 import { useChatAnalytics } from "../hooks/useChatAnalytics";
 import { AnalyticsChart } from "./AnalyticsChart";
 import { SubscriptionStatus } from "./SubscriptionStatus";
-import { useUsageLimitCheck } from "./ChatbotLimitGuard";
 import { supabase } from "../lib/supabase";
 import { useUserSubscription } from "../hooks/useBilling";
 import TokenUsageWidget from "./TokenUsageWidget";
+import { useUsageLimitCheck } from "../hooks/useUsageLimitCheck";
 
 type RecentActivity = {
   id: string;

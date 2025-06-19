@@ -31,6 +31,7 @@ import { EmailConfirmationRequired } from "./components/EmailConfirmationRequire
 import { Loader2 } from "lucide-react";
 import ConfirmEmail from "./components/ConfirmEmail";
 import { TokenUsageDashboard } from "./components/TokenUsageDashboard";
+import { ChatbotLimitGuard } from "./components/ChatbotLimitGuard";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -68,6 +69,7 @@ function AppContent() {
       <Route path="/success" element={<SuccessPage />} />
       <Route path="/cancel" element={<CancelPage />} />
       <Route path="/reset-password" element={<ResetPasswordForm />} />
+
       {/* Protected routes */}
       <Route
         path="/*"
@@ -76,14 +78,35 @@ function AppContent() {
             emailConfirmed ? (
               <Layout>
                 <Routes>
-                  <Route path="/dashboard" element={<Dashboard />} />
-                  <Route path="/chatbots" element={<ChatbotList />} />
-                  <Route path="/chatbots/new" element={<ChatbotBuilder />} />
-                  <Route path="/chatbots/:id" element={<ChatbotDetail />} />
+                  {/* Wrap chatbot-related routes with ChatbotLimitGuard */}
+                  <Route
+                    path="/chatbots/new"
+                    element={
+                      <ChatbotLimitGuard>
+                        <ChatbotBuilder />
+                      </ChatbotLimitGuard>
+                    }
+                  />
+                  <Route
+                    path="/chatbots/:id"
+                    element={
+                      <ChatbotLimitGuard>
+                        <ChatbotDetail />
+                      </ChatbotLimitGuard>
+                    }
+                  />
                   <Route
                     path="/chatbots/:id/knowledge"
-                    element={<KnowledgeBase />}
+                    element={
+                      <ChatbotLimitGuard>
+                        <KnowledgeBase />
+                      </ChatbotLimitGuard>
+                    }
                   />
+
+                  {/* Other protected routes */}
+                  <Route path="/dashboard" element={<Dashboard />} />
+                  <Route path="/chatbots" element={<ChatbotList />} />
                   <Route path="/bot-knowledge" element={<KnowledgeBase />} />
                   <Route path="/usage" element={<TokenUsageDashboard />} />
                   <Route path="/analytics" element={<AdvancedAnalytics />} />

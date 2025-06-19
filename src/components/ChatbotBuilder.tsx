@@ -19,10 +19,10 @@ import { useAuth } from "../hooks/useAuth";
 import { useCreateChatbot } from "../hooks/useChatbots";
 import { useAddKnowledgeBase } from "../hooks/useKnowledgeBase";
 import { useTrainChatbot } from "../hooks/useTraining";
-import { useUsageLimitCheck } from "./ChatbotLimitGuard";
 import { useSubscriptionStatus } from "../hooks/useStripe";
 import { useEmail } from "../hooks/useEmail";
 import { Link } from "react-router-dom";
+import { useUsageLimitCheck } from "../hooks/useUsageLimitCheck";
 
 function EnhancedTrainingDataDropzone({
   value,
