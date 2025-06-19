@@ -1,139 +1,117 @@
-import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-
-import { ChatRequest } from '../_shared/types.ts'
-import { corsHeaders, createErrorResponse, createSuccessResponse, createCorsResponse, validateRequestBody } from '../_shared/utils/response.ts'
-import { generateRAGResponse, generateFallbackResponse } from '../_shared/handlers/rag.ts'
-import { saveChatMessage } from '../_shared/utils/database.ts'
-import { OpenAIError } from '../_shared/utils/openai.ts'
-import { withRateLimit } from '../_shared/middleware/rateLimiting.ts'
-import { AuditLogger } from '../_shared/middleware/auditLogging.ts'
-
-serve(async (req) => {
-  // Handle CORS preflight requests
+import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { generateRAGResponse, generateStreamingRAGResponse } from '../_shared/handlers/rag.ts';
+import { createErrorResponse, createSuccessResponse, createCorsResponse } from '../_shared/utils/response.ts';
+serve(async (req)=>{
   if (req.method === 'OPTIONS') {
-    return createCorsResponse()
+    return createCorsResponse();
   }
-
-  // Apply rate limiting
-  return await withRateLimit(
-    req,
-    '/chat',
-    {
-      requests_per_minute: 60,
-      requests_per_hour: 500,
-      requests_per_day: 2000,
-      enabled: true
-    },
-    async () => {
-      try {
-        const body = await req.json()
-        const { botId, message, userIp } = validateRequestBody<ChatRequest>(body, ['botId', 'message'])
-
-        // Initialize Supabase client and audit logger
-        const supabaseClient = createClient(
-          Deno.env.get('SUPABASE_URL') ?? '',
-          Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-        )
-
-        const auditLogger = new AuditLogger(
-          Deno.env.get('SUPABASE_URL') ?? '',
-          Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-        )
-
-        const clientIP = req.headers.get('x-forwarded-for')?.split(',')[0] || 
-                        req.headers.get('x-real-ip') || 
-                        userIp || 
-                        'unknown'
-        const userAgent = req.headers.get('user-agent') || 'unknown'
-
-        let responseText: string
-        let ragResponse: any = null
-
-        try {
-          // Try RAG response first
-          ragResponse = await generateRAGResponse(message, botId, supabaseClient, {
-            enableCitations: false,
-            maxRetrievedChunks: 5,
-            similarityThreshold: 0.7
-          })
-          responseText = ragResponse.response
-          
-        } catch (error) {
-          if (error instanceof OpenAIError) {
-            // Log security event for OpenAI configuration issues
-            await auditLogger.logSecurityEvent(
-              'openai_configuration_error',
-              'medium',
-              {
-                error_message: error.message,
-                chatbot_id: botId
-              },
-              undefined,
-              clientIP
-            )
-
-            return createErrorResponse(
-              'OpenAI integration is not properly configured. Please contact the administrator.',
-              503,
-              { 
-                type: 'openai_configuration_error',
-                message: error.message 
-              }
-            )
-          }
-          
-          console.error('RAG response error:', error)
-          
-          // Fallback to simple response
-          const chatbot = await supabaseClient
-            .from('chatbots')
-            .select('name')
-            .eq('id', botId)
-            .eq('status', 'ready')
-            .single()
-          
-          if (!chatbot.data) {
-            return createErrorResponse('Chatbot not found or not ready', 404)
-          }
-          
-          responseText = await generateFallbackResponse(message, botId, chatbot.data.name, supabaseClient)
-        }
-
-        // Save chat message (don't let this fail the request)
-        try {
-          await saveChatMessage(supabaseClient, botId, message, responseText, clientIP)
-        } catch (error) {
-          console.error('Failed to save chat message:', error)
-        }
-
-        // Log successful chat interaction
-        await auditLogger.logChatMessage(
-          undefined, // No user ID for public chat
-          botId,
-          message,
-          responseText,
-          clientIP,
-          userAgent
-        )
-
-        // Return response with optional sources
-        const response: any = { response: responseText }
-        if (ragResponse?.sources) {
-          response.sources = ragResponse.sources
-        }
-
-        return createSuccessResponse(response)
-
-      } catch (error) {
-        console.error('Chat function error:', error)
-        
-        if (error.message.includes('Missing required field')) {
-          return createErrorResponse(error.message, 400)
-        }
-        
-        return createErrorResponse('Internal server error', 500)
-      }
+  try {
+    const body = await req.json();
+    const { message, chatbot_id, user_ip, stream = false } = body;
+    if (!message || !chatbot_id) {
+      return createErrorResponse('Message and chatbot_id are required', 400);
     }
-  )
-})
+    const supabaseClient = createClient(Deno.env.get('SUPABASE_URL') ?? '', Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '');
+    const { data: chatbot, error: chatbotError } = await supabaseClient.from('chatbots').select('id, name, user_id, status').eq('id', chatbot_id).single();
+    if (chatbotError || !chatbot) {
+      return createErrorResponse('Chatbot not found', 404);
+    }
+    if (chatbot.status !== 'ready') {
+      return createErrorResponse('Chatbot is not ready', 400, {
+        status: chatbot.status
+      });
+    }
+    const userId = chatbot.user_id;
+    if (userId) {
+      const { data: limitCheck, error: limitError } = await supabaseClient.rpc('check_token_limit', {
+        p_user_id: userId,
+        p_metric_name: 'chat_tokens_per_month',
+        p_estimated_tokens: 10
+      });
+    // if (limitError) {
+    //   console.error('Token limit check failed:', limitError);
+    //   return createErrorResponse('Internal token check error', 500);
+    // }
+    // if (!limitCheck?.allowed) {
+    //   return createErrorResponse('Token limit exceeded', 429, {
+    //     current_usage: limitCheck.current_usage,
+    //     limit: limitCheck.limit,
+    //     percentage_used: limitCheck.percentage_used
+    //   });
+    // }
+    }
+    // Continue with chat processing
+    try {
+      if (stream) {
+        const responseStream = await generateStreamingRAGResponse({
+          message,
+          chatbotId: chatbot_id,
+          userId
+        }, supabaseClient);
+        await supabaseClient.from('chat_messages').insert({
+          chatbot_id,
+          message,
+          response: '',
+          user_ip: user_ip || 'unknown'
+        });
+        return new Response(responseStream, {
+          headers: {
+            'Content-Type': 'text/plain',
+            'Cache-Control': 'no-cache',
+            'Connection': 'keep-alive',
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+            'Access-Control-Allow-Headers': 'Content-Type, Authorization'
+          }
+        });
+      } else {
+        const result = await generateRAGResponse({
+          message,
+          chatbotId: chatbot_id,
+          userId
+        }, supabaseClient);
+        const { data: chatMessage, error: insertError } = await supabaseClient.from('chat_messages').insert({
+          chatbot_id,
+          message,
+          response: result.response,
+          user_ip: user_ip || 'unknown'
+        }).select().single();
+        if (insertError) {
+          console.error('Failed to store chat message:', insertError);
+        }
+        return createSuccessResponse({
+          response: result.response,
+          context: result.context,
+          usage: result.usage,
+          cost_estimate: result.cost_estimate,
+          message_id: chatMessage?.id
+        });
+      }
+    } catch (error) {
+      if (error.message?.includes('Token limit would be exceeded')) {
+        return createErrorResponse('Token limit exceeded', 429, {
+          message: error.message
+        });
+      }
+      if (error.status === 401 || error.message?.includes('Invalid API key')) {
+        return createErrorResponse('AI service not configured', 503, {
+          message: 'The AI service is not properly configured. Please contact support.'
+        });
+      }
+      if (error.status === 429) {
+        return createErrorResponse('AI service rate limit exceeded', 429, {
+          message: 'Too many requests. Please try again later.'
+        });
+      }
+      return createErrorResponse('AI service error', 503, {
+        message: error.message
+      });
+    }
+  } catch (error) {
+    console.error('Chat error:', error);
+    return createErrorResponse('Internal server error', 500, {
+      details: error.message
+    });
+  }
+});

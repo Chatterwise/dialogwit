@@ -20,7 +20,8 @@
     "react-confetti": "^6.4.0",
     "react-dom": "^18.3.1",
     "react-router-dom": "^6.20.1",
-    "resend": "^2.0.0"
+    "resend": "^2.0.0",
+    "supabase": "^2.26.9"
   },
   "devDependencies": {
     "@eslint/js": "^9.9.1",

@@ -1,89 +1,101 @@
 import { Resend } from 'npm:resend@2.0.0';
-
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS'
 };
-
 // Helper function to get detailed error messages
-function getErrorMessage(error: any): string {
+function getErrorMessage(error) {
   if (typeof error === 'string') return error;
   if (error?.message) return error.message;
   if (error?.error) return error.error;
   return 'Unknown error occurred';
 }
-
-Deno.serve(async (req: Request) => {
+Deno.serve(async (req)=>{
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, {
+      headers: corsHeaders
+    });
   }
-
   try {
     const { email, resetUrl } = await req.json();
-
     if (!email || !resetUrl) {
-      return new Response(
-        JSON.stringify({ error: 'Email and resetUrl are required' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return new Response(JSON.stringify({
+        error: 'Email and resetUrl are required'
+      }), {
+        status: 400,
+        headers: {
+          ...corsHeaders,
+          'Content-Type': 'application/json'
+        }
+      });
     }
-
     // Initialize Resend
     const resendApiKey = Deno.env.get('RESEND_API_KEY');
     if (!resendApiKey) {
       console.error('RESEND_API_KEY not configured');
-      return new Response(
-        JSON.stringify({ error: 'Email service not configured' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return new Response(JSON.stringify({
+        error: 'Email service not configured'
+      }), {
+        status: 500,
+        headers: {
+          ...corsHeaders,
+          'Content-Type': 'application/json'
+        }
+      });
     }
-    
     const resend = new Resend(resendApiKey);
-
     const { data, error } = await resend.emails.send({
       from: 'ChatterWise <noreply@email.chatterwise.io>',
-      to: [email],
+      to: [
+        email
+      ],
       subject: 'Reset Your ChatterWise Password',
-      html: getResetPasswordTemplate(email, resetUrl),
+      html: getResetPasswordTemplate(email, resetUrl)
     });
-
     if (error) {
       const errorMsg = getErrorMessage(error);
       console.error('Error sending reset password email:', errorMsg);
-      
-      return new Response(
-        JSON.stringify({ error: 'Failed to send reset password email', details: errorMsg }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return new Response(JSON.stringify({
+        error: 'Failed to send reset password email',
+        details: errorMsg
+      }), {
+        status: 500,
+        headers: {
+          ...corsHeaders,
+          'Content-Type': 'application/json'
+        }
+      });
     }
-
     console.log('Reset password email sent successfully:', data?.id);
-
-    return new Response(
-      JSON.stringify({
-        success: true,
-        message: 'Password reset email sent',
-        id: data?.id,
-      }),
-      { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
-
+    return new Response(JSON.stringify({
+      success: true,
+      message: 'Password reset email sent',
+      id: data?.id
+    }), {
+      status: 200,
+      headers: {
+        ...corsHeaders,
+        'Content-Type': 'application/json'
+      }
+    });
   } catch (error) {
     const errorMsg = getErrorMessage(error);
     console.error('Error in reset-password function:', errorMsg);
-    return new Response(
-      JSON.stringify({
-        error: 'Internal server error',
-        details: errorMsg
-      }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    return new Response(JSON.stringify({
+      error: 'Internal server error',
+      details: errorMsg
+    }), {
+      status: 500,
+      headers: {
+        ...corsHeaders,
+        'Content-Type': 'application/json'
+      }
+    });
   }
 });
-
-function getResetPasswordTemplate(email: string, resetUrl: string): string {
+function getResetPasswordTemplate(email, resetUrl) {
   return `
     <!DOCTYPE html>
     <html>
