@@ -22,8 +22,10 @@ interface Message {
 }
 
 export const PublicChat = () => {
-  const { botId } = useParams<{ botId: string }>();
-  const { data: chatbot, isLoading: chatbotLoading } = useChatbot(botId || "");
+  const { chatbotId } = useParams<{ chatbotId: string }>();
+  const { data: chatbot, isLoading: chatbotLoading } = useChatbot(
+    chatbotId || ""
+  );
   const sendMessage = useSendMessage();
   const { user } = useAuth();
   const [messages, setMessages] = useState<Message[]>([]);
