@@ -1,296 +1,258 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { supabase } from '../lib/supabase'
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "../lib/supabase";
 
-export interface SubscriptionPlan {
-  id: string
-  name: string
-  display_name: string
-  description: string
-  price_monthly: number
-  price_yearly: number
-  features: Record<string, any>
-  limits: Record<string, any>
-  usage_limits: UsageLimit[]
+//useBilling fetches and manages subscription/usage data from your database
+
+interface Subscription {
+  id: string;
+  user_id: string;
+  plan_id: string;
+  plan_name: string;
+  stripe_customer_id: string;
+  stripe_subscription_id: string;
+  status: string;
+  current_period_start: string;
+  current_period_end: string;
+  trial_start: string | null;
+  trial_end: string | null;
+  canceled_at: string | null;
+  cancel_at_period_end: boolean;
+  metadata: Record<string, any>;
+  created_at: string;
+  updated_at: string;
 }
 
-export interface UsageLimit {
-  id: string
-  plan_id: string
-  metric_name: string
-  limit_value: number
-  overage_price: number
+interface Invoice {
+  id: string;
+  user_id: string;
+  subscription_id: string;
+  stripe_invoice_id: string;
+  amount_paid: number;
+  amount_due: number;
+  currency: string;
+  status: string;
+  invoice_pdf: string | null;
+  period_start: string | null;
+  period_end: string | null;
+  created_at: string;
 }
 
-export interface UserSubscription {
-  id: string
-  user_id: string
-  plan_id: string
-  status: string
-  current_period_start: string
-  current_period_end: string
-  trial_start?: string
-  trial_end?: string
-  canceled_at?: string
-  cancel_at_period_end: boolean
-  subscription_plans: SubscriptionPlan
+interface Usage {
+  tokens_used: number;
+  chatbots_created: number;
+  documents_uploaded: number;
+  api_requests: number;
+  emails_sent: number;
 }
 
-export interface UsageTracking {
-  id: string
-  user_id: string
-  metric_name: string
-  metric_value: number
-  period_start: string
-  period_end: string
+interface UseBillingReturn {
+  subscription: Subscription | null;
+  invoices: Invoice[] | null;
+  usage: Usage | null;
+  isLoading: boolean;
+  error: Error | null;
+  refetch: () => void;
 }
 
-export const useSubscriptionPlans = () => {
-  return useQuery({
-    queryKey: ['subscription_plans'],
+export const useBilling = (): UseBillingReturn => {
+  // Fetch subscription data
+  const {
+    data: subscription,
+    isLoading: subscriptionLoading,
+    error: subscriptionError,
+    refetch: refetchSubscription,
+  } = useQuery({
+    queryKey: ["subscription"],
     queryFn: async () => {
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/billing/plans`, {
-        headers: {
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-        },
-      })
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
 
-      if (!response.ok) {
-        throw new Error('Failed to fetch subscription plans')
-      }
-
-      const data = await response.json()
-      return data.plans as SubscriptionPlan[]
-    },
-  })
-}
-
-export const useUserSubscription = (userId: string) => {
-  return useQuery({
-    queryKey: ['user_subscription', userId],
-    queryFn: async () => {
-      const { data: { session } } = await supabase.auth.getSession()
-      
       if (!session) {
-        throw new Error('No active session')
+        throw new Error("Not authenticated");
       }
 
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/billing/subscription`, {
-        headers: {
-          'Authorization': `Bearer ${session.access_token}`,
-        },
-      })
+      const { data, error } = await supabase
+        .from("user_subscriptions")
+        .select(
+          `
+          *,
+          subscription_plans (
+            name,
+            display_name,
+            features,
+            limits
+          )
+        `
+        )
+        .eq("user_id", session.user.id)
+        .maybeSingle();
 
-      if (!response.ok) {
-        throw new Error('Failed to fetch subscription')
+      if (error) {
+        throw error;
       }
 
-      const data = await response.json()
+      // Transform the data to include plan_name
+      if (data) {
+        return {
+          ...data,
+          plan_name: data.subscription_plans?.name || "free",
+        };
+      }
+
+      // Return default free plan if no subscription exists
       return {
-        subscription: data.subscription as UserSubscription | null,
-        usage: data.usage as UsageTracking[]
-      }
-    },
-    enabled: !!userId,
-  })
-}
-
-export const useCreateCheckout = () => {
-  return useMutation({
-    mutationFn: async ({ planId, billingCycle }: { planId: string, billingCycle: 'monthly' | 'yearly' }) => {
-      const { data: { session } } = await supabase.auth.getSession()
-      
-      if (!session) {
-        throw new Error('No active session')
-      }
-
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/billing/create-checkout`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.access_token}`,
-        },
-        body: JSON.stringify({
-          plan_id: planId,
-          billing_cycle: billingCycle,
-        }),
-      })
-
-      if (!response.ok) {
-        throw new Error('Failed to create checkout session')
-      }
-
-      const data = await response.json()
-      return data.checkout_url
-    },
-  })
-}
-
-export const useCustomerPortal = () => {
-  return useMutation({
-    mutationFn: async () => {
-      const { data: { session } } = await supabase.auth.getSession()
-      
-      if (!session) {
-        throw new Error('No active session')
-      }
-
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/customer-portal`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${session.access_token}`,
-        },
-      })
-
-      if (!response.ok) {
-        throw new Error('Failed to create customer portal session')
-      }
-
-      const data = await response.json()
-      return data.portal_url
-    },
-  })
-}
-
-// Cache for usage check results
-const usageCheckCache: Record<string, {result: any, timestamp: number}> = {};
-const CACHE_TTL = 60000; // 1 minute cache TTL
-
-export const useUsageCheck = () => {
-  return useMutation({
-    mutationFn: async (metricName: string) => {
-      // Check cache first
-      const cacheKey = metricName;
-      const cachedData = usageCheckCache[cacheKey];
-      const now = Date.now();
-      
-      if (cachedData && (now - cachedData.timestamp < CACHE_TTL)) {
-        console.log(`Using cached usage check for ${metricName}`);
-        return cachedData.result;
-      }
-      
-      const { data: { session } } = await supabase.auth.getSession()
-      
-      if (!session) {
-        throw new Error('No active session')
-      }
-
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/billing/usage-check`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.access_token}`,
-        },
-        body: JSON.stringify({
-          metric_name: metricName,
-        }),
-      })
-
-      if (!response.ok) {
-        let errorMessage = 'Failed to check usage'
-        
-        try {
-          const errorData = await response.json()
-          if (errorData.error) {
-            errorMessage = errorData.error
-          } else if (errorData.message) {
-            errorMessage = errorData.message
-          }
-        } catch (parseError) {
-          // If we can't parse the error response, use the status text
-          errorMessage = `Failed to check usage: ${response.status} ${response.statusText}`
-        }
-        
-        throw new Error(errorMessage)
-      }
-
-      const data = await response.json()
-      
-      // Cache the result
-      usageCheckCache[cacheKey] = {
-        result: data.usage_check,
-        timestamp: now
+        id: "",
+        user_id: session.user.id,
+        plan_id: "",
+        plan_name: "free",
+        stripe_customer_id: "",
+        stripe_subscription_id: "",
+        status: "free",
+        current_period_start: "",
+        current_period_end: "",
+        trial_start: null,
+        trial_end: null,
+        canceled_at: null,
+        cancel_at_period_end: false,
+        metadata: {},
+        created_at: "",
+        updated_at: "",
       };
-      
-      return data.usage_check
     },
-  })
-}
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
 
-export const useTrackUsage = () => {
-  const queryClient = useQueryClient()
+  // Fetch invoices
+  const {
+    data: invoices,
+    isLoading: invoicesLoading,
+    error: invoicesError,
+    refetch: refetchInvoices,
+  } = useQuery({
+    queryKey: ["invoices"],
+    queryFn: async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
 
-  return useMutation({
-    mutationFn: async ({ metricName, increment = 1 }: { metricName: string, increment?: number }) => {
-      const { data: { session } } = await supabase.auth.getSession()
-      
       if (!session) {
-        throw new Error('No active session')
+        throw new Error("Not authenticated");
       }
 
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/billing/track-usage`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.access_token}`,
-        },
-        body: JSON.stringify({
-          metric_name: metricName,
-          increment,
-        }),
-      })
+      const { data, error } = await supabase
+        .from("invoices")
+        .select("*")
+        .eq("user_id", session.user.id)
+        .order("created_at", { ascending: false });
 
-      if (!response.ok) {
-        throw new Error('Failed to track usage')
+      if (error) {
+        throw error;
       }
 
-      // Invalidate cache for this metric
-      delete usageCheckCache[metricName];
-
-      return await response.json()
+      return data || [];
     },
-    onSuccess: () => {
-      // Invalidate subscription data to refresh usage
-      queryClient.invalidateQueries({ queryKey: ['user_subscription'] })
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+
+  // Fetch usage data
+  const {
+    data: usage,
+    isLoading: usageLoading,
+    error: usageError,
+    refetch: refetchUsage,
+  } = useQuery({
+    queryKey: ["usage"],
+    queryFn: async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      if (!session) {
+        throw new Error("Not authenticated");
+      }
+
+      // Get current month's usage
+      const startOfMonth = new Date();
+      startOfMonth.setDate(1);
+      startOfMonth.setHours(0, 0, 0, 0);
+
+      const endOfMonth = new Date();
+      endOfMonth.setMonth(endOfMonth.getMonth() + 1);
+      endOfMonth.setDate(0);
+      endOfMonth.setHours(23, 59, 59, 999);
+
+      // Fetch usage tracking data
+      const { data: usageData, error: usageError } = await supabase
+        .from("usage_tracking")
+        .select("metric_name, metric_value")
+        .eq("user_id", session.user.id)
+        .gte("period_start", startOfMonth.toISOString())
+        .lte("period_end", endOfMonth.toISOString());
+
+      if (usageError) {
+        console.error("Usage tracking error:", usageError);
+      }
+
+      // Fetch chatbots count
+      const { count: chatbotsCount, error: chatbotsError } = await supabase
+        .from("chatbots")
+        .select("id", { count: "exact", head: true })
+        .eq("user_id", session.user.id);
+
+      if (chatbotsError) {
+        console.error("Chatbots count error:", chatbotsError);
+      }
+
+      // Fetch documents count
+      const { count: documentsCount, error: documentsError } = await supabase
+        .from("knowledge_base")
+        .select("id", { count: "exact", head: true })
+        .in(
+          "chatbot_id",
+          await supabase
+            .from("chatbots")
+            .select("id")
+            .eq("user_id", session.user.id)
+            .then(({ data }) => data?.map((c) => c.id) || [])
+        );
+
+      if (documentsError) {
+        console.error("Documents count error:", documentsError);
+      }
+
+      // Process usage data
+      const usageMap = new Map();
+      usageData?.forEach((item) => {
+        usageMap.set(item.metric_name, item.metric_value);
+      });
+
+      return {
+        tokens_used:
+          usageMap.get("tokens_per_month") ||
+          usageMap.get("embedding_tokens_per_month") ||
+          0,
+        chatbots_created: chatbotsCount || 0,
+        documents_uploaded: documentsCount || 0,
+        api_requests: usageMap.get("api_requests_per_minute") || 0,
+        emails_sent: usageMap.get("emails_per_month") || 0,
+      };
     },
-  })
-}
+    staleTime: 2 * 60 * 1000, // 2 minutes
+  });
 
-// Helper function to check if user is on trial
-export const isOnTrial = (subscription: UserSubscription | null): boolean => {
-  if (!subscription) return false
-  return subscription.status === 'trialing' && 
-         subscription.trial_end && 
-         new Date(subscription.trial_end) > new Date()
-}
+  const refetch = () => {
+    refetchSubscription();
+    refetchInvoices();
+    refetchUsage();
+  };
 
-// Helper function to get trial days remaining
-export const getTrialDaysRemaining = (subscription: UserSubscription | null): number => {
-  if (!subscription || !subscription.trial_end) return 0
-  
-  const trialEnd = new Date(subscription.trial_end)
-  const now = new Date()
-  const diffTime = trialEnd.getTime() - now.getTime()
-  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
-  
-  return Math.max(0, diffDays)
-}
-
-// Helper function to check if trial is expiring soon
-export const isTrialExpiringSoon = (subscription: UserSubscription | null, days = 3): boolean => {
-  if (!isOnTrial(subscription)) return false
-  return getTrialDaysRemaining(subscription) <= days
-}
-
-// Helper function to format price
-export const formatPrice = (priceInCents: number): string => {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-  }).format(priceInCents / 100)
-}
-
-// Helper function to calculate yearly savings
-export const calculateYearlySavings = (monthlyPrice: number, yearlyPrice: number): number => {
-  const yearlyMonthly = monthlyPrice * 12
-  return Math.round(((yearlyMonthly - yearlyPrice) / yearlyMonthly) * 100)
-}
+  return {
+    subscription: subscription || null,
+    invoices: invoices || null,
+    usage: usage || null,
+    isLoading: subscriptionLoading || invoicesLoading || usageLoading,
+    error: subscriptionError || invoicesError || usageError,
+    refetch,
+  };
+};

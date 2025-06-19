@@ -19,10 +19,8 @@ import { useAuth } from "../hooks/useAuth";
 import { useCreateChatbot } from "../hooks/useChatbots";
 import { useAddKnowledgeBase } from "../hooks/useKnowledgeBase";
 import { useTrainChatbot } from "../hooks/useTraining";
-import { useSubscriptionStatus } from "../hooks/useStripe";
 import { useEmail } from "../hooks/useEmail";
 import { Link } from "react-router-dom";
-import { useUsageLimitCheck } from "../hooks/useUsageLimitCheck";
 
 function EnhancedTrainingDataDropzone({
   value,
@@ -284,8 +282,6 @@ export const ChatbotBuilder = () => {
   const createChatbot = useCreateChatbot();
   const addKnowledgeBase = useAddKnowledgeBase();
   const trainChatbot = useTrainChatbot();
-  const { checkLimit, isLoading: checkingLimits } = useUsageLimitCheck();
-  const { hasActiveSubscription } = useSubscriptionStatus();
   const { sendNewChatbotEmail } = useEmail();
 
   const [step, setStep] = useState(1);
@@ -298,20 +294,20 @@ export const ChatbotBuilder = () => {
     useOpenAI: true,
     openAIModel: "gpt-3.5-turbo",
   });
-  const [limitReached, setLimitReached] = useState(false);
+  // const [limitReached, setLimitReached] = useState(false);
 
-  useEffect(() => {
-    const checkChatbotLimit = async () => {
-      if (!user) return;
-      try {
-        const allowed = await checkLimit("chatbots");
-        setLimitReached(!allowed);
-      } catch (error) {
-        console.error("Failed to check chatbot limit:", error);
-      }
-    };
-    checkChatbotLimit();
-  }, [user]);
+  // useEffect(() => {
+  //   const checkChatbotLimit = async () => {
+  //     if (!user) return;
+  //     try {
+  //       const allowed = await checkLimit("chatbots");
+  //       setLimitReached(!allowed);
+  //     } catch (error) {
+  //       console.error("Failed to check chatbot limit:", error);
+  //     }
+  //   };
+  //   checkChatbotLimit();
+  // }, [user]);
 
   const handleNext = () => setStep(Math.min(step + 1, 5));
   const handleBack = () => setStep(Math.max(step - 1, 1));
@@ -319,11 +315,11 @@ export const ChatbotBuilder = () => {
   const handleSubmit = async () => {
     if (!user) return;
     try {
-      const allowed = await checkLimit("chatbots");
-      if (!allowed) {
-        setLimitReached(true);
-        return;
-      }
+      // const allowed = await checkLimit("chatbots");
+      // if (!allowed) {
+      //   setLimitReached(true);
+      //   return;
+      // }
 
       // Create chatbot
       const chatbot = await createChatbot.mutateAsync({
@@ -371,35 +367,35 @@ export const ChatbotBuilder = () => {
 
   const handleFinish = () => navigate(`/chatbots/${createdChatbotId}`);
 
-  if (limitReached) {
-    return (
-      <div className="max-w-3xl mx-auto">
-        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-2xl p-6">
-          <div className="flex items-start">
-            <AlertTriangle className="h-6 w-6 text-red-600 dark:text-red-400 mt-1 mr-3" />
-            <div>
-              <h3 className="text-lg font-semibold text-red-900 dark:text-red-100">
-                Chatbot Limit Reached
-              </h3>
-              <p className="text-red-700 dark:text-red-300 mt-1">
-                You've reached the maximum number of chatbots allowed on your
-                current plan.
-              </p>
-              <div className="mt-4">
-                <Link
-                  to="/pricing"
-                  className="inline-flex items-center px-5 py-2.5 border border-transparent rounded-xl text-sm font-semibold text-white bg-red-600 hover:bg-red-700 shadow-card transition-colors duration-200"
-                >
-                  <Zap className="h-4 w-4 mr-2" />
-                  Upgrade Plan
-                </Link>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  // if (limitReached) {
+  //   return (
+  //     <div className="max-w-3xl mx-auto">
+  //       <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-2xl p-6">
+  //         <div className="flex items-start">
+  //           <AlertTriangle className="h-6 w-6 text-red-600 dark:text-red-400 mt-1 mr-3" />
+  //           <div>
+  //             <h3 className="text-lg font-semibold text-red-900 dark:text-red-100">
+  //               Chatbot Limit Reached
+  //             </h3>
+  //             <p className="text-red-700 dark:text-red-300 mt-1">
+  //               You've reached the maximum number of chatbots allowed on your
+  //               current plan.
+  //             </p>
+  //             <div className="mt-4">
+  //               <Link
+  //                 to="/pricing"
+  //                 className="inline-flex items-center px-5 py-2.5 border border-transparent rounded-xl text-sm font-semibold text-white bg-red-600 hover:bg-red-700 shadow-card transition-colors duration-200"
+  //               >
+  //                 <Zap className="h-4 w-4 mr-2" />
+  //                 Upgrade Plan
+  //               </Link>
+  //             </div>
+  //           </div>
+  //         </div>
+  //       </div>
+  //     </div>
+  //   );
+  // }
 
   return (
     <div className="max-w-3xl mx-auto">
@@ -707,8 +703,7 @@ export const ChatbotBuilder = () => {
               disabled={
                 (step === 1 && (!formData.name || !formData.description)) ||
                 (step === 2 && !formData.trainingData) ||
-                createChatbot.isPending ||
-                checkingLimits
+                createChatbot.isPending
               }
               className="flex items-center px-5 py-2.5 text-sm font-semibold text-white bg-primary-600 dark:bg-primary-500 border border-transparent rounded-xl shadow-card hover:bg-primary-700 dark:hover:bg-primary-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
             >

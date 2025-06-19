@@ -1,10 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { Mail, Save, AlertTriangle, CheckCircle, Loader } from 'lucide-react';
-import { useAuth } from '../hooks/useAuth';
-import { useEmail } from '../hooks/useEmail';
-import { useEmailUsage } from '../hooks/useEmailUsage';
-import { EmailUsageDisplay } from './EmailUsageDisplay';
-import { EmailSettingsForm } from './EmailSettingsForm';
+import { useState, useEffect } from "react";
+import { AlertTriangle, Loader } from "lucide-react";
+import { useAuth } from "../hooks/useAuth";
+import { useEmail } from "../hooks/useEmail";
+import { EmailSettingsForm } from "./EmailSettingsForm";
 
 export const EmailSettings = () => {
   const { user } = useAuth();
@@ -15,20 +13,20 @@ export const EmailSettings = () => {
   useEffect(() => {
     const loadSettings = async () => {
       if (!user) return;
-      
+
       setLoading(true);
       setError(null);
-      
+
       try {
         await refetchSettings();
       } catch (err) {
-        console.error('Error loading email settings:', err);
-        setError('Failed to load email settings. Please try again.');
+        console.error("Error loading email settings:", err);
+        setError("Failed to load email settings. Please try again.");
       } finally {
         setLoading(false);
       }
     };
-    
+
     loadSettings();
   }, [user]);
 
@@ -47,7 +45,7 @@ export const EmailSettings = () => {
           <AlertTriangle className="h-5 w-5 text-red-600 mt-0.5 mr-3" />
           <div>
             <p className="text-sm text-red-700">{error}</p>
-            <button 
+            <button
               onClick={() => window.location.reload()}
               className="mt-2 text-sm font-medium text-red-700 hover:text-red-800"
             >

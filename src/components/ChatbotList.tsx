@@ -3,18 +3,14 @@ import { Bot, Plus, MessageCircle, Settings, Trash2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import { useChatbots, useDeleteChatbot } from "../hooks/useChatbots";
-import { useSubscriptionStatus } from "../hooks/useStripe";
 import { ActionModal } from "./ActionModal";
-import { useUsageLimitCheck } from "../hooks/useUsageLimitCheck";
 
 export const ChatbotList = () => {
   const { user } = useAuth();
   const { data: chatbots = [], isLoading } = useChatbots(user?.id || "");
   const deleteChatbot = useDeleteChatbot();
   const [deletingId, setDeletingId] = useState<string | null>(null);
-  const { hasActiveSubscription } = useSubscriptionStatus();
-  const { checkLimit } = useUsageLimitCheck();
-  const [canCreateChatbot, setCanCreateChatbot] = useState(true);
+  const [canCreateChatbot] = useState(true);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [chatbotToDelete, setChatbotToDelete] = useState<{
     id: string;
@@ -22,19 +18,6 @@ export const ChatbotList = () => {
   } | null>(null);
 
   // Check if user can create more chatbots
-  useState(() => {
-    const checkChatbotLimit = async () => {
-      if (!user) return;
-      try {
-        const allowed = await checkLimit("chatbots");
-        setCanCreateChatbot(allowed);
-      } catch (error) {
-        console.error("Failed to check chatbot limit:", error);
-      }
-    };
-
-    checkChatbotLimit();
-  });
 
   const handleDeleteClick = (chatbotId: string, chatbotName: string) => {
     setChatbotToDelete({ id: chatbotId, name: chatbotName });
@@ -47,8 +30,6 @@ export const ChatbotList = () => {
     try {
       await deleteChatbot.mutateAsync(chatbotToDelete.id);
       // After successful deletion, check if user can create more chatbots
-      const allowed = await checkLimit("chatbots");
-      setCanCreateChatbot(allowed);
     } catch (error) {
       console.error("Error deleting chatbot:", error);
       alert("Failed to delete chatbot. Please try again.");
@@ -104,17 +85,17 @@ export const ChatbotList = () => {
               <p className="text-sm text-yellow-700 dark:text-yellow-300 mt-1">
                 You've reached the maximum number of chatbots allowed on your
                 current plan.
-                {!hasActiveSubscription &&
-                  " Consider upgrading to create more chatbots."}
+                {/* {/* {!hasActiveSubscription &&
+                  " Consider upgrading to create more chatbots."} */}
               </p>
-              {!hasActiveSubscription && (
+              {/* {!hasActiveSubscription && (
                 <Link
                   to="/pricing"
                   className="mt-2 inline-flex items-center text-sm font-medium text-yellow-800 dark:text-yellow-200 hover:text-yellow-900 dark:hover:text-yellow-100"
                 >
                   View upgrade options →
                 </Link>
-              )}
+              )} */}
             </div>
           </div>
         </div>

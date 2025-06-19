@@ -12,14 +12,10 @@ import {
 import { Link } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import { useChatbots } from "../hooks/useChatbots";
-import { useSubscriptionStatus } from "../hooks/useStripe";
 import { useChatAnalytics } from "../hooks/useChatAnalytics";
 import { AnalyticsChart } from "./AnalyticsChart";
-import { SubscriptionStatus } from "./SubscriptionStatus";
 import { supabase } from "../lib/supabase";
-import { useUserSubscription } from "../hooks/useBilling";
 import TokenUsageWidget from "./TokenUsageWidget";
-import { useUsageLimitCheck } from "../hooks/useUsageLimitCheck";
 
 type RecentActivity = {
   id: string;
@@ -32,11 +28,11 @@ type RecentActivity = {
 export const Dashboard = () => {
   const { user, loading: authLoading } = useAuth();
   const { data: chatbots = [], isLoading } = useChatbots(user?.id || "");
-  const { hasActiveSubscription } = useSubscriptionStatus();
-  const { checkLimit } = useUsageLimitCheck();
+  // const { hasActiveSubscription } = useSubscriptionStatus();
+  // const { checkLimit } = useUsageLimitCheck();
   const [canCreateChatbot, setCanCreateChatbot] = useState(true);
   const [checkingLimits, setCheckingLimits] = useState(false);
-  const { data: subscriptionData } = useUserSubscription(user?.id || "");
+  // const { data: subscriptionData } = useUserSubscription(user?.id || "");
   const [recentActivity, setRecentActivity] = useState<RecentActivity[]>([]);
   const [loadingActivity, setLoadingActivity] = useState(false);
 
@@ -47,7 +43,7 @@ export const Dashboard = () => {
 
       try {
         setCheckingLimits(true);
-        const allowed = await checkLimit("chatbots");
+        // const allowed = await checkLimit("chatbots");
         setCanCreateChatbot(allowed);
       } catch (error) {
         console.error("Failed to check chatbot limit:", error);
@@ -61,7 +57,7 @@ export const Dashboard = () => {
     if (!authLoading) {
       checkChatbotLimit();
     }
-  }, [user, authLoading, checkLimit]);
+  }, [user, authLoading]);
 
   const activeBots = chatbots.filter((bot) => bot.status === "ready").length;
   const processingBots = chatbots.filter(
@@ -172,15 +168,15 @@ export const Dashboard = () => {
   }, [user, authLoading]);
 
   // Get token usage from subscription data
-  const getTokenUsage = () => {
-    if (!subscriptionData) return 0;
+  // const getTokenUsage = () => {
+  //   if (!subscriptionData) return 0;
 
-    const tokenUsage = subscriptionData.usage.find(
-      (item) => item.metric_name === "tokens_per_month"
-    );
+  //   const tokenUsage = subscriptionData.usage.find(
+  //     (item) => item.metric_name === "tokens_per_month"
+  //   );
 
-    return tokenUsage?.metric_value || 0;
-  };
+  //   return tokenUsage?.metric_value || 0;
+  // };
 
   const stats = [
     {
@@ -199,7 +195,7 @@ export const Dashboard = () => {
     },
     {
       name: "Total Tokens Used",
-      value: getTokenUsage().toLocaleString(),
+      value: "", //getTokenUsage().toLocaleString(),
       icon: MessageCircle,
       color: "text-purple-600 bg-purple-100",
       change: `${analyticsData?.todayMessages || 0} today`,
@@ -242,7 +238,7 @@ export const Dashboard = () => {
           </div>
         </div>
         <div className="flex space-x-3">
-          {!hasActiveSubscription && (
+          {/* {!hasActiveSubscription && (
             <Link
               to="/pricing"
               className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-semibold rounded-xl shadow-card text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-400 transition-colors duration-200"
@@ -250,7 +246,7 @@ export const Dashboard = () => {
               <CreditCard className="h-4 w-4 mr-2" />
               Upgrade Now
             </Link>
-          )}
+          )} */}
           <Link
             to="/chatbots/new"
             className={`inline-flex items-center px-5 py-2.5 border border-transparent text-sm font-semibold rounded-xl shadow-card text-white bg-primary-500 hover:bg-primary-600 focus:outline-none focus:ring-2 focus:ring-primary-400 transition-colors duration-200 ${
@@ -274,7 +270,7 @@ export const Dashboard = () => {
       </div>
 
       {/* Subscription Status */}
-      <SubscriptionStatus />
+      {/* <SubscriptionStatus /> */}
 
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">

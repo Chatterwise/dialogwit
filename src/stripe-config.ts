@@ -1,50 +1,147 @@
-export interface Product {
-  id: string
-  priceId: string
-  name: string
-  description: string
-  mode: 'payment' | 'subscription'
-  price: number // in cents
-}
+export const stripeConfig = {
+  products: [
+    {
+      priceId: "price_1RbdmZPTUKauYAQ6PffMIExC",
+      productId: "prod_SWhAsYuw9GW7O0",
+      name: "Chatterwise Free",
+      description:
+        "Get started with building AI-powered chatbots at no cost. Ideal for experimenting and testing.",
+      mode: "subscription" as const,
+      price: 0,
+      interval: "month" as const,
+      features: [
+        "10,000 tokens per month",
+        "10 document uploads",
+        "1 chatbot",
+        "GPT-3.5 model",
+        "Basic support",
+        "Community access",
+      ],
+      limits: {
+        tokens_per_month: 10000,
+        max_documents: 10,
+        max_chatbots: 1,
+        api_requests_per_minute: 10,
+        emails_per_month: 50,
+      },
+      popular: false,
+    },
+    {
+      priceId: "price_1RbdoNPTUKauYAQ616vAg6AT",
+      productId: "prod_SWhCbpoJi4LtBz",
+      name: "Chatterwise Starter",
+      description:
+        "Perfect for indie developers or small teams. Includes more monthly tokens, access to GPT-3.5, and increased document uploads.",
+      mode: "subscription" as const,
+      price: 19,
+      interval: "month" as const,
+      features: [
+        "100,000 tokens per month",
+        "50 document uploads",
+        "5 chatbots",
+        "GPT-3.5 model",
+        "Email support",
+        "Analytics dashboard",
+        "API access",
+      ],
+      limits: {
+        tokens_per_month: 100000,
+        max_documents: 50,
+        max_chatbots: 5,
+        api_requests_per_minute: 50,
+        emails_per_month: 200,
+      },
+      popular: true,
+    },
+    {
+      priceId: "price_1RbdpgPTUKauYAQ6eS9EySHg",
+      productId: "prod_SWhEWyc9pjQIZe",
+      name: "Chatterwise Growth",
+      description:
+        "For scaling teams and products. Includes access to GPT-4, high token limits, and robust document processing capacity.",
+      mode: "subscription" as const,
+      price: 79,
+      interval: "month" as const,
+      features: [
+        "500,000 tokens per month",
+        "250 document uploads",
+        "25 chatbots",
+        "GPT-4 model access",
+        "Priority support",
+        "Advanced analytics",
+        "Webhook integrations",
+        "Custom branding",
+      ],
+      limits: {
+        tokens_per_month: 500000,
+        max_documents: 250,
+        max_chatbots: 25,
+        api_requests_per_minute: 200,
+        emails_per_month: 1000,
+      },
+      popular: false,
+    },
+    {
+      priceId: "price_1RbdrmPTUKauYAQ6F7hdYqmU",
+      productId: "prod_SWhGsPyug4GuP1",
+      name: "Chatterwise Business",
+      description:
+        "Enterprise-grade chatbot infrastructure. Includes multi-million token limits, GPT-4 access, extended support, and custom KB scaling.",
+      mode: "subscription" as const,
+      price: 249,
+      interval: "month" as const,
+      features: [
+        "2,000,000 tokens per month",
+        "1,000 document uploads",
+        "100 chatbots",
+        "GPT-4 model access",
+        "Dedicated support",
+        "Custom integrations",
+        "White-label options",
+        "SLA guarantee",
+        "Advanced security",
+      ],
+      limits: {
+        tokens_per_month: 2000000,
+        max_documents: 1000,
+        max_chatbots: 100,
+        api_requests_per_minute: 1000,
+        emails_per_month: 5000,
+      },
+      popular: false,
+    },
+  ],
+  addOns: [
+    {
+      priceId: "price_1RbdtlPTUKauYAQ6hj8uESNA",
+      productId: "prod_SWhIsEW9dvxHbJ",
+      name: "GPT-4 Upgrade",
+      description: "Upgrade your existing plan to use GPT-4 model",
+      mode: "subscription" as const,
+      price: 10,
+      interval: "month" as const,
+      features: [
+        "Access to GPT-4 model",
+        "Better response quality",
+        "Enhanced reasoning",
+        "Improved accuracy",
+      ],
+    },
+    {
+      priceId: "price_1Rbdt0PTUKauYAQ6weQjNWUa",
+      productId: "prod_SWhHdl6eVtRdNy",
+      name: "Extra Tokens (100k)",
+      description: "Add 100,000 extra tokens to your monthly allowance",
+      mode: "payment" as const,
+      price: 5,
+      features: [
+        "100,000 additional tokens",
+        "One-time purchase",
+        "Stacks with existing plan",
+        "Never expires",
+      ],
+    },
+  ],
+};
 
-export const products: Product[] = [
-  {
-    id: 'prod_SVwexdLkECUeHy',
-    priceId: 'price_1RauldPTUKauYAQ6vsSK6qU6',
-    name: 'Starter',
-    description: 'Ideal for small businesses and personal projects.',
-    mode: 'subscription',
-    price: 1900 // $19.00
-  },
-  {
-    id: 'prod_SVwfIxUk3kXDcU',
-    priceId: 'price_1RaumJPTUKauYAQ6wMuBtA9g',
-    name: 'Growth',
-    description: 'Perfect for growing businesses with increased needs.',
-    mode: 'subscription',
-    price: 4900 // $49.00
-  },
-  {
-    id: 'prod_SVwgGOmYhlE7vW',
-    priceId: 'price_1RaunBPTUKauYAQ6Ig3ai8Ms',
-    name: 'Business',
-    description: 'Advanced features for established businesses.',
-    mode: 'subscription',
-    price: 9900 // $99.00
-  }
-]
-
-export const getProductByPriceId = (priceId: string): Product | undefined => {
-  return products.find(product => product.priceId === priceId)
-}
-
-export const getProductById = (id: string): Product | undefined => {
-  return products.find(product => product.id === id)
-}
-
-export const formatPrice = (priceInCents: number): string => {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-  }).format(priceInCents / 100)
-}
+export default stripeConfig;

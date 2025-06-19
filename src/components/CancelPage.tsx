@@ -1,56 +1,90 @@
-import React from 'react'
-import { XCircle, ArrowLeft, CreditCard } from 'lucide-react'
-import { Link } from 'react-router-dom'
+import React from "react";
+import { XCircle, ArrowLeft, HelpCircle, MessageCircle } from "lucide-react";
+import { Link } from "react-router-dom";
 
-export const CancelPage = () => {
+const CancelPage: React.FC = () => {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-red-50 via-white to-gray-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8 text-center">
-        <div>
-          <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-100 mb-6">
-            <XCircle className="h-10 w-10 text-red-600" />
+    <div className="min-h-screen bg-gradient-to-br from-red-50 to-orange-50 flex items-center justify-center p-4">
+      <div className="max-w-md w-full">
+        {/* Cancel Card */}
+        <div className="bg-white rounded-2xl shadow-xl p-8 text-center">
+          {/* Cancel Icon */}
+          <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
+            <XCircle className="w-12 h-12 text-red-600" />
           </div>
-          
-          <h2 className="text-3xl font-extrabold text-gray-900 mb-2">
-            Payment Canceled
-          </h2>
-          
+
+          {/* Cancel Message */}
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">
+            Payment Cancelled
+          </h1>
           <p className="text-gray-600 mb-8">
-            Your payment was canceled. No charges were made to your account. You can try again anytime.
+            Your payment was cancelled and no charges were made to your account.
+            You can try again anytime or continue using ChatterWise with your
+            current plan.
           </p>
 
-          <div className="space-y-4">
+          {/* What You Can Do */}
+          <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg p-4 mb-8">
+            <h3 className="font-semibold text-gray-900 mb-3 flex items-center justify-center">
+              <HelpCircle className="w-5 h-5 text-blue-500 mr-2" />
+              What would you like to do?
+            </h3>
+            <div className="space-y-2 text-sm text-gray-700">
+              <p>• Continue with your current plan</p>
+              <p>• Try a different payment method</p>
+              <p>• Contact support for assistance</p>
+            </div>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="space-y-3">
+            <Link
+              to="/pricing"
+              className="w-full bg-blue-500 text-white py-3 px-4 rounded-lg font-medium hover:bg-blue-600 transition-colors flex items-center justify-center"
+            >
+              Try Again
+            </Link>
+
             <Link
               to="/dashboard"
-              className="w-full flex justify-center items-center px-6 py-3 border border-transparent rounded-lg text-base font-medium text-white bg-primary-600 hover:bg-primary-700 transition-colors"
+              className="w-full bg-gray-100 text-gray-700 py-3 px-4 rounded-lg font-medium hover:bg-gray-200 transition-colors flex items-center justify-center"
             >
-              <ArrowLeft className="mr-2 h-4 w-4" />
+              <ArrowLeft className="w-4 h-4 mr-2" />
               Back to Dashboard
             </Link>
-            
-            <button
-              onClick={() => window.history.back()}
-              className="w-full flex justify-center items-center px-6 py-3 border border-gray-300 rounded-lg text-base font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors"
-            >
-              <CreditCard className="mr-2 h-4 w-4" />
-              Try Payment Again
-            </button>
           </div>
         </div>
 
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <h3 className="text-sm font-medium text-blue-900 mb-2">Need Help?</h3>
-          <p className="text-sm text-blue-700">
-            If you're experiencing issues with payment, please contact our support team. We're here to help!
-          </p>
-          <Link
-            to="/support"
-            className="inline-block mt-2 text-sm font-medium text-blue-600 hover:text-blue-500"
-          >
-            Contact Support →
-          </Link>
+        {/* Support Info */}
+        <div className="mt-6 text-center">
+          <div className="bg-white rounded-lg p-4 shadow-sm">
+            <h4 className="font-medium text-gray-900 mb-2 flex items-center justify-center">
+              <MessageCircle className="w-4 h-4 mr-2" />
+              Need Help?
+            </h4>
+            <p className="text-sm text-gray-600 mb-3">
+              If you're experiencing issues with payment or have questions about
+              our plans, we're here to help.
+            </p>
+            <div className="space-y-2">
+              <a
+                href="mailto:support@chatterwise.ai"
+                className="block text-blue-500 hover:text-blue-600 text-sm font-medium"
+              >
+                Email Support
+              </a>
+              <a
+                href="/pricing"
+                className="block text-blue-500 hover:text-blue-600 text-sm font-medium"
+              >
+                View All Plans
+              </a>
+            </div>
+          </div>
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
+
+export default CancelPage;

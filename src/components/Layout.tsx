@@ -17,7 +17,7 @@ import {
   ChevronDown,
   ChevronRight,
 } from "lucide-react";
-import { TrialNotifications } from "./TrialNotifications";
+// import { TrialNotifications } from "./TrialNotifications";
 import { Header } from "./ui/Header";
 
 const mainNavigation = [
@@ -248,7 +248,7 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
         <main className="flex-1 relative overflow-y-auto focus:outline-none bg-gradient-to-br from-white via-primary-50 to-accent-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
           <div className="py-8">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
-              <TrialNotifications />
+              {/* <TrialNotifications /> */}
               {children}
               <Outlet />
             </div>

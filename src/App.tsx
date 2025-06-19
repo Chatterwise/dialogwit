@@ -22,16 +22,16 @@ import { ApiEndpoints } from "./components/ApiEndpoints";
 import { SecurityCenter } from "./components/SecurityCenter";
 import { TestingTools } from "./components/TestingTools";
 import { BillingDashboard } from "./components/BillingDashboard";
-import { PricingPlans } from "./components/PricingPlans";
-import { SuccessPage } from "./components/SuccessPage";
-import { CancelPage } from "./components/CancelPage";
 import { useAuth } from "./hooks/useAuth";
 import { ResetPasswordForm } from "./components/ResetPasswordForm";
 import { EmailConfirmationRequired } from "./components/EmailConfirmationRequired";
 import { Loader2 } from "lucide-react";
 import ConfirmEmail from "./components/ConfirmEmail";
 import { TokenUsageDashboard } from "./components/TokenUsageDashboard";
-import { ChatbotLimitGuard } from "./components/ChatbotLimitGuard";
+// import { ChatbotLimitGuard } from "./components/ChatbotLimitGuard";
+import CancelPage from "./components/CancelPage";
+import PricingPlans from "./components/PricingPlans";
+import SuccessPage from "./components/SuccessPage";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -79,29 +79,11 @@ function AppContent() {
               <Layout>
                 <Routes>
                   {/* Wrap chatbot-related routes with ChatbotLimitGuard */}
-                  <Route
-                    path="/chatbots/new"
-                    element={
-                      <ChatbotLimitGuard>
-                        <ChatbotBuilder />
-                      </ChatbotLimitGuard>
-                    }
-                  />
-                  <Route
-                    path="/chatbots/:id"
-                    element={
-                      <ChatbotLimitGuard>
-                        <ChatbotDetail />
-                      </ChatbotLimitGuard>
-                    }
-                  />
+                  <Route path="/chatbots/new" element={<ChatbotBuilder />} />
+                  <Route path="/chatbots/:id" element={<ChatbotDetail />} />
                   <Route
                     path="/chatbots/:id/knowledge"
-                    element={
-                      <ChatbotLimitGuard>
-                        <KnowledgeBase />
-                      </ChatbotLimitGuard>
-                    }
+                    element={<KnowledgeBase />}
                   />
 
                   {/* Other protected routes */}

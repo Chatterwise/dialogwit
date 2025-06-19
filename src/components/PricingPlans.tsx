@@ -1,421 +1,310 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
-import {
-  Check,
-  Zap,
-  Loader,
-  CreditCard,
-  Users,
-  MessageCircle,
-  Mail,
-} from "lucide-react";
-import { useStripeSubscription } from "../hooks/useStripe";
-import { products, getProductByPriceId, formatPrice } from "../stripe-config";
-import { useCreateCheckout } from "../hooks/useStripe";
+import React, { useState } from "react";
+import { Check, Zap, Crown, Building2, Sparkles } from "lucide-react";
+import { useStripe } from "../hooks/useStripe";
+import { stripeConfig } from "../stripe-config";
 
-export const PricingPlans = () => {
-  const createCheckout = useCreateCheckout();
-  const { data: subscription } = useStripeSubscription();
-  const [loadingPriceId, setLoadingPriceId] = useState<string | null>(null);
-  const [billingCycle, setBillingCycle] = useState<"monthly" | "yearly">(
-    "monthly"
+const PricingPlans: React.FC = () => {
+  const { createCheckoutSession, isLoading } = useStripe();
+  const [billingInterval, setBillingInterval] = useState<"month" | "year">(
+    "month"
   );
-  const product = subscription?.price_id
-    ? getProductByPriceId(subscription.price_id)
-    : null;
 
   const handleSubscribe = async (priceId: string) => {
-    setLoadingPriceId(priceId);
     try {
-      const { url } = await createCheckout.mutateAsync({
-        priceId,
-        mode: "subscription",
-        successUrl: `${window.location.origin}/success`,
-        cancelUrl: `${window.location.origin}/cancel`,
-      });
-      if (url) window.location.href = url;
+      await createCheckoutSession(priceId);
     } catch (error) {
       console.error("Failed to create checkout session:", error);
-      alert("Failed to start checkout process. Please try again.");
-    } finally {
-      setLoadingPriceId(null);
     }
   };
 
-  // Calculate yearly prices (15% discount)
-  const getYearlyPrice = (monthlyPrice: number) =>
-    Math.round(monthlyPrice * 12 * 0.85);
-  const getMonthlyEquivalent = (yearlyPrice: number) =>
-    Math.round(yearlyPrice / 12);
+  const getPlanIcon = (planName: string) => {
+    switch (planName) {
+      case "Chatterwise Free":
+        return <Sparkles className="w-8 h-8 text-gray-500" />;
+      case "Chatterwise Starter":
+        return <Zap className="w-8 h-8 text-blue-500" />;
+      case "Chatterwise Growth":
+        return <Crown className="w-8 h-8 text-purple-500" />;
+      case "Chatterwise Business":
+        return <Building2 className="w-8 h-8 text-indigo-600" />;
+      default:
+        return <Sparkles className="w-8 h-8 text-gray-500" />;
+    }
+  };
+
+  const formatNumber = (num: number) => {
+    if (num >= 1000000) {
+      return `${(num / 1000000).toFixed(1)}M`;
+    }
+    if (num >= 1000) {
+      return `${(num / 1000).toFixed(0)}K`;
+    }
+    return num.toString();
+  };
 
   return (
-    <div
-      className={`min-h-screen bg-gradient-to-br from-primary-50 via-white to-accent-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 py-16 transition-colors duration-500`}
-    >
+    <div className="py-12 bg-gradient-to-br from-gray-50 to-blue-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center">
-          <h1 className="text-4xl font-extrabold text-gray-900 dark:text-gray-100 sm:text-5xl sm:tracking-tight lg:text-6xl">
-            Simple, Transparent Pricing
-          </h1>
-          <p className="mt-5 max-w-xl mx-auto text-xl text-gray-500 dark:text-gray-400">
-            Choose the perfect plan for your chatbot needs
+        {/* Header */}
+        <div className="text-center mb-12">
+          <h2 className="text-4xl font-bold text-gray-900 mb-4">
+            Choose Your Plan
+          </h2>
+          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+            Start building AI-powered chatbots today. Upgrade or downgrade at
+            any time.
           </p>
-        </div>
 
-        {/* Billing Toggle */}
-        <div className="mt-12 flex justify-center">
-          <div className="relative bg-white dark:bg-gray-800 rounded-lg p-1 flex shadow-sm">
-            <button
-              onClick={() => setBillingCycle("monthly")}
-              className={`relative w-32 py-2 text-sm font-medium rounded-md transition-colors ${
-                billingCycle === "monthly"
-                  ? "bg-primary-100 dark:bg-primary-900/20 text-primary-800 dark:text-primary-400"
-                  : "text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100"
-              }`}
-            >
-              Monthly
-            </button>
-            <button
-              onClick={() => setBillingCycle("yearly")}
-              className={`relative w-32 py-2 text-sm font-medium rounded-md transition-colors ${
-                billingCycle === "yearly"
-                  ? "bg-primary-100 dark:bg-primary-900/20 text-primary-800 dark:text-primary-400"
-                  : "text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100"
-              }`}
-            >
-              Yearly
-              <span className="absolute -top-2 -right-2 bg-green-500 text-white text-xs px-2 py-0.5 rounded-full">
-                Save 15%
-              </span>
-            </button>
-          </div>
-        </div>
-
-        {/* Pricing Grid */}
-        <div className="mt-12 grid grid-cols-1 gap-8 lg:grid-cols-4">
-          {/* Free Plan */}
-          <div className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-8 shadow-sm">
-            <div className="text-center">
-              <h3 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                Free
-              </h3>
-              <p className="mt-2 text-gray-600 dark:text-gray-400 h-12">
-                Try out basic features with limited usage
-              </p>
-              <div className="mt-6">
-                <span className="text-4xl font-bold text-gray-900 dark:text-gray-100">
-                  $0
-                </span>
-                <span className="text-gray-600 dark:text-gray-400">/month</span>
-              </div>
-              <Link
-                to="/auth"
-                className="mt-8 w-full inline-flex items-center justify-center px-6 py-3 border border-gray-300 rounded-lg text-base font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-              >
-                Get Started Free
-              </Link>
-            </div>
-            <div className="mt-8">
-              <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-4">
-                Features included:
-              </h4>
-              <ul className="space-y-3">
-                <li className="flex items-start">
-                  <Check className="h-5 w-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
-                  <div>
-                    <span className="text-sm text-gray-600 dark:text-gray-400 flex items-center">
-                      <Users className="h-4 w-4 mr-1 text-gray-400" />1 Chatbot
-                    </span>
-                  </div>
-                </li>
-                <li className="flex items-start">
-                  <Check className="h-5 w-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
-                  <div>
-                    <span className="text-sm text-gray-600 dark:text-gray-400 flex items-center">
-                      <MessageCircle className="h-4 w-4 mr-1 text-gray-400" />
-                      10,000 Tokens/mo
-                    </span>
-                  </div>
-                </li>
-                <li className="flex items-start">
-                  <Check className="h-5 w-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
-                  <div>
-                    <span className="text-sm text-gray-600 dark:text-gray-400 flex items-center">
-                      <Mail className="h-4 w-4 mr-1 text-gray-400" />
-                      3,000 Emails/mo
-                    </span>
-                  </div>
-                </li>
-                <li className="flex items-start">
-                  <Check className="h-5 w-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
-                  <span className="text-sm text-gray-600 dark:text-gray-400">
-                    Basic templates
-                  </span>
-                </li>
-                <li className="flex items-start">
-                  <Check className="h-5 w-5 text-green-500 mr-3 mt=0.5 flex-shrink-0" />
-                  <span className="text-sm text-gray=600 dark:text-gray-400">
-                    Community support
-                  </span>
-                </li>
-              </ul>
-            </div>
-          </div>
-
-          {/* Paid Plans */}
-          {products.map((productItem) => {
-            const isPopular = productItem.name === "Growth";
-            const isCurrent = product?.id === productItem.id;
-            const isLoading = loadingPriceId === productItem.priceId;
-            const displayPrice =
-              billingCycle === "yearly"
-                ? getYearlyPrice(productItem.price)
-                : productItem.price;
-            const monthlyEquivalent =
-              billingCycle === "yearly"
-                ? getMonthlyEquivalent(getYearlyPrice(productItem.price))
-                : null;
-
-            // Plan-specific features
-            const chatbots =
-              productItem.name === "Starter"
-                ? 2
-                : productItem.name === "Growth"
-                ? 5
-                : 20;
-            const tokens =
-              productItem.name === "Starter"
-                ? "50,000"
-                : productItem.name === "Growth"
-                ? "200,000"
-                : "1,000,000";
-            const emails =
-              productItem.name === "Starter"
-                ? "50,000"
-                : productItem.name === "Growth"
-                ? "100,000"
-                : "500,000";
-
-            return (
-              <div
-                key={productItem.id}
-                className={`relative rounded-2xl border ${
-                  isPopular
-                    ? "border-primary-500 dark:border-primary-400 ring-2 ring-primary-200 dark:ring-primary-900/30"
-                    : "border-gray-200 dark:border-gray-700"
-                } bg-white dark:bg-gray-800 p-8 shadow-sm ${
-                  isPopular ? "lg:scale-105 z-10" : ""
+          {/* Billing Toggle */}
+          <div className="mt-8 flex justify-center">
+            <div className="bg-white rounded-lg p-1 shadow-sm border">
+              <button
+                onClick={() => setBillingInterval("month")}
+                className={`px-6 py-2 rounded-md text-sm font-medium transition-all ${
+                  billingInterval === "month"
+                    ? "bg-blue-500 text-white shadow-sm"
+                    : "text-gray-500 hover:text-gray-700"
                 }`}
               >
-                {isPopular && (
-                  <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                    <span className="inline-flex items-center px-4 py-1 rounded-full text-sm font-medium bg-primary-600 text-white">
-                      Most Popular
-                    </span>
+                Monthly
+              </button>
+              <button
+                onClick={() => setBillingInterval("year")}
+                className={`px-6 py-2 rounded-md text-sm font-medium transition-all ${
+                  billingInterval === "year"
+                    ? "bg-blue-500 text-white shadow-sm"
+                    : "text-gray-500 hover:text-gray-700"
+                }`}
+              >
+                Yearly
+                <span className="ml-1 text-xs bg-green-100 text-green-600 px-2 py-0.5 rounded-full">
+                  Save 20%
+                </span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Pricing Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
+          {stripeConfig.products.map((plan) => (
+            <div
+              key={plan.priceId}
+              className={`relative bg-white rounded-2xl shadow-lg border-2 transition-all duration-300 hover:shadow-xl ${
+                plan.popular
+                  ? "border-blue-500 ring-2 ring-blue-200"
+                  : "border-gray-200 hover:border-blue-300"
+              }`}
+            >
+              {plan.popular && (
+                <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
+                  <span className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-4 py-1 rounded-full text-sm font-medium">
+                    Most Popular
+                  </span>
+                </div>
+              )}
+
+              <div className="p-8">
+                {/* Plan Header */}
+                <div className="text-center mb-6">
+                  <div className="flex justify-center mb-4">
+                    {getPlanIcon(plan.name)}
                   </div>
-                )}
-                <div className="text-center">
-                  <h3 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                    {productItem.name}
+                  <h3 className="text-xl font-bold text-gray-900 mb-2">
+                    {plan.name.replace("Chatterwise ", "")}
                   </h3>
-                  <p className="mt-2 text-gray-600 dark:text-gray-400 h-12">
-                    {productItem.description}
-                  </p>
-                  <div className="mt-6">
-                    <span className="text-4xl font-bold text-gray-900 dark:text-gray-100">
-                      {formatPrice(displayPrice)}
+                  <div className="mb-4">
+                    <span className="text-4xl font-bold text-gray-900">
+                      ${plan.price}
                     </span>
-                    <span className="text-gray-600 dark:text-gray-400">
-                      {billingCycle === "yearly" ? "/year" : "/month"}
-                    </span>
-                    {billingCycle === "yearly" && monthlyEquivalent && (
-                      <p className="mt=1 text-sm text-green-600">
-                        ${monthlyEquivalent}/mo (15% off)
-                      </p>
-                    )}
+                    <span className="text-gray-500 ml-1">/{plan.interval}</span>
                   </div>
-                  <button
-                    onClick={() => handleSubscribe(productItem.priceId)}
-                    disabled={isCurrent || isLoading}
-                    className={`mt-8 w-full inline-flex items-center justify-center px-6 py-3 border border-transparent rounded-lg text-base font-medium transition-colors ${
-                      isCurrent
-                        ? "bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed"
-                        : isPopular
-                        ? "bg-primary-600 text-white hover:bg-primary-700"
-                        : "bg-gray-900 dark:bg-gray-700 text-white hover:bg-gray-800 dark:hover:bg-gray-600"
-                    }`}
-                  >
-                    {isLoading ? (
-                      <>
-                        <Loader className="h-4 w-4 mr-2 animate-spin" />
-                        Processing...
-                      </>
-                    ) : isCurrent ? (
-                      "Current Plan"
-                    ) : (
-                      <>
-                        <CreditCard className="h-4 w-4 mr-2" />
-                        Subscribe
-                      </>
-                    )}
-                  </button>
+                  <p className="text-gray-600 text-sm">{plan.description}</p>
                 </div>
-                <div className="mt-8">
-                  <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-4">
-                    Features included:
+
+                {/* Features */}
+                <div className="space-y-3 mb-8">
+                  {plan.features.map((feature, index) => (
+                    <div key={index} className="flex items-start">
+                      <Check className="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
+                      <span className="text-gray-700 text-sm">{feature}</span>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Usage Limits */}
+                <div className="bg-gray-50 rounded-lg p-4 mb-6">
+                  <h4 className="font-semibold text-gray-900 mb-3 text-sm">
+                    Usage Limits
                   </h4>
-                  <ul className="space-y-3">
-                    <li className="flex items-start">
-                      <Check className="h-5 w-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
-                      <div>
-                        <span className="text-sm text-gray-600 dark:text-gray-400 flex items-center">
-                          <Users className="h-4 w-4 mr-1 text-gray-400" />
-                          {chatbots} Chatbots
-                        </span>
-                      </div>
-                    </li>
-                    <li className="flex items-start">
-                      <Check className="h-5 w-5 text-green-500 mr=3 mt-0.5 flex-shrink-0" />
-                      <div>
-                        <span className="text-sm text-gray-600 dark:text-gray-400 flex items-center">
-                          <MessageCircle className="h-4 w-4 mr-1 text-gray-400" />
-                          {tokens} Tokens/mo
-                        </span>
-                      </div>
-                    </li>
-                    <li className="flex items-start">
-                      <Check className="h-5 w-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
-                      <div>
-                        <span className="text-sm text-gray-600 dark:text-gray-400 flex items-center">
-                          <Mail className="h-4 w-4 mr-1 text-gray-400" />
-                          {emails} Emails/mo
-                        </span>
-                      </div>
-                    </li>
-                    <li className="flex items-start">
-                      <Check className="h-5 w-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
-                      <span className="text-sm text-gray-600 dark:text-gray-400">
-                        {productItem.name === "Starter"
-                          ? "Standard templates"
-                          : "Premium templates"}
+                  <div className="space-y-2 text-xs text-gray-600">
+                    <div className="flex justify-between">
+                      <span>Tokens/month:</span>
+                      <span className="font-medium">
+                        {formatNumber(plan.limits.tokens_per_month)}
                       </span>
-                    </li>
-                    <li className="flex items-start">
-                      <Check className="h-5 w-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
-                      <span className="text-sm text-gray-600 dark:text-gray-400">
-                        {productItem.name === "Starter"
-                          ? "Email support"
-                          : "Priority support"}
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Documents:</span>
+                      <span className="font-medium">
+                        {plan.limits.max_documents}
                       </span>
-                    </li>
-                    {productItem.name !== "Starter" && (
-                      <li className="flex items-start">
-                        <Check className="h-5 w-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
-                        <span className="text-sm text-gray-600 dark:text-gray-400">
-                          Advanced analytics
-                        </span>
-                      </li>
-                    )}
-                    {productItem.name === "Business" && (
-                      <>
-                        <li className="flex items-start">
-                          <Check className="h-5 w-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
-                          <span className="text-sm text-gray-600 dark:text-gray-400">
-                            Custom branding
-                          </span>
-                        </li>
-                        <li className="flex items-start">
-                          <Check className="h-5 w-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
-                          <span className="text-sm text-gray-600 dark:text-gray-400">
-                            Dedicated account manager
-                          </span>
-                        </li>
-                      </>
-                    )}
-                  </ul>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Chatbots:</span>
+                      <span className="font-medium">
+                        {plan.limits.max_chatbots}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>API calls/min:</span>
+                      <span className="font-medium">
+                        {plan.limits.api_requests_per_minute}
+                      </span>
+                    </div>
+                  </div>
                 </div>
+
+                {/* CTA Button */}
+                <button
+                  onClick={() => handleSubscribe(plan.priceId)}
+                  disabled={isLoading || plan.price === 0}
+                  className={`w-full py-3 px-4 rounded-lg font-medium transition-all duration-200 ${
+                    plan.popular
+                      ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:from-blue-600 hover:to-purple-700 shadow-lg"
+                      : plan.price === 0
+                      ? "bg-gray-100 text-gray-500 cursor-not-allowed"
+                      : "bg-gray-900 text-white hover:bg-gray-800"
+                  } ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
+                >
+                  {isLoading ? (
+                    <div className="flex items-center justify-center">
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                      Processing...
+                    </div>
+                  ) : plan.price === 0 ? (
+                    "Current Plan"
+                  ) : (
+                    `Get Started - $${plan.price}/${plan.interval}`
+                  )}
+                </button>
               </div>
-            );
-          })}
+            </div>
+          ))}
+        </div>
+
+        {/* Add-ons Section */}
+        <div className="mt-16">
+          <div className="text-center mb-8">
+            <h3 className="text-2xl font-bold text-gray-900 mb-4">
+              Add-ons & Upgrades
+            </h3>
+            <p className="text-gray-600">
+              Enhance your plan with additional features and capacity
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+            {stripeConfig.addOns.map((addon) => (
+              <div
+                key={addon.priceId}
+                className="bg-white rounded-xl shadow-lg border border-gray-200 p-6 hover:shadow-xl transition-all duration-300"
+              >
+                <div className="flex items-start justify-between mb-4">
+                  <div>
+                    <h4 className="text-lg font-semibold text-gray-900 mb-2">
+                      {addon.name}
+                    </h4>
+                    <p className="text-gray-600 text-sm mb-4">
+                      {addon.description}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-2xl font-bold text-gray-900">
+                      ${addon.price}
+                    </div>
+                    <div className="text-sm text-gray-500">
+                      {addon.mode === "subscription" ? "/month" : "one-time"}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-2 mb-6">
+                  {addon.features.map((feature, index) => (
+                    <div key={index} className="flex items-start">
+                      <Check className="w-4 h-4 text-green-500 mr-2 mt-0.5 flex-shrink-0" />
+                      <span className="text-gray-700 text-sm">{feature}</span>
+                    </div>
+                  ))}
+                </div>
+
+                <button
+                  onClick={() => handleSubscribe(addon.priceId)}
+                  disabled={isLoading}
+                  className="w-full py-2 px-4 bg-blue-500 text-white rounded-lg font-medium hover:bg-blue-600 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isLoading ? (
+                    <div className="flex items-center justify-center">
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                      Processing...
+                    </div>
+                  ) : (
+                    `Add ${addon.name} - $${addon.price}`
+                  )}
+                </button>
+              </div>
+            ))}
+          </div>
         </div>
 
         {/* FAQ Section */}
-        <div className="mt-20">
-          <h2 className="text-3xl font-bold text-center text-gray-900 dark:text-gray-100 mb-12">
+        <div className="mt-16 bg-white rounded-2xl shadow-lg p-8">
+          <h3 className="text-2xl font-bold text-gray-900 mb-6 text-center">
             Frequently Asked Questions
-          </h2>
+          </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray=200 dark:border-gray-700 p-6">
-              <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-3">
-                What happens when I reach my usage limits?
-              </h3>
-              <p className="text-gray-600 dark:text-gray-400">
-                When you reach your usage limits, you'll be notified and given
-                the option to upgrade to a higher plan. Your chatbots will
-                continue to function, but new messages may be queued until the
-                next billing cycle.
+            <div>
+              <h4 className="font-semibold text-gray-900 mb-2">
+                Can I change plans anytime?
+              </h4>
+              <p className="text-gray-600 text-sm">
+                Yes! You can upgrade or downgrade your plan at any time. Changes
+                take effect immediately, and we'll prorate the billing.
               </p>
             </div>
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray=200 dark:border-gray-700 p-6">
-              <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-3">
-                Can I change plans at any time?
-              </h3>
-              <p className="text-gray-600 dark:text-gray-400">
-                Yes, you can upgrade your plan at any time. When you upgrade,
-                you'll be charged the prorated amount for the remainder of your
-                billing cycle. Downgrades take effect at the end of your current
-                billing cycle.
+            <div>
+              <h4 className="font-semibold text-gray-900 mb-2">
+                What happens if I exceed my limits?
+              </h4>
+              <p className="text-gray-600 text-sm">
+                We'll notify you when you're approaching your limits. You can
+                purchase add-ons or upgrade your plan to continue using the
+                service.
               </p>
             </div>
-            <div className="bg-white dark:bg-gray=800 rounded-lg shadow-sm border border-gray=200 dark:border-gray=700 p-6">
-              <h3 className="text-lg font-medium text-gray-900 dark:text-gray=100 mb-3">
+            <div>
+              <h4 className="font-semibold text-gray-900 mb-2">
+                Do you offer refunds?
+              </h4>
+              <p className="text-gray-600 text-sm">
+                We offer a 30-day money-back guarantee for all paid plans.
+                Contact support if you're not satisfied.
+              </p>
+            </div>
+            <div>
+              <h4 className="font-semibold text-gray-900 mb-2">
                 Is there a free trial?
-              </h3>
-              <p className="text-gray-600 dark:text-gray=400">
-                Yes, all new accounts start with a 14-day free trial of the
-                Growth plan features. No credit card is required to start your
-                trial.
+              </h4>
+              <p className="text-gray-600 text-sm">
+                Yes! All new users start with our Free plan. You can upgrade
+                anytime to access more features and higher limits.
               </p>
             </div>
-            <div className="bg-white dark:bg-gray=800 rounded-lg shadow-sm border border-gray=200 dark:border-gray=700 p-6">
-              <h3 className="text-lg font-medium text-gray-900 dark:text-gray=100 mb-3">
-                How do I cancel my subscription?
-              </h3>
-              <p className="text-gray-600 dark:text-gray=400">
-                You can cancel your subscription at any time from your account
-                settings. After cancellation, your plan will remain active until
-                the end of your current billing period.
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* CTA Section */}
-        <div className="mt-20 text-center">
-          <h2 className="text-3xl font-bold text-gray-900 dark:text-gray=100 mb-4">
-            Ready to get started?
-          </h2>
-          <p className="text-xl text-gray-600 dark:text-gray=400 mb-8">
-            Choose the plan that's right for you and start building amazing
-            chatbots today.
-          </p>
-          <div className="flex justify-center space-x-4">
-            <Link
-              to="/auth"
-              className="inline-flex items-center px-6 py-3 border border-transparent rounded-lg text-base font-medium text-white bg-primary-600 hover:bg-primary-700 transition-colors"
-            >
-              <Zap className="h-5 w-5 mr-2" />
-              Start Free Trial
-            </Link>
-            <Link
-              to="/contact"
-              className="inline-flex items-center px=6 py-3 border border-gray-300 rounded-lg text-base font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-            >
-              Contact Sales
-            </Link>
           </div>
         </div>
       </div>
     </div>
   );
 };
+
+export default PricingPlans;
