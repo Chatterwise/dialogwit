@@ -80,10 +80,9 @@ export const useStripe = (): UseStripeReturn => {
         throw new Error(errorData.error || "Failed to create checkout session");
       }
 
-      const { checkout_url } = await response.json();
-
-      if (checkout_url) {
-        window.location.href = checkout_url;
+      const { url } = await response.json();
+      if (url) {
+        window.location.href = url;
       } else {
         throw new Error("No checkout URL received");
       }

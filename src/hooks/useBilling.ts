@@ -1,8 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "../lib/supabase";
 
-//useBilling fetches and manages subscription/usage data from your database
-
 interface Subscription {
   id: string;
   user_id: string;
@@ -55,7 +53,6 @@ interface UseBillingReturn {
 }
 
 export const useBilling = (): UseBillingReturn => {
-  // Fetch subscription data
   const {
     data: subscription,
     isLoading: subscriptionLoading,
@@ -65,17 +62,14 @@ export const useBilling = (): UseBillingReturn => {
     queryKey: ["subscription"],
     queryFn: async () => {
       const {
-        data: { session },
-      } = await supabase.auth.getSession();
-
-      if (!session) {
-        throw new Error("Not authenticated");
-      }
+        data: { user },
+        error: userError,
+      } = await supabase.auth.getUser();
+      if (!user || userError) throw new Error("Not authenticated");
 
       const { data, error } = await supabase
         .from("user_subscriptions")
-        .select(
-          `
+        .select(`
           *,
           subscription_plans (
             name,
@@ -83,16 +77,12 @@ export const useBilling = (): UseBillingReturn => {
             features,
             limits
           )
-        `
-        )
-        .eq("user_id", session.user.id)
+        `)
+        .eq("user_id", user.id)
         .maybeSingle();
 
-      if (error) {
-        throw error;
-      }
+      if (error) throw error;
 
-      // Transform the data to include plan_name
       if (data) {
         return {
           ...data,
@@ -100,10 +90,9 @@ export const useBilling = (): UseBillingReturn => {
         };
       }
 
-      // Return default free plan if no subscription exists
       return {
         id: "",
-        user_id: session.user.id,
+        user_id: user.id,
         plan_id: "",
         plan_name: "free",
         stripe_customer_id: "",
@@ -120,10 +109,9 @@ export const useBilling = (): UseBillingReturn => {
         updated_at: "",
       };
     },
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 5 * 60 * 1000,
   });
 
-  // Fetch invoices
   const {
     data: invoices,
     isLoading: invoicesLoading,
@@ -133,29 +121,24 @@ export const useBilling = (): UseBillingReturn => {
     queryKey: ["invoices"],
     queryFn: async () => {
       const {
-        data: { session },
-      } = await supabase.auth.getSession();
-
-      if (!session) {
-        throw new Error("Not authenticated");
-      }
+        data: { user },
+        error: userError,
+      } = await supabase.auth.getUser();
+      if (!user || userError) throw new Error("Not authenticated");
 
       const { data, error } = await supabase
         .from("invoices")
         .select("*")
-        .eq("user_id", session.user.id)
+        .eq("user_id", user.id)
         .order("created_at", { ascending: false });
 
-      if (error) {
-        throw error;
-      }
+      if (error) throw error;
 
       return data || [];
     },
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 5 * 60 * 1000,
   });
 
-  // Fetch usage data
   const {
     data: usage,
     isLoading: usageLoading,
@@ -165,63 +148,62 @@ export const useBilling = (): UseBillingReturn => {
     queryKey: ["usage"],
     queryFn: async () => {
       const {
-        data: { session },
-      } = await supabase.auth.getSession();
+        data: { user },
+        error: userError,
+      } = await supabase.auth.getUser();
+      if (!user || userError) throw new Error("Not authenticated");
 
-      if (!session) {
-        throw new Error("Not authenticated");
-      }
-
-      // Get current month's usage
       const startOfMonth = new Date();
       startOfMonth.setDate(1);
       startOfMonth.setHours(0, 0, 0, 0);
 
-      const endOfMonth = new Date();
-      endOfMonth.setMonth(endOfMonth.getMonth() + 1);
+      const endOfMonth = new Date(startOfMonth);
+      endOfMonth.setMonth(startOfMonth.getMonth() + 1);
       endOfMonth.setDate(0);
       endOfMonth.setHours(23, 59, 59, 999);
 
-      // Fetch usage tracking data
-      const { data: usageData, error: usageError } = await supabase
+      const { data: usageData, error: usageErr } = await supabase
         .from("usage_tracking")
         .select("metric_name, metric_value")
-        .eq("user_id", session.user.id)
+        .eq("user_id", user.id)
         .gte("period_start", startOfMonth.toISOString())
         .lte("period_end", endOfMonth.toISOString());
 
-      if (usageError) {
-        console.error("Usage tracking error:", usageError);
+      if (usageErr) {
+        console.error("Usage tracking error:", usageErr);
       }
 
-      // Fetch chatbots count
       const { count: chatbotsCount, error: chatbotsError } = await supabase
         .from("chatbots")
         .select("id", { count: "exact", head: true })
-        .eq("user_id", session.user.id);
+        .eq("user_id", user.id);
 
       if (chatbotsError) {
         console.error("Chatbots count error:", chatbotsError);
       }
 
-      // Fetch documents count
-      const { count: documentsCount, error: documentsError } = await supabase
-        .from("knowledge_base")
-        .select("id", { count: "exact", head: true })
-        .in(
-          "chatbot_id",
-          await supabase
-            .from("chatbots")
-            .select("id")
-            .eq("user_id", session.user.id)
-            .then(({ data }) => data?.map((c) => c.id) || [])
-        );
+      const chatbotIdsResp = await supabase
+        .from("chatbots")
+        .select("id")
+        .eq("user_id", user.id);
 
-      if (documentsError) {
-        console.error("Documents count error:", documentsError);
+      const chatbotIds = chatbotIdsResp.data?.map((c) => c.id) || [];
+
+      let documentsCount = 0;
+
+      if (chatbotIds.length > 0) {
+        const { count, error } = await supabase
+          .from("knowledge_base")
+          .select("id", { count: "exact", head: true })
+          .in("chatbot_id", chatbotIds);
+
+        if (error) {
+          console.error("Documents count error:", error);
+        } else {
+          documentsCount = count || 0;
+        }
       }
 
-      // Process usage data
       const usageMap = new Map();
       usageData?.forEach((item) => {
         usageMap.set(item.metric_name, item.metric_value);
@@ -229,16 +211,16 @@ export const useBilling = (): UseBillingReturn => {
 
       return {
         tokens_used:
-          usageMap.get("tokens_per_month") ||
+          usageMap.get("chat_tokens_per_month") ||
           usageMap.get("embedding_tokens_per_month") ||
           0,
         chatbots_created: chatbotsCount || 0,
-        documents_uploaded: documentsCount || 0,
+        documents_uploaded: documentsCount,
         api_requests: usageMap.get("api_requests_per_minute") || 0,
         emails_sent: usageMap.get("emails_per_month") || 0,
       };
     },
-    staleTime: 2 * 60 * 1000, // 2 minutes
+    staleTime: 2 * 60 * 1000,
   });
 
   const refetch = () => {

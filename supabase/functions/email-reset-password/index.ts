@@ -1,25 +1,38 @@
 import { Resend } from 'npm:resend@2.0.0';
+
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
   'Access-Control-Allow-Methods': 'POST, OPTIONS'
 };
+
+// Initialize Resend globally
+const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY') || "";
+if (!RESEND_API_KEY) {
+  console.error("RESEND_API_KEY not set in environment!");
+}
+const resend = new Resend(RESEND_API_KEY);
+
 // Helper function to get detailed error messages
-function getErrorMessage(error) {
+function getErrorMessage(error: unknown) {
   if (typeof error === 'string') return error;
-  if (error?.message) return error.message;
-  if (error?.error) return error.error;
+  if (typeof error === 'object' && error !== null) {
+    if ('message' in error) return (error as any).message;
+    if ('error' in error) return (error as any).error;
+  }
   return 'Unknown error occurred';
 }
-Deno.serve(async (req)=>{
-  // Handle CORS preflight requests
+
+Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, {
       headers: corsHeaders
     });
   }
+
   try {
     const { email, resetUrl } = await req.json();
+
     if (!email || !resetUrl) {
       return new Response(JSON.stringify({
         error: 'Email and resetUrl are required'
@@ -31,12 +44,10 @@ Deno.serve(async (req)=>{
         }
       });
     }
-    // Initialize Resend
-    const resendApiKey = Deno.env.get('RESEND_API_KEY');
-    if (!resendApiKey) {
-      console.error('RESEND_API_KEY not configured');
+
+    if (!RESEND_API_KEY) {
       return new Response(JSON.stringify({
-        error: 'Email service not configured'
+        error: 'Email service is not configured correctly (missing API key)'
       }), {
         status: 500,
         headers: {
@@ -45,15 +56,14 @@ Deno.serve(async (req)=>{
         }
       });
     }
-    const resend = new Resend(resendApiKey);
+
     const { data, error } = await resend.emails.send({
       from: 'ChatterWise <noreply@email.chatterwise.io>',
-      to: [
-        email
-      ],
+      to: [email],
       subject: 'Reset Your ChatterWise Password',
       html: getResetPasswordTemplate(email, resetUrl)
     });
+
     if (error) {
       const errorMsg = getErrorMessage(error);
       console.error('Error sending reset password email:', errorMsg);
@@ -68,6 +78,7 @@ Deno.serve(async (req)=>{
         }
       });
     }
+
     console.log('Reset password email sent successfully:', data?.id);
     return new Response(JSON.stringify({
       success: true,
@@ -80,6 +91,7 @@ Deno.serve(async (req)=>{
         'Content-Type': 'application/json'
       }
     });
+
   } catch (error) {
     const errorMsg = getErrorMessage(error);
     console.error('Error in reset-password function:', errorMsg);
@@ -95,7 +107,8 @@ Deno.serve(async (req)=>{
     });
   }
 });
-function getResetPasswordTemplate(email, resetUrl) {
+
+function getResetPasswordTemplate(email: string, resetUrl: string) {
   return `
     <!DOCTYPE html>
     <html>
@@ -115,22 +128,21 @@ function getResetPasswordTemplate(email, resetUrl) {
       <div class="header">
         <div class="logo">ChatterWise</div>
       </div>
-      
+
       <p>Hello,</p>
-      
       <p>We received a request to reset your ChatterWise password. Click the button below to create a new password:</p>
-      
+
       <div style="text-align: center;">
         <a href="${resetUrl}" class="button">Reset Password</a>
       </div>
-      
+
       <p>Or copy and paste this URL into your browser:</p>
       <p style="word-break: break-all;">${resetUrl}</p>
-      
+
       <p>If you didn't request a password reset, you can safely ignore this email.</p>
-      
+
       <p>Best regards,<br>The ChatterWise Team</p>
-      
+
       <div class="footer">
         <p>© 2025 ChatterWise. All rights reserved.</p>
         <p>This email was sent to ${email}</p>

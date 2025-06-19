@@ -17,6 +17,9 @@ export const BillingDashboard: React.FC = () => {
   const [activeTab, setActiveTab] = useState<"overview" | "invoices" | "usage">(
     "overview"
   );
+  console.log("BillingDashboard rendered with subscription:", subscription);
+  console.log("BillingDashboard rendered with invoices:", invoices);
+  console.log("BillingDashboard rendered with usage:", usage);
 
   const handleManageBilling = async () => {
     await createPortalSession();

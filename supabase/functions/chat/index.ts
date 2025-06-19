@@ -12,7 +12,7 @@ serve(async (req)=>{
     if (!message || !chatbot_id) {
       return createErrorResponse('Message and chatbot_id are required', 400);
     }
-    const supabaseClient = createClient(Deno.env.get('SUPABASE_URL') ?? '', Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '');
+    const supabaseClient = createClient(Deno.env.get("SUPABASE_URL") ?? "", Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "");
     const { data: chatbot, error: chatbotError } = await supabaseClient.from('chatbots').select('id, name, user_id, status').eq('id', chatbot_id).single();
     if (chatbotError || !chatbot) {
       return createErrorResponse('Chatbot not found', 404);
@@ -23,23 +23,8 @@ serve(async (req)=>{
       });
     }
     const userId = chatbot.user_id;
-    if (userId) {
-      const { data: limitCheck, error: limitError } = await supabaseClient.rpc('check_token_limit', {
-        p_user_id: userId,
-        p_metric_name: 'chat_tokens_per_month',
-        p_estimated_tokens: 10
-      });
-    // if (limitError) {
-    //   console.error('Token limit check failed:', limitError);
-    //   return createErrorResponse('Internal token check error', 500);
-    // }
-    // if (!limitCheck?.allowed) {
-    //   return createErrorResponse('Token limit exceeded', 429, {
-    //     current_usage: limitCheck.current_usage,
-    //     limit: limitCheck.limit,
-    //     percentage_used: limitCheck.percentage_used
-    //   });
-    // }
+    if (!userId) {
+      return createErrorResponse('User ID not found for the chatbot', 400);
     }
     // Continue with chat processing
     try {
@@ -66,11 +51,13 @@ serve(async (req)=>{
           }
         });
       } else {
-        const result = await generateRAGResponse({
+        const result = await generateRAGResponse(
           message,
-          chatbotId: chatbot_id,
+          chatbot_id,
+          supabaseClient,
+          {},
           userId
-        }, supabaseClient);
+        );
         const { data: chatMessage, error: insertError } = await supabaseClient.from('chat_messages').insert({
           chatbot_id,
           message,

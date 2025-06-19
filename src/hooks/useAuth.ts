@@ -37,11 +37,11 @@ export function useAuth() {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event, session) => {
-      console.log(
-        "Auth state change:",
-        event,
-        session?.user?.email_confirmed_at
-      );
+      // console.log(
+      //   "Auth state change:",
+      //   event,
+      //   session?.user?.email_confirmed_at
+      // );
 
       // Use setTimeout to avoid deadlocks in the callback
       setTimeout(() => {
@@ -136,14 +136,14 @@ export function useAuth() {
       );
 
       if (!response.ok) {
-        const errorData = await response.json();
-        console.error("Email confirmation handler error:", errorData);
+        // const errorData = await response.json();
+        // console.error("Email confirmation handler error:", errorData);
       } else {
-        const result = await response.json();
-        console.log("Email confirmation handler result:", result);
+        // const result = await response.json();
+        // console.log("Email confirmation handler result:", result);
       }
-    } catch (error) {
-      console.error("Email confirmation handler error:", error);
+    } catch  {
+      // console.error("Email confirmation handler error:", error);
     }
   };
 
@@ -269,6 +269,7 @@ export function useAuth() {
 
   const resendConfirmation = async (email: string) => {
     try {
+      
       const response = await fetch(
         `${
           import.meta.env.VITE_SUPABASE_URL
