@@ -1,22 +1,20 @@
-import { useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "../lib/supabase";
+// useBilling.ts (last working version before free plan patch)
+import { useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '../lib/supabase';
 
 export const useBilling = () => {
   const subscriptionQuery = useQuery({
-    queryKey: ["subscription"],
+    queryKey: ['subscription'],
     queryFn: async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) throw new Error("Not authenticated");
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Not authenticated');
 
-      
       const { data, error } = await supabase
-        .from("user_subscriptions")
-        .select("*, subscription_plans (*)")
-        .eq("user_id", user.id)
-        .order("updated_at", { ascending: false })
+        .from('user_subscriptions')
+        .select('*, subscription_plans (*)')
+        .eq('user_id', user.id)
+        .order('updated_at', { ascending: false })
         .limit(1)
         .maybeSingle();
 
@@ -25,92 +23,81 @@ export const useBilling = () => {
       const plan = data?.subscription_plans || {};
       return {
         ...data,
-        plan_name: plan.name || "free",
-        display_name: plan.display_name || "Free",
+        plan_name: plan.name || 'free',
+        display_name: plan.display_name || 'Free',
         features: plan.features || {},
         limits: plan.limits || {},
-        metadata: data?.metadata || {},
+        metadata: data?.metadata || {}
       };
     },
-    staleTime: 5 * 60 * 1000,
+    staleTime: 300000,
   });
 
-const usageQuery = useQuery({
-  queryKey: ["usage", subscriptionQuery.data?.id],
-  queryFn: async () => {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+  const usageQuery = useQuery({
+    queryKey: ['usage', subscriptionQuery.data?.id],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      const subId = subscriptionQuery.data?.id;
+      const planTokens = subscriptionQuery.data?.limits?.tokens_per_month || 10000;
 
-        const subId = subscriptionQuery.data?.id;
-    if (!user || !subId) return null;
+      if (!user || !subId) {
+        return {
+          tokens_used: 0,
+          rolled_over: 0,
+          available_tokens: 10000,
+          chatbots_created: 0,
+          documents_uploaded: 0,
+          api_requests: 0,
+          emails_sent: 0
+        };
+      }
 
-  const now = new Date();
-  now.setUTCHours(0, 0, 0, 0); // clear time part
+      const now = new Date();
+      const start = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1)).toISOString();
+      const end = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1)).toISOString();
 
-const start = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1)).toISOString(); // '2025-06-01T00:00:00.000Z'
-const end = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1)).toISOString(); // '2025-07-01T00:00:00.000Z'
+      const { data: usageData } = await supabase
+        .from('usage_tracking')
+        .select('metric_name, metric_value')
+        .eq('user_id', user.id)
+        .eq('subscription_id', subId)
+        .gte('period_start', start)
+        .lt('period_start', end);
 
-    console.log("🔍 Filtering with:", {
-      userId: user.id,
-      subId,
-      start,
-      end,
-    });
+      const usageMap = new Map();
+      usageData?.forEach((u) => usageMap.set(u.metric_name, u.metric_value));
+      const tokensUsed = usageMap.get('chat_tokens_per_month') || 0;
 
-const { data: usageData } = await supabase
-  .from("usage_tracking")
-  .select("metric_name, metric_value")
-.eq("user_id", user.id)
-.eq("subscription_id", subId)
-.gte("period_start", start)
-.lt("period_start", end)
-//.lt("period_start", next); // where `next` = 2025-07-01
+      const { data: rolledOverData } = await supabase
+        .from('token_rollovers')
+        .select('tokens_rolled_over')
+        .eq('user_id', user.id);
 
-    console.log("✅ usageData raw from Supabase:", usageData);
-    const { count: chatbotsCount } = await supabase
-      .from("chatbots")
-      .select("*", { count: "exact", head: true })
-      .eq("user_id", user.id);
+      const rolledOver = rolledOverData?.reduce((sum, row) => sum + (row.tokens_rolled_over || 0), 0) || 0;
+      const availableTokens = planTokens + rolledOver - tokensUsed;
 
-    const { data: chatbotIds } = await supabase
-      .from("chatbots")
-      .select("id")
-      .eq("user_id", user.id);
+      const { count: chatbotsCount } = await supabase
+        .from('chatbots')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', user.id);
 
-    const chatbotIdsArray = chatbotIds?.map((c) => c.id) || [];
+      return {
+        tokens_used: tokensUsed,
+        rolled_over: rolledOver,
+        available_tokens: availableTokens,
+        chatbots_created: chatbotsCount || 0,
+        documents_uploaded: 0,
+        api_requests: usageMap.get('api_requests_per_minute') || 0,
+        emails_sent: usageMap.get('emails_per_month') || 0
+      };
+    },
+    enabled: !!subscriptionQuery.data?.id,
+    staleTime: 120000,
+  });
 
-    let documentsCount = 0;
-    if (chatbotIdsArray.length > 0) {
-      const { count } = await supabase
-        .from("knowledge_base")
-        .select("id", { count: "exact", head: true })
-        .in("chatbot_id", chatbotIdsArray);
-      documentsCount = count || 0;
-    }
-
-    const usageMap = new Map();
-    usageData?.forEach((u) => usageMap.set(u.metric_name, u.metric_value));
-
-    return {
-      tokens_used: usageMap.get("chat_tokens_per_month") || 0,
-      chatbots_created: chatbotsCount || 0,
-      documents_uploaded: documentsCount,
-      api_requests: usageMap.get("api_requests_per_minute") || 0,
-      emails_sent: usageMap.get("emails_per_month") || 0,
-    };
-  },
-  enabled: !!subscriptionQuery.data?.id,
-  staleTime: 2 * 60 * 1000,
-});
-
-
-  // ✅ Force refetch when subscription is ready
   useEffect(() => {
-    if (subscriptionQuery.data?.id) {
-      usageQuery.refetch();
-    }
-  }, [subscriptionQuery.data?.id, usageQuery]);
+    if (subscriptionQuery.data?.id) usageQuery.refetch();
+  }, [subscriptionQuery.data?.id]);
 
   return {
     subscription: subscriptionQuery.data || null,

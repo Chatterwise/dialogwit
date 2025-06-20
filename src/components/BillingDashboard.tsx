@@ -23,6 +23,11 @@ export const BillingDashboard: React.FC = () => {
   console.log("Sub ID:", subscription?.id);
   console.log("Subscription ID:", subscription?.id);
   console.log("Usage tokens:", usage?.tokens_used);
+
+  console.log("Available Tokens", usage?.available_tokens);
+  console.log("Rolled-over Tokens:", usage?.rolled_over);
+  console.log("Used Tokens:", usage?.tokens_used);
+
   const handleManageBilling = async () => {
     await createPortalSession();
   };
@@ -277,25 +282,25 @@ export const BillingDashboard: React.FC = () => {
             </p>
           </div>
           <div className="p-6">
-            {usage ? (
+            {usage !== undefined ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <div className="text-center">
                   <div className="text-3xl font-bold text-blue-600 mb-2">
-                    {usage.tokens_used?.toLocaleString() || 0}
+                    {usage?.tokens_used?.toLocaleString() || 0}
                   </div>
                   <div className="text-sm text-gray-600">Tokens Used</div>
                   <div className="text-xs text-gray-500 mt-1">This month</div>
                 </div>
                 <div className="text-center">
                   <div className="text-3xl font-bold text-purple-600 mb-2">
-                    {usage.chatbots_created || 0}
+                    {usage?.chatbots_created || 0}
                   </div>
                   <div className="text-sm text-gray-600">Chatbots Created</div>
                   <div className="text-xs text-gray-500 mt-1">Total</div>
                 </div>
                 <div className="text-center">
                   <div className="text-3xl font-bold text-green-600 mb-2">
-                    {usage.documents_uploaded || 0}
+                    {usage?.documents_uploaded || 0}
                   </div>
                   <div className="text-sm text-gray-600">
                     Documents Uploaded
@@ -304,10 +309,25 @@ export const BillingDashboard: React.FC = () => {
                 </div>
                 <div className="text-center">
                   <div className="text-3xl font-bold text-orange-600 mb-2">
-                    {usage.api_requests || 0}
+                    {usage?.api_requests || 0}
                   </div>
                   <div className="text-sm text-gray-600">API Requests</div>
                   <div className="text-xs text-gray-500 mt-1">This month</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-3xl font-bold text-orange-600 mb-2">
+                    {usage?.available_tokens || 0}
+                  </div>
+                  <div className="text-sm text-gray-600">Available Tokens</div>
+                  <div className="text-xs text-gray-500 mt-1">This month</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-3xl font-bold text-orange-600 mb-2">
+                    {usage?.rolled_over || 0}
+                  </div>
+                  <div className="text-sm text-gray-600">
+                    Rolled-over Tokens
+                  </div>
                 </div>
               </div>
             ) : (
