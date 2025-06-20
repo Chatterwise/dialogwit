@@ -71,6 +71,18 @@ const SubscriptionStatus: React.FC = () => {
     }
   };
 
+  const handleDowngrade = async () => {
+    const currentPlan = getPlanDetails(subscription?.plan_name || "free");
+    const currentIndex = stripeConfig.products.findIndex(
+      (p) => p.name === currentPlan?.name
+    );
+    const previousPlan = stripeConfig.products[currentIndex - 1];
+
+    if (previousPlan) {
+      await createCheckoutSession(previousPlan.priceId);
+    }
+  };
+
   const handleManageBilling = async () => {
     await createPortalSession();
   };
@@ -185,6 +197,8 @@ const SubscriptionStatus: React.FC = () => {
                   <CreditCard className="w-4 h-4 inline mr-2" />
                   {stripeLoading ? "Processing..." : "Manage Billing"}
                 </button>
+
+                {/* Upgrade Button */}
                 {!isCanceled && (
                   <button
                     onClick={handleUpgrade}
@@ -194,6 +208,15 @@ const SubscriptionStatus: React.FC = () => {
                     {stripeLoading ? "Processing..." : "Upgrade Plan"}
                   </button>
                 )}
+
+                {/* Downgrade Button */}
+                <button
+                  onClick={handleDowngrade}
+                  disabled={stripeLoading}
+                  className="flex-1 bg-yellow-500 text-white px-4 py-2 rounded-lg font-medium hover:bg-yellow-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {stripeLoading ? "Processing..." : "Downgrade Plan"}
+                </button>
               </>
             )}
           </div>

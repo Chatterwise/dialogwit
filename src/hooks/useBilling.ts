@@ -1,70 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "../lib/supabase";
 
-interface Subscription {
-  id: string;
-  user_id: string;
-  plan_id: string;
-  plan_name: string;
-  stripe_customer_id: string;
-  stripe_subscription_id: string;
-  status: string;
-  current_period_start: string;
-  current_period_end: string;
-  trial_start: string | null;
-  trial_end: string | null;
-  canceled_at: string | null;
-  cancel_at_period_end: boolean;
-  metadata: Record<string, any>;
-  created_at: string;
-  updated_at: string;
-}
-
-interface Invoice {
-  id: string;
-  user_id: string;
-  subscription_id: string;
-  stripe_invoice_id: string;
-  amount_paid: number;
-  amount_due: number;
-  currency: string;
-  status: string;
-  invoice_pdf: string | null;
-  period_start: string | null;
-  period_end: string | null;
-  created_at: string;
-}
-
-interface Usage {
-  tokens_used: number;
-  chatbots_created: number;
-  documents_uploaded: number;
-  api_requests: number;
-  emails_sent: number;
-}
-
-interface UseBillingReturn {
-  subscription: Subscription | null;
-  invoices: Invoice[] | null;
-  usage: Usage | null;
-  isLoading: boolean;
-  error: Error | null;
-  refetch: () => void;
-}
-
-export const useBilling = (): UseBillingReturn => {
-  const {
-    data: subscription,
-    isLoading: subscriptionLoading,
-    error: subscriptionError,
-    refetch: refetchSubscription,
-  } = useQuery({
+export const useBilling = () => {
+  const subscriptionQuery = useQuery({
     queryKey: ["subscription"],
     queryFn: async () => {
-      const {
-        data: { user },
-        error: userError,
-      } = await supabase.auth.getUser();
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
       if (!user || userError) throw new Error("Not authenticated");
 
       const { data, error } = await supabase
@@ -79,14 +20,21 @@ export const useBilling = (): UseBillingReturn => {
           )
         `)
         .eq("user_id", user.id)
+        .order("updated_at", { ascending: false }) // <-- selecciona el más reciente
+        .limit(1)
         .maybeSingle();
 
       if (error) throw error;
 
       if (data) {
+        const plan = data.subscription_plans || {};
         return {
           ...data,
-          plan_name: data.subscription_plans?.name || "free",
+          plan_name: plan.name || "free",
+          display_name: plan.display_name || "Free",
+          features: plan.features || {},
+          limits: plan.limits || {},
+          metadata: data.metadata || {},
         };
       }
 
@@ -95,7 +43,7 @@ export const useBilling = (): UseBillingReturn => {
         user_id: user.id,
         plan_id: "",
         plan_name: "free",
-        stripe_customer_id: "",
+        customer_id: "",
         stripe_subscription_id: "",
         status: "free",
         current_period_start: "",
@@ -107,113 +55,75 @@ export const useBilling = (): UseBillingReturn => {
         metadata: {},
         created_at: "",
         updated_at: "",
+        features: {},
+        limits: {},
+        display_name: "Free",
       };
     },
     staleTime: 5 * 60 * 1000,
   });
 
-  const {
-    data: invoices,
-    isLoading: invoicesLoading,
-    error: invoicesError,
-    refetch: refetchInvoices,
-  } = useQuery({
+  const invoicesQuery = useQuery({
     queryKey: ["invoices"],
     queryFn: async () => {
-      const {
-        data: { user },
-        error: userError,
-      } = await supabase.auth.getUser();
-      if (!user || userError) throw new Error("Not authenticated");
+      const { data: { user }, error } = await supabase.auth.getUser();
+      if (!user || error) throw new Error("Not authenticated");
 
-      const { data, error } = await supabase
+      const { data, error: fetchErr } = await supabase
         .from("invoices")
         .select("*")
         .eq("user_id", user.id)
         .order("created_at", { ascending: false });
 
-      if (error) throw error;
-
+      if (fetchErr) throw fetchErr;
       return data || [];
     },
     staleTime: 5 * 60 * 1000,
   });
 
-  const {
-    data: usage,
-    isLoading: usageLoading,
-    error: usageError,
-    refetch: refetchUsage,
-  } = useQuery({
+  const usageQuery = useQuery({
     queryKey: ["usage"],
     queryFn: async () => {
-      const {
-        data: { user },
-        error: userError,
-      } = await supabase.auth.getUser();
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
       if (!user || userError) throw new Error("Not authenticated");
 
-      const startOfMonth = new Date();
-      startOfMonth.setDate(1);
-      startOfMonth.setHours(0, 0, 0, 0);
+      const now = new Date();
+      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+      const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
 
-      const endOfMonth = new Date(startOfMonth);
-      endOfMonth.setMonth(startOfMonth.getMonth() + 1);
-      endOfMonth.setDate(0);
-      endOfMonth.setHours(23, 59, 59, 999);
-
-      const { data: usageData, error: usageErr } = await supabase
+      const { data: usageData } = await supabase
         .from("usage_tracking")
         .select("metric_name, metric_value")
         .eq("user_id", user.id)
         .gte("period_start", startOfMonth.toISOString())
         .lte("period_end", endOfMonth.toISOString());
 
-      if (usageErr) {
-        console.error("Usage tracking error:", usageErr);
-      }
-
-      const { count: chatbotsCount, error: chatbotsError } = await supabase
+      const { count: chatbotsCount } = await supabase
         .from("chatbots")
         .select("id", { count: "exact", head: true })
         .eq("user_id", user.id);
 
-      if (chatbotsError) {
-        console.error("Chatbots count error:", chatbotsError);
-      }
-
-      const chatbotIdsResp = await supabase
+      const { data: chatbotIdsData } = await supabase
         .from("chatbots")
         .select("id")
         .eq("user_id", user.id);
 
-      const chatbotIds = chatbotIdsResp.data?.map((c) => c.id) || [];
+      const chatbotIds = chatbotIdsData?.map(c => c.id) || [];
 
       let documentsCount = 0;
-
       if (chatbotIds.length > 0) {
-        const { count, error } = await supabase
+        const { count } = await supabase
           .from("knowledge_base")
           .select("id", { count: "exact", head: true })
           .in("chatbot_id", chatbotIds);
-
-        if (error) {
-          console.error("Documents count error:", error);
-        } else {
-          documentsCount = count || 0;
-        }
+        documentsCount = count || 0;
       }
 
       const usageMap = new Map();
-      usageData?.forEach((item) => {
-        usageMap.set(item.metric_name, item.metric_value);
-      });
+      usageData?.forEach((u) => usageMap.set(u.metric_name, u.metric_value));
 
       return {
-        tokens_used:
-          usageMap.get("chat_tokens_per_month") ||
-          usageMap.get("embedding_tokens_per_month") ||
-          0,
+        tokens_used: usageMap.get("chat_tokens_per_month") || 0,
         chatbots_created: chatbotsCount || 0,
         documents_uploaded: documentsCount,
         api_requests: usageMap.get("api_requests_per_minute") || 0,
@@ -223,18 +133,23 @@ export const useBilling = (): UseBillingReturn => {
     staleTime: 2 * 60 * 1000,
   });
 
-  const refetch = () => {
-    refetchSubscription();
-    refetchInvoices();
-    refetchUsage();
-  };
-
   return {
-    subscription: subscription || null,
-    invoices: invoices || null,
-    usage: usage || null,
-    isLoading: subscriptionLoading || invoicesLoading || usageLoading,
-    error: subscriptionError || invoicesError || usageError,
-    refetch,
+    subscription: subscriptionQuery.data || null,
+    invoices: invoicesQuery.data || null,
+    usage: usageQuery.data || null,
+    isLoading:
+      subscriptionQuery.isLoading ||
+      invoicesQuery.isLoading ||
+      usageQuery.isLoading,
+    error:
+      subscriptionQuery.error ||
+      invoicesQuery.error ||
+      usageQuery.error ||
+      null,
+    refetch: () => {
+      subscriptionQuery.refetch();
+      invoicesQuery.refetch();
+      usageQuery.refetch();
+    },
   };
 };
