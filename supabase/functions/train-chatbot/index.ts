@@ -41,8 +41,12 @@ serve(async (req)=>{
     }
     let processingResult;
     try {
+      const { data: chatbot, error: chatbotError } = await supabaseClient.from('chatbots').select('user_id').eq('id', chatbotId).single();
+      if (chatbotError || !chatbot?.user_id) {
+        throw new Error('Failed to fetch chatbot owner (user_id)');
+      }
       // Process knowledge base with RAG pipeline
-      processingResult = await processKnowledgeBaseWithRAG(knowledgeBase, chatbotId, model, supabaseClient);
+      processingResult = await processKnowledgeBaseWithRAG(knowledgeBase, chatbotId, model, supabaseClient, chatbot.user_id);
     } catch (error) {
       if (error instanceof OpenAIError) {
         // Return clear error for OpenAI configuration issues
