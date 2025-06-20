@@ -20,7 +20,9 @@ export const BillingDashboard: React.FC = () => {
   console.log("BillingDashboard rendered with subscription:", subscription);
   console.log("BillingDashboard rendered with invoices:", invoices);
   console.log("BillingDashboard rendered with usage:", usage);
-
+  console.log("Sub ID:", subscription?.id);
+  console.log("Subscription ID:", subscription?.id);
+  console.log("Usage tokens:", usage?.tokens_used);
   const handleManageBilling = async () => {
     await createPortalSession();
   };
