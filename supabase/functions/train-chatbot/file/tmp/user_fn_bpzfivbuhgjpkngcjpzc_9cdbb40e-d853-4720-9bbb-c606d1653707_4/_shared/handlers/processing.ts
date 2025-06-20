@@ -86,31 +86,29 @@ export async function processKnowledgeBaseWithRAG(knowledgeBase, chatbotId, mode
     // Insert token usage into usage_tracking
     const now = new Date();
     const periodStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
-    const periodEnd = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1));
-    const userResult = await supabaseClient.auth.getUser();
     if (userId && totalTokensUsed > 0) {
-      const { data: userSub, error: subError } = await supabaseClient.from('user_subscriptions').select('subscription_id').eq('user_id', userId).eq('status', 'active').maybeSingle();
-      const subscriptionId = userSub?.subscription_id ?? null;
-      const { error } = await supabaseClient.from("usage_tracking").upsert({
-        user_id: userId,
-        subscription_id: subscriptionId,
-        metric_name: "chat_tokens_per_month",
-        metric_value: totalTokensUsed,
-        period_start: periodStart.toISOString(),
-        period_end: periodEnd.toISOString()
-      }, {
-        onConflict: "user_id,metric_name,period_start,period_end"
+      const { data: userSub } = await supabaseClient.from('user_subscriptions').select('id').eq('user_id', userId).eq('status', 'active').maybeSingle();
+      const subscriptionId = userSub?.id ?? null;
+      console.log("👀 Subscription ID for usage_tracking:", subscriptionId);
+      // await supabaseClient.rpc('track_token_usage', {
+      //   p_user_id: userId,
+      //   p_metric_name: 'chat_tokens_per_month',
+      //   p_token_count: totalTokensUsed,
+      //   p_metadata: {
+      //     model,
+      //     processing_type: 'training',
+      //     subscription_id: subscriptionId
+      //   }
+      // });
+      await supabaseClient.rpc('track_token_usage', {
+        p_user_id: userId,
+        p_metric_name: 'chat_tokens_per_month',
+        p_increment: totalTokensUsed,
+        p_metadata: {
+          model,
+          processing_type: 'training'
+        }
       });
-      if (error) {
-        console.error("❌ Failed to insert usage_tracking:", error);
-      } else {
-        console.log("✅ usage_tracking recorded:", {
-          user_id: userId,
-          tokens: totalTokensUsed,
-          subscription_id: subscriptionId,
-          period: periodStart.toISOString()
-        });
-      }
     } else {
       console.warn("⚠️ Skipped usage tracking insert (missing user or tokens = 0)", {
         userId,

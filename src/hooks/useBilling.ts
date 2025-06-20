@@ -1,7 +1,8 @@
-// useBilling.ts (last working version before free plan patch)
 import { useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
+
+const DEBUG_BILLING = true;
 
 export const useBilling = () => {
   const subscriptionQuery = useQuery({
@@ -37,10 +38,10 @@ export const useBilling = () => {
     queryKey: ['usage', subscriptionQuery.data?.id],
     queryFn: async () => {
       const { data: { user } } = await supabase.auth.getUser();
-      const subId = subscriptionQuery.data?.id;
+      const subId = subscriptionQuery.data?.id || null;
       const planTokens = subscriptionQuery.data?.limits?.tokens_per_month || 10000;
 
-      if (!user || !subId) {
+      if (!user) {
         return {
           tokens_used: 0,
           rolled_over: 0,
@@ -52,9 +53,8 @@ export const useBilling = () => {
         };
       }
 
-      const now = new Date();
-      const start = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1)).toISOString();
-      const end = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1)).toISOString();
+      const start = '2025-06-01T00:00:00Z';
+      const end = '2025-07-01T00:00:00Z';
 
       const { data: usageData } = await supabase
         .from('usage_tracking')
@@ -65,13 +65,18 @@ export const useBilling = () => {
         .lt('period_start', end);
 
       const usageMap = new Map();
-      usageData?.forEach((u) => usageMap.set(u.metric_name, u.metric_value));
+      usageData?.forEach((u) => {
+        if (DEBUG_BILLING) console.log('🔑 usage metric:', u.metric_name, 'value:', u.metric_value);
+        usageMap.set(u.metric_name, u.metric_value);
+      });
+
       const tokensUsed = usageMap.get('chat_tokens_per_month') || 0;
 
       const { data: rolledOverData } = await supabase
         .from('token_rollovers')
         .select('tokens_rolled_over')
-        .eq('user_id', user.id);
+        .eq('user_id', user.id)
+        .eq('subscription_id', subId);
 
       const rolledOver = rolledOverData?.reduce((sum, row) => sum + (row.tokens_rolled_over || 0), 0) || 0;
       const availableTokens = planTokens + rolledOver - tokensUsed;
@@ -95,14 +100,31 @@ export const useBilling = () => {
     staleTime: 120000,
   });
 
+  const invoicesQuery = useQuery({
+    queryKey: ['invoices'],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      const { data, error } = await supabase
+        .from('invoices')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      return data;
+    },
+    staleTime: 300000,
+  });
+
   useEffect(() => {
-    if (subscriptionQuery.data?.id) usageQuery.refetch();
+    if (subscriptionQuery.data?.id !== undefined) usageQuery.refetch();
   }, [subscriptionQuery.data?.id]);
 
   return {
     subscription: subscriptionQuery.data || null,
     usage: usageQuery.data || null,
-    isLoading: subscriptionQuery.isLoading || usageQuery.isLoading,
-    error: subscriptionQuery.error || usageQuery.error,
+    invoices: invoicesQuery.data || [],
+    isLoading: subscriptionQuery.isLoading || usageQuery.isLoading || invoicesQuery.isLoading,
+    error: subscriptionQuery.error || usageQuery.error || invoicesQuery.error,
   };
 };

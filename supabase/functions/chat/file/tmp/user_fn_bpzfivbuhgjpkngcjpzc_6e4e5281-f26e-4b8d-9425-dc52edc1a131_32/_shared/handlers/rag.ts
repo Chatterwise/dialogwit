@@ -1,111 +1,36 @@
-import OpenAI from 'https://esm.sh/openai@4.24.1';
-const openai = new OpenAI({
-  apiKey: Deno.env.get('OPENAI_API_KEY')
-});
-export async function generateRAGResponse(request, supabaseClient) {
-  const { message, chatbotId, userId, context = [], stream = false } = request;
+import { generateEmbedding, generateChatCompletion, streamChatCompletion, OpenAIError } from '../utils/openai.ts';
+import { searchSimilarChunks, fallbackTextSearch, getChatbot } from '../utils/database.ts';
+export async function generateRAGResponse(message, botId, supabaseClient, options = {}, userId) {
+  const { enableCitations = false, maxRetrievedChunks = 5, similarityThreshold = 0.7, enableStreaming = false, model = 'gpt-3.5-turbo', temperature = 0.7, maxTokens = 500 } = options;
+  // Get chatbot info
+  const chatbot = await getChatbot(supabaseClient, botId);
+  let retrievedChunks = [];
+  let context = '';
   try {
-    let relevantContext = context;
-    if (relevantContext.length === 0) {
-      relevantContext = await retrieveRelevantContext(supabaseClient, chatbotId, message);
+    // Step 1: Create embedding for the user's query
+    const embeddingResponse = await generateEmbedding(message);
+    const queryEmbedding = embeddingResponse.data[0].embedding;
+    // Step 2: Search for similar chunks
+    retrievedChunks = await searchSimilarChunks(supabaseClient, queryEmbedding, botId, {
+      matchThreshold: similarityThreshold,
+      matchCount: maxRetrievedChunks
+    });
+    // Step 3: Build context from retrieved chunks
+    if (retrievedChunks.length > 0) {
+      context = retrievedChunks.map((chunk, index)=>`[${index + 1}] ${chunk.content}`).join('\n\n');
     }
-    const systemPrompt = buildSystemPrompt(relevantContext);
-    const messages = [
-      {
-        role: 'system',
-        content: systemPrompt
-      },
-      {
-        role: 'user',
-        content: message
-      }
-    ];
-    if (userId) {
-      const tokenEstimate = estimatePromptTokens(messages);
-      const limitCheck = await supabaseClient.rpc('check_token_limit', {
-        p_user_id: userId,
-        p_metric_name: 'chat_tokens_per_month',
-        p_estimated_tokens: tokenEstimate
-      });
-      console.log('Generating RAG response with:', {
-        userId,
-        chatbotId,
-        message
-      });
-    // if (limitCheck.current_usage > limitCheck.limit) {
-    //   throw new Error(`Token limit would be exceeded. Current usage: ${limitCheck.current_usage}/${limitCheck.limit}`);
-    // }
-    // if (!limitCheck.allowed) {
-    //   throw new Error(`Token limit would be exceeded. Current usage: ${limitCheck.current_usage}/${limitCheck.limit} tokens`);
-    // }
-    }
-    let response = '';
-    let usage;
-    if (stream) {
-      const completion = await openai.chat.completions.create({
-        model: 'gpt-3.5-turbo',
-        messages,
-        temperature: 0.7,
-        max_tokens: 1000,
-        stream: true
-      });
-      const chunks = [];
-      for await (const chunk of completion){
-        const delta = chunk.choices?.[0]?.delta?.content || '';
-        chunks.push(delta);
-      }
-      response = chunks.join('');
-      usage = await openai.chat.completions.create({
-        model: 'gpt-3.5-turbo',
-        messages,
-        temperature: 0.7,
-        max_tokens: 1
-      }).then((res)=>res.usage);
-    } else {
-      const result = await openai.chat.completions.create({
-        model: 'gpt-3.5-turbo',
-        messages,
-        temperature: 0.7,
-        max_tokens: 1000
-      });
-      response = result.choices[0].message.content || '';
-      usage = result.usage;
-    }
-    if (userId && usage.total_tokens > 0) {
-      await supabaseClient.rpc('track_token_usage', {
-        p_user_id: userId,
-        p_metric_name: 'chat_tokens_per_month',
-        p_token_count: usage.total_tokens,
-        p_metadata: {
-          chatbot_id: chatbotId,
-          message_length: message.length,
-          response_length: response.length,
-          context_chunks: relevantContext.length,
-          model: 'gpt-3.5-turbo',
-          tokens: usage,
-          raw_response_length: response.length,
-          estimated_vs_actual: {
-            estimated_prompt_tokens: estimatePromptTokens(messages),
-            actual_prompt_tokens: usage.prompt_tokens
-          }
-        }
-      });
-    }
-    const costEstimate = calculateCostEstimate(usage, 'gpt-3.5-turbo');
-    return {
-      response,
-      context: relevantContext,
-      usage,
-      cost_estimate: costEstimate
-    };
   } catch (error) {
-    throw new Error(`RAG generation failed: ${error.message}`);
+    if (error instanceof OpenAIError) {
+      throw error;
+    }
+    console.error('RAG retrieval error:', error);
+    // Fallback to text search
+    const fallbackChunks = await fallbackTextSearch(supabaseClient, message, botId);
+    if (fallbackChunks.length > 0) {
+      context = fallbackChunks.map((chunk, index)=>`[${index + 1}] ${chunk.content}`).join('\n\n');
+    }
   }
-}
-export async function generateStreamingRAGResponse(request, supabaseClient) {
-  const { message, chatbotId, userId, context = [] } = request;
-  const relevantContext = context.length > 0 ? context : await retrieveRelevantContext(supabaseClient, chatbotId, message);
-  const systemPrompt = buildSystemPrompt(relevantContext);
+  const systemPrompt = buildSystemPrompt(chatbot.name, context, enableCitations);
   const messages = [
     {
       role: 'system',
@@ -116,151 +41,177 @@ export async function generateStreamingRAGResponse(request, supabaseClient) {
       content: message
     }
   ];
-  if (userId) {
-    const tokenEstimate = estimatePromptTokens(messages);
-    const { data: limitCheck, error: limitError } = await supabaseClient.rpc('check_token_limit', {
-      p_user_id: userId,
-      p_metric_name: 'chat_tokens_per_month',
-      p_estimated_tokens: tokenEstimate
-    });
-    if (limitError) {
-      console.error('Limit check failed:', limitError);
-      throw new Error('Token limit check failed');
-    }
-    if (!limitCheck.allowed) {
-      throw new Error(`Token limit would be exceeded. Current usage: ${limitCheck.current_usage}/${limitCheck.limit} tokens`);
-    }
+  // ✅ Optional: Check token limit before proceeding
+  // if (userId && supabaseClient) {
+  //   try {
+  //     const estimatedTokens = estimatePromptTokens(messages);
+  //     const { data: limitCheck, error } = await supabaseClient.rpc('check_token_limit', {
+  //       p_user_id: userId,
+  //       p_metric_name: 'chat_tokens_per_month',
+  //       p_estimated_tokens: estimatedTokens
+  //     });
+  //     if (error) throw new Error('Token limit check failed');
+  //     if (!limitCheck.allowed) {
+  //       throw new Error(`Token limit exceeded. Usage: ${limitCheck.current_usage}/${limitCheck.limit}`);
+  //     }
+  //   } catch (err) {
+  //     console.error('Token limit error:', err);
+  //     throw err;
+  //   }
+  // }
+  // Streaming not supported here
+  if (enableStreaming) {
+    throw new Error('Streaming is only supported via generateStreamingRAGResponse(). Please call that instead.');
   }
-  const stream = await openai.chat.completions.create({
-    model: 'gpt-3.5-turbo',
-    messages,
-    temperature: 0.7,
-    max_tokens: 1000,
-    stream: true
+  // Step 4: Generate chat completion
+  const chatResponse = await generateChatCompletion(messages, {
+    model,
+    temperature,
+    max_tokens: maxTokens
   });
-  if (userId) {
-    openai.chat.completions.create({
-      model: 'gpt-3.5-turbo',
-      messages,
-      temperature: 0.7,
-      max_tokens: 1
-    }).then(async (usageResult)=>{
-      const usage = usageResult.usage;
-      if (usage.total_tokens > 0) {
-        try {
-          await supabaseClient.rpc('track_token_usage', {
-            p_user_id: userId,
-            p_metric_name: 'chat_tokens_per_month',
-            p_token_count: usage.total_tokens,
-            p_metadata: {
-              chatbot_id: chatbotId,
-              message_length: message.length,
-              context_chunks: relevantContext.length,
-              model: 'gpt-3.5-turbo',
-              streaming: true,
-              usage
-            }
-          });
-        } catch (rpcError) {
-          console.error('Token tracking RPC failed:', rpcError);
-          await supabaseClient.from('billing_failures').insert({
-            user_id: userId,
-            tokens: usage.total_tokens,
-            metadata: {
-              chatbot_id: chatbotId,
-              message_length: message.length,
-              context_chunks: relevantContext.length,
-              model: 'gpt-3.5-turbo',
-              streaming: true,
-              usage
-            },
-            error: rpcError.message
-          });
+  const responseText = chatResponse.choices?.[0]?.message?.content || 'I apologize, but I encountered an error processing your request.';
+  // ✅ Token tracking after generation
+  if (userId && supabaseClient) {
+    try {
+      const totalTokens = estimatePromptTokens(messages) + Math.ceil(responseText.length / 4);
+      // await supabaseClient.rpc('track_token_usage', {
+      //   p_user_id: userId,
+      //   p_metric_name: 'chat_tokens_per_month',
+      //   p_token_count: totalTokens,
+      //   p_metadata: {
+      //     chatbot_id: botId,
+      //     message_length: message.length,
+      //     response_length: responseText.length,
+      //     context_chunks: retrievedChunks.length,
+      //     model,
+      //     estimated_tokens: totalTokens
+      //   }
+      // });
+      await supabaseClient.rpc('track_token_usage', {
+        p_user_id: userId,
+        p_metric_name: 'chat_tokens_per_month',
+        p_increment: totalTokens,
+        p_metadata: {
+          chatbot_id: botId,
+          message_length: message.length,
+          response_length: responseText.length,
+          context_chunks: retrievedChunks.length,
+          model,
+          estimated_tokens: totalTokens
         }
-      }
-    }).catch(console.error);
+      });
+    } catch (err) {
+      console.error('Token usage tracking failed:', err);
+    }
   }
+  const ragResponse = {
+    response: responseText,
+    citations_enabled: enableCitations
+  };
+  if (enableCitations && retrievedChunks.length > 0) {
+    ragResponse.sources = retrievedChunks.map((chunk)=>({
+        content: chunk.content.substring(0, 200) + '...',
+        similarity: chunk.similarity,
+        chunk_index: chunk.chunk_index,
+        source_url: chunk.source_url
+      }));
+  }
+  return ragResponse;
+}
+export async function generateStreamingRAGResponse({ message, chatbotId, userId }, supabaseClient) {
+  const chatbot = await getChatbot(supabaseClient, chatbotId);
+  const embeddingResponse = await generateEmbedding(message);
+  const queryEmbedding = embeddingResponse.data[0].embedding;
+  const retrievedChunks = await searchSimilarChunks(supabaseClient, queryEmbedding, chatbotId, {
+    matchThreshold: 0.7,
+    matchCount: 5
+  });
+  const context = retrievedChunks.map((chunk, i)=>`[${i + 1}] ${chunk.content}`).join('\n\n');
+  const systemPrompt = buildSystemPrompt(chatbot.name, context, false);
+  const messages = [
+    {
+      role: 'system',
+      content: systemPrompt
+    },
+    {
+      role: 'user',
+      content: message
+    }
+  ];
+  // This returns a ReadableStream for Deno/Supabase Edge
+  const stream = await generateReadableStreamChatCompletion(messages, {
+    model: 'gpt-3.5-turbo',
+    temperature: 0.7,
+    max_tokens: 500
+  });
   return stream;
 }
-async function retrieveRelevantContext(supabaseClient, chatbotId, query, limit = 5) {
+export async function generateFallbackResponse(message, botId, botName, supabaseClient) {
   try {
-    const { data: vectorResults, error: vectorError } = await supabaseClient.rpc('match_documents', {
-      query_embedding: null,
-      match_threshold: 0.7,
-      match_count: limit,
-      chatbot_id: chatbotId
-    });
-    if (!vectorError && vectorResults?.length > 0) {
-      return vectorResults.map((result)=>({
-          content: result.content,
-          source_url: result.source_url,
-          chunk_index: result.chunk_index,
-          similarity: result.similarity
-        }));
+    // Simple keyword search in chunks
+    const fallbackChunks = await fallbackTextSearch(supabaseClient, message, botId);
+    if (fallbackChunks.length > 0) {
+      const context = fallbackChunks.map((chunk)=>chunk.content).join('\n\n').substring(0, 300);
+      return `Hello! I'm ${botName}. Based on the information I have: ${context}... Is there anything specific you'd like to know more about?`;
     }
-    const { data: textResults, error: textError } = await supabaseClient.from('kb_chunks').select('content, source_url, chunk_index, metadata').eq('chatbot_id', chatbotId).textSearch('content', query.split(' ').join(' | ')).limit(limit);
-    if (textError) {
-      console.error('Text search error:', textError);
-      return [];
-    }
-    return textResults?.map((result)=>({
-        content: result.content,
-        source_url: result.source_url,
-        chunk_index: result.chunk_index,
-        similarity: 0.5
-      })) || [];
   } catch (error) {
-    console.error('Context retrieval error:', error);
-    return [];
+    console.error('Fallback search error:', error);
   }
+  // Final fallback responses
+  const responses = [
+    `Hello! I'm ${botName}. I'd be happy to help you with that. Could you please provide more details about what you're looking for?`,
+    `Hi there! I'm ${botName}, your AI assistant. I'm here to help answer your questions. What would you like to know?`,
+    `Thank you for your question! I'm ${botName} and I'm designed to help with information from my knowledge base. Could you rephrase your question or ask about something more specific?`
+  ];
+  return responses[Math.floor(Math.random() * responses.length)];
 }
-function buildSystemPrompt(context) {
-  if (context.length === 0) {
-    return `You are a helpful AI assistant. Answer the user's question to the best of your ability.`;
-  }
-  const contextText = context.map((ctx, index)=>`[${index + 1}] ${ctx.content}`).join('\n\n');
-  return `You are a helpful AI assistant. Use the following context to answer the user's question. If the context doesn't contain relevant information, say so and provide a general helpful response.
+export async function generateReadableStreamChatCompletion(messages, options = {}) {
+  const encoder = new TextEncoder();
+  const stream = new ReadableStream({
+    async start (controller) {
+      try {
+        for await (const chunk of streamChatCompletion(messages, options)){
+          controller.enqueue(encoder.encode(chunk));
+        }
+        controller.close();
+      } catch (err) {
+        controller.error(err);
+      }
+    }
+  });
+  return stream;
+}
+function buildSystemPrompt(botName, context, enableCitations) {
+  const basePrompt = `You are ${botName}, an AI assistant that ONLY answers questions based on the provided knowledge base.`;
+  if (!context) {
+    return `${basePrompt}
 
-Context:
-${contextText}
+No knowledge base context was provided, so you cannot answer any questions.
 
 Instructions:
-- Answer based on the provided context when relevant
-- Be concise and helpful
-- If you're not sure about something, say so
-- Cite the context when appropriate using [1], [2], etc.`;
-}
-function estimatePromptTokens(messages, model = 'gpt-3.5-turbo') {
-  try {
-    const encoder = encoding_for_model(model);
-    let tokens = 0;
-    for (const message of messages){
-      tokens += 4;
-      tokens += encoder.encode(message.content || '').length;
-      tokens += encoder.encode(message.role || '').length;
-    }
-    tokens += 2;
-    encoder.free?.();
-    return tokens;
-  } catch (err) {
-    console.warn("Fallback to rough estimate: ", err);
-    const totalText = messages.map((m)=>m.content).join(' ');
-    return Math.ceil(totalText.length / 4) + messages.length * 10;
+- Do NOT answer questions.
+- Respond with: "I'm sorry, I don't have any information available to answer that question."
+- DO NOT try to be helpful beyond this.`;
   }
+  const contextSection = `Knowledge Base Context:
+${context}
+
+Instructions:
+- ONLY answer questions using the provided knowledge base.
+- DO NOT use any external knowledge.
+- If the context does NOT contain relevant information to a question (including follow-ups), reply with:
+  "I'm sorry, I can only answer questions based on the knowledge provided to me."
+- DO NOT infer or assume anything not clearly stated in the context.
+- Treat each user message independently unless it's clearly related to the prior one **AND** the context supports it.
+- DO NOT try to remember previous messages unless they are relevant **and** supported by the context.
+- Be friendly and clear, but remain strictly limited to the context.
+${enableCitations ? '- When referencing information, mention it comes from the knowledge base.' : ''}
+`;
+  return `${basePrompt}
+
+${contextSection}`;
 }
-function calculateCostEstimate(usage, model) {
-  const pricing = {
-    'gpt-3.5-turbo': {
-      input: 0.0015,
-      output: 0.002
-    },
-    'gpt-4': {
-      input: 0.03,
-      output: 0.06
-    }
-  };
-  const modelPricing = pricing[model] || pricing['gpt-3.5-turbo'];
-  const inputCost = usage.prompt_tokens / 1000 * modelPricing.input;
-  const outputCost = (usage.completion_tokens || 0) / 1000 * modelPricing.output;
-  return inputCost + outputCost;
+function estimatePromptTokens(messages) {
+  const total = messages.map((m)=>m.content).join(' ');
+  return Math.ceil(total.length / 4) + messages.length * 10;
 }
