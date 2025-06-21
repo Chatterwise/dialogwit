@@ -66,8 +66,10 @@ export const useBilling = () => {
 
       const usageMap = new Map();
       usageData?.forEach((u) => {
-        if (DEBUG_BILLING) console.log('🔑 usage metric:', u.metric_name, 'value:', u.metric_value);
         usageMap.set(u.metric_name, u.metric_value);
+        if (DEBUG_BILLING) {
+          console.log('🔑 usage metric:', u.metric_name, 'value:', u.metric_value);
+        }
       });
 
       const tokensUsed = usageMap.get('chat_tokens_per_month') || 0;
@@ -76,7 +78,7 @@ export const useBilling = () => {
         .from('token_rollovers')
         .select('tokens_rolled_over')
         .eq('user_id', user.id)
-        .eq('subscription_id', subId);
+        // .eq('subscription_id', subId);
 
       const rolledOver = rolledOverData?.reduce((sum, row) => sum + (row.tokens_rolled_over || 0), 0) || 0;
       const availableTokens = planTokens + rolledOver - tokensUsed;
@@ -85,6 +87,14 @@ export const useBilling = () => {
         .from('chatbots')
         .select('*', { count: 'exact', head: true })
         .eq('user_id', user.id);
+
+      if (DEBUG_BILLING) {
+        console.log('📊 Tokens used:', tokensUsed);
+        console.log('📦 Rolled-over Tokens:', rolledOver);
+        console.log('💰 Available Tokens:', availableTokens);
+        console.log('🤖 Chatbots created:', chatbotsCount);
+        console.log('Rollover data:', rolledOverData);
+      }
 
       return {
         tokens_used: tokensUsed,
@@ -117,7 +127,9 @@ export const useBilling = () => {
   });
 
   useEffect(() => {
-    if (subscriptionQuery.data?.id !== undefined) usageQuery.refetch();
+    if (subscriptionQuery.data?.id !== undefined) {
+      usageQuery.refetch();
+    }
   }, [subscriptionQuery.data?.id]);
 
   return {

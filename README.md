@@ -89,29 +89,6 @@ A complete chatbot integration solution that allows users to easily add AI-power
 └── README.md                  # This documentation
 ```
 
-## Roll Over
-
-💾 rollover to behave?
-✅ Roll over all unused tokens each month
-
-📆 When should rollover happen?
-✅ At the start of the next billing cycle
-
-📐 Should rolled-over tokens expire?
-✅ No
-
-# token usage and rollover data works out:
-
-available_tokens = plan.tokens_per_month + rollover.total_rolled_tokens - usage.tokens_used
-
-Used Tokens (this month): 1,000
-
-Rolled-Over Tokens: 2,000
-
-Available Tokens (limit + rollover): 7,000
-
-Remaining Tokens: 6,000
-
 ## 🔧 Quick Start
 
 ### React Integration
