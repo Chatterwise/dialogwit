@@ -1,546 +1,499 @@
-import { useState, useEffect } from "react";
 import {
-  Plus,
-  MessageCircle,
+  Bot,
   BookOpen,
   Zap,
-  CreditCard,
+  MessageCircle,
   Loader,
-  BarChart3,
-  Bot,
+  Plus,
+  ArrowRight,
+  Users,
+  Smile,
+  Sparkles,
+  Puzzle,
 } from "lucide-react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import { useChatbots } from "../hooks/useChatbots";
-import { useChatAnalytics } from "../hooks/useChatAnalytics";
-import { AnalyticsChart } from "./AnalyticsChart";
+import { useChatAnalytics } from "../hooks/useChatMessages";
 import { supabase } from "../lib/supabase";
 import TokenUsageWidget from "./TokenUsageWidget";
+import { motion } from "framer-motion";
+import { AnalyticsChart } from "./AnalyticsChart";
 
-type RecentActivity = {
-  id: string;
-  type: string;
-  content: string;
-  chatbot: string;
-  timestamp: string;
-};
+// Animated card component
+const AnimatedCard = ({ children, delay = 0 }) => (
+  <motion.div
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ duration: 0.4, delay }}
+    className="bg-white/90 dark:bg-gray-900/90 backdrop-blur-lg rounded-2xl shadow-xl border border-gray-100 dark:border-gray-800 overflow-hidden hover:shadow-2xl transition-all duration-300"
+  >
+    {children}
+  </motion.div>
+);
 
-export const Dashboard = () => {
+// Stat card component
+const StatCard = ({ icon: Icon, title, value, color, note, delay = 0 }) => (
+  <AnimatedCard delay={delay}>
+    <div className="p-6">
+      <div className="flex items-center">
+        <div className={`rounded-xl p-3 ${color} shadow-inner`}>
+          <Icon className="h-6 w-6" />
+        </div>
+        <div className="ml-4">
+          <p className="text-sm font-semibold text-gray-600 dark:text-gray-400">
+            {title}
+          </p>
+          <p className="text-2xl font-extrabold text-gray-900 dark:text-gray-100">
+            {value}
+          </p>
+        </div>
+      </div>
+      <p className="mt-3 text-xs text-gray-500 dark:text-gray-400">{note}</p>
+    </div>
+  </AnimatedCard>
+);
+
+// Activity item component
+const ActivityItem = ({
+  icon: Icon,
+  title,
+  description,
+  timestamp,
+  delay = 0,
+}) => (
+  <motion.div
+    initial={{ opacity: 0, x: -10 }}
+    animate={{ opacity: 1, x: 0 }}
+    transition={{ duration: 0.3, delay }}
+    className="flex items-start space-x-3"
+  >
+    <div className="h-8 w-8 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center">
+      <Icon className="h-4 w-4 text-primary-600 dark:text-primary-400" />
+    </div>
+    <div className="flex-1 min-w-0">
+      <p className="text-sm font-semibold text-gray-900 dark:text-white">
+        {title}
+      </p>
+      <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+        {description}
+      </p>
+      <p className="text-xs text-gray-400 dark:text-gray-500">{timestamp}</p>
+    </div>
+  </motion.div>
+);
+
+// Quick action card component
+const QuickActionCard = ({ icon: Icon, title, description, to, delay = 0 }) => (
+  <motion.div
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ duration: 0.4, delay }}
+    whileHover={{ scale: 1.03, y: -5 }}
+    whileTap={{ scale: 0.97 }}
+  >
+    <Link
+      to={to}
+      className="block p-5 bg-white/90 dark:bg-gray-900/90 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-lg hover:shadow-xl transition-all duration-300"
+    >
+      <div className="flex items-center mb-3">
+        <div className="p-2 bg-primary-100 dark:bg-primary-900/30 rounded-lg mr-3">
+          <Icon className="h-5 w-5 text-primary-600 dark:text-primary-400" />
+        </div>
+        <h3 className="font-semibold text-gray-900 dark:text-white">{title}</h3>
+      </div>
+      <p className="text-sm text-gray-600 dark:text-gray-400">{description}</p>
+    </Link>
+  </motion.div>
+);
+
+// Feature highlight component
+const FeatureHighlight = ({ icon: Icon, title, description, delay = 0 }) => (
+  <motion.div
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ duration: 0.4, delay }}
+    className="flex items-start space-x-4 p-4 bg-white/80 dark:bg-gray-900/80 rounded-xl border border-gray-100 dark:border-gray-800 shadow-md"
+  >
+    <div className="p-2 bg-primary-100 dark:bg-primary-900/30 rounded-lg">
+      <Icon className="h-5 w-5 text-primary-600 dark:text-primary-400" />
+    </div>
+    <div>
+      <h3 className="font-semibold text-gray-900 dark:text-white text-sm">
+        {title}
+      </h3>
+      <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+        {description}
+      </p>
+    </div>
+  </motion.div>
+);
+
+export function Dashboard() {
   const { user, loading: authLoading } = useAuth();
   const { data: chatbots = [], isLoading } = useChatbots(user?.id || "");
-  // const { hasActiveSubscription } = useSubscriptionStatus();
-  // const { checkLimit } = useUsageLimitCheck();
-  const [canCreateChatbot, setCanCreateChatbot] = useState(true);
-  const [checkingLimits, setCheckingLimits] = useState(false);
-  // const { data: subscriptionData } = useUserSubscription(user?.id || "");
-  const [recentActivity, setRecentActivity] = useState<RecentActivity[]>([]);
-  const [loadingActivity, setLoadingActivity] = useState(false);
-
-  // Check if user can create more chatbots
-  useEffect(() => {
-    const checkChatbotLimit = async () => {
-      if (!user || authLoading) return;
-
-      try {
-        setCheckingLimits(true);
-        // const allowed = await checkLimit("chatbots");
-        setCanCreateChatbot(allowed);
-      } catch (error) {
-        console.error("Failed to check chatbot limit:", error);
-        // Allow by default on error to prevent blocking
-        setCanCreateChatbot(true);
-      } finally {
-        setCheckingLimits(false);
-      }
-    };
-
-    if (!authLoading) {
-      checkChatbotLimit();
-    }
-  }, [user, authLoading]);
-
-  const activeBots = chatbots.filter((bot) => bot.status === "ready").length;
-  const processingBots = chatbots.filter(
-    (bot) => bot.status === "processing"
-  ).length;
-
-  // Get analytics data for all chatbots
   const { data: analyticsData, isLoading: analyticsLoading } =
     useChatAnalytics("all");
-
-  // Get Bot Knowledge count
+  const [canCreateChatbot, setCanCreateChatbot] = useState(true);
   const [knowledgeBaseCount, setKnowledgeBaseCount] = useState(0);
-  const [loadingKnowledgeBase, setLoadingKnowledgeBase] = useState(false);
+  const [recentActivity, setRecentActivity] = useState([]);
 
   useEffect(() => {
-    const fetchKnowledgeBaseCount = async () => {
-      if (!user || authLoading) return;
-
-      try {
-        setLoadingKnowledgeBase(true);
-
-        // Only query if we have chatbot IDs
-        if (chatbots.length === 0) {
-          setKnowledgeBaseCount(0);
-          return;
-        }
-
-        const chatbotIds = chatbots.map((bot) => bot.id);
-        const query = chatbotIds.map((id) => `chatbot_id.eq.${id}`).join(",");
-
-        const { count, error } = await supabase
-          .from("knowledge_base")
-          .select("id", { count: "exact", head: true })
-          .or(query);
-
-        if (error) {
-          console.error("Failed to fetch Bot Knowledge count:", error);
-          setKnowledgeBaseCount(0);
-        } else {
-          setKnowledgeBaseCount(count || 0);
-        }
-      } catch (error) {
-        console.error("Failed to fetch Bot Knowledge count:", error);
-        setKnowledgeBaseCount(0);
-      } finally {
-        setLoadingKnowledgeBase(false);
-      }
-    };
-
-    if (!authLoading && chatbots.length > 0) {
-      fetchKnowledgeBaseCount();
-    } else if (!authLoading) {
-      setKnowledgeBaseCount(0);
-    }
+    if (!user || authLoading || chatbots.length === 0) return;
+    (async () => {
+      const chatbotIds = chatbots.map((bot) => bot.id);
+      const query = chatbotIds.map((id) => `chatbot_id.eq.${id}`).join(",");
+      const { count } = await supabase
+        .from("knowledge_base")
+        .select("id", { count: "exact", head: true })
+        .or(query);
+      setKnowledgeBaseCount(count || 0);
+    })();
   }, [user, authLoading, chatbots]);
 
-  // Fetch recent activity
   useEffect(() => {
-    const fetchRecentActivity = async () => {
-      if (!user || authLoading) return;
-
-      try {
-        setLoadingActivity(true);
-
-        // Get recent chat messages
-        const { data: messages, error } = await supabase
-          .from("chat_messages")
-          .select(
-            `
-            id, 
-            message, 
-            created_at,
-            chatbots(name)
-          `
-          )
-          .order("created_at", { ascending: false })
-          .limit(5);
-
-        if (error) {
-          console.error("Failed to fetch recent activity:", error);
-          return;
-        }
-
-        const formattedActivity = messages.map((msg) => ({
-          id: msg.id,
-          type: "message",
-          content:
-            msg.message.substring(0, 50) +
-            (msg.message.length > 50 ? "..." : ""),
-          chatbot:
-            Array.isArray(msg.chatbots) && msg.chatbots.length > 0
-              ? msg.chatbots[0].name
-              : "Unknown",
-          timestamp: new Date(msg.created_at).toLocaleString(),
-        }));
-
-        setRecentActivity(formattedActivity);
-      } catch (error) {
-        console.error("Failed to fetch recent activity:", error);
-      } finally {
-        setLoadingActivity(false);
-      }
-    };
-
-    if (!authLoading) {
-      fetchRecentActivity();
-    }
+    if (!user || authLoading) return;
+    (async () => {
+      const { data } = await supabase
+        .from("chat_messages")
+        .select("id, message, created_at, chatbots(name)")
+        .order("created_at", { ascending: false })
+        .limit(5);
+      const formatted = data?.map((msg) => ({
+        id: msg.id,
+        type: "message",
+        content:
+          msg.message.slice(0, 50) + (msg.message.length > 50 ? "..." : ""),
+        chatbot: msg.chatbots?.name || "Unknown",
+        timestamp: new Date(msg.created_at).toLocaleString(),
+      }));
+      setRecentActivity(formatted);
+    })();
   }, [user, authLoading]);
-
-  // Get token usage from subscription data
-  // const getTokenUsage = () => {
-  //   if (!subscriptionData) return 0;
-
-  //   const tokenUsage = subscriptionData.usage.find(
-  //     (item) => item.metric_name === "tokens_per_month"
-  //   );
-
-  //   return tokenUsage?.metric_value || 0;
-  // };
 
   const stats = [
     {
-      name: "Total Chatbots",
+      title: "Total Chatbots",
       value: chatbots.length,
       icon: Bot,
-      color: "text-primary-600 bg-primary-100",
-      change: "+2 this week",
+      color:
+        "text-primary-600 dark:text-primary-400 bg-primary-100 dark:bg-primary-900/30",
+      note: "+2 this week",
     },
     {
-      name: "Active Chatbots",
-      value: activeBots,
+      title: "Active Chatbots",
+      value: chatbots.filter((b) => b.status === "ready").length,
       icon: Zap,
-      color: "text-green-600 bg-green-100",
-      change: `${processingBots} processing`,
+      color:
+        "text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-900/30",
+      note: `${
+        chatbots.filter((b) => b.status === "processing").length
+      } processing`,
     },
     {
-      name: "Total Tokens Used",
-      value: "", //getTokenUsage().toLocaleString(),
+      title: "Total Tokens Used",
+      value: analyticsData?.totalTokens ?? 0,
       icon: MessageCircle,
-      color: "text-purple-600 bg-purple-100",
-      change: `${analyticsData?.todayMessages || 0} today`,
+      color:
+        "text-purple-600 dark:text-purple-400 bg-purple-100 dark:bg-purple-900/30",
+      note: `${analyticsData?.todayMessages || 0} today`,
     },
     {
-      name: "Bot Knowledge Items",
+      title: "Knowledge Items",
       value: knowledgeBaseCount,
       icon: BookOpen,
-      color: "text-accent-600 bg-accent-100",
-      change: "Across all chatbots",
+      color:
+        "text-accent-600 dark:text-accent-400 bg-accent-100 dark:bg-accent-900/30",
+      note: "Across all chatbots",
     },
   ];
 
-  // Show loading state while auth is loading
   if (authLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <Loader className="h-8 w-8 text-primary-600 animate-spin mx-auto mb-4" />
-          <p className="text-gray-500">Loading dashboard...</p>
-        </div>
+      <div className="flex justify-center items-center h-screen">
+        <Loader className="h-8 w-8 animate-spin text-primary-500" />
       </div>
     );
   }
 
   return (
     <div className="space-y-8">
-      {/* Header */}
-      <div className="flex items-center justify-between border-b border-gray-200 dark:border-gray-800 pb-6 mb-6">
-        <div className="flex items-center space-x-4">
-          {/* Use your SVG logo here if available, otherwise use Bot icon */}
-          {/* <img src={logo} alt="ChatterWise" className="h-8 w-8" /> */}
+      {/* Welcome Banner */}
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="bg-gradient-to-r from-primary-600 to-primary-500 dark:from-primary-800 dark:to-primary-700 rounded-2xl shadow-xl p-6 text-white"
+      >
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between">
           <div>
-            <h1 className="text-3xl font-extrabold text-gray-900 dark:text-gray-100 font-display tracking-tight">
-              Dashboard
+            <h1 className="text-2xl md:text-3xl font-bold mb-2">
+              Welcome back, {user?.email?.split("@")[0] || "User"}!
             </h1>
-            <p className="text-gray-500 dark:text-gray-400">
-              Welcome back! Here's what's happening with your chatbots.
+            <p className="text-primary-100">
+              Build and deploy AI chatbots in minutes, not months.
             </p>
           </div>
-        </div>
-        <div className="flex space-x-3">
-          {/* {!hasActiveSubscription && (
-            <Link
-              to="/pricing"
-              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-semibold rounded-xl shadow-card text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-400 transition-colors duration-200"
-            >
-              <CreditCard className="h-4 w-4 mr-2" />
-              Upgrade Now
-            </Link>
-          )} */}
-          <Link
-            to="/chatbots/new"
-            className={`inline-flex items-center px-5 py-2.5 border border-transparent text-sm font-semibold rounded-xl shadow-card text-white bg-primary-500 hover:bg-primary-600 focus:outline-none focus:ring-2 focus:ring-primary-400 transition-colors duration-200 ${
-              !canCreateChatbot
-                ? "opacity-50 cursor-not-allowed pointer-events-none"
-                : ""
-            }`}
-            onClick={(e) => {
-              if (!canCreateChatbot) {
-                e.preventDefault();
-                alert(
-                  "You've reached your chatbot limit. Please upgrade your plan to create more chatbots."
-                );
-              }
-            }}
+          <motion.div
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className="mt-4 md:mt-0"
           >
-            <Plus className="h-4 w-4 mr-2" />
-            New Chatbot
-          </Link>
-        </div>
-      </div>
-
-      {/* Subscription Status */}
-      {/* <SubscriptionStatus /> */}
-
-      {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {stats.map((stat) => {
-          return (
-            <div
-              key={stat.name}
-              className="bg-white/90 dark:bg-gray-900/90 backdrop-blur-lg rounded-2xl shadow-xl border border-gray-200 dark:border-gray-800 p-6 flex flex-col justify-between"
+            <Link
+              to="/chatbots/new"
+              className="inline-flex items-center px-4 py-2 bg-white text-primary-600 rounded-xl font-medium shadow-md hover:shadow-lg transition-all"
             >
-              <div className="flex items-center">
-                <div className={`rounded-xl p-3 ${stat.color} shadow-inner`}>
-                  <stat.icon className="h-7 w-7" />
-                </div>
-                <div className="ml-5">
-                  <p className="text-sm font-semibold text-gray-600 dark:text-gray-400">
-                    {stat.name}
-                  </p>
-                  <p className="text-2xl font-extrabold text-gray-900 dark:text-gray-100">
-                    {loadingKnowledgeBase &&
-                    stat.name === "Bot Knowledge Items" ? (
-                      <div className="flex items-center justify-center py-8">
-                        <Loader className="h-8 w-8 text-primary-600 animate-spin" />
-                        <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-                          Loading...
-                        </p>
-                      </div>
-                    ) : (
-                      stat.value
-                    )}
-                  </p>
-                </div>
-              </div>
-              <div className="mt-4 text-xs text-gray-500 dark:text-gray-400">
-                {stat.change}
-              </div>
-            </div>
-          );
-        })}
+              <Plus className="h-4 w-4 mr-2" />
+              Create New Chatbot
+            </Link>
+          </motion.div>
+        </div>
+      </motion.div>
+
+      {/* Stats Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {stats.map((stat, index) => (
+          <StatCard
+            key={stat.title}
+            icon={stat.icon}
+            title={stat.title}
+            value={stat.value}
+            color={stat.color}
+            note={stat.note}
+            delay={index * 0.1}
+          />
+        ))}
       </div>
 
-      {/* Token esage widget */}
-      <TokenUsageWidget className="col-span-1" showDetails={true} />
+      {/* Token Usage Widget */}
+      <AnimatedCard delay={0.2}>
+        <TokenUsageWidget showDetails={true} />
+      </AnimatedCard>
 
       {/* Charts and Recent Activity */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Analytics Chart */}
-        {analyticsLoading ? (
-          // <AnalyticsChart data={[]} title="Messages This Week" loading={true} />
-          <div className="bg-white/90 dark:bg-gray-900/90 backdrop-blur-lg rounded-2xl shadow-xl border border-gray-200 dark:border-gray-800 p-6">
-            <div className="flex items-center justify-center py-8">
-              <Loader className="h-8 w-8 text-primary-600 animate-spin" />
+        <AnimatedCard delay={0.3}>
+          {analyticsLoading ? (
+            <div className="flex justify-center py-12">
+              <Loader className="h-6 w-6 animate-spin text-primary-500" />
             </div>
-          </div>
-        ) : analyticsData ? (
-          <AnalyticsChart
-            data={analyticsData.chartData}
-            title="Messages This Week"
-          />
-        ) : (
-          <div className="bg-white/90 rounded-2xl shadow-xl border border-gray-100 p-6">
-            <div className="text-center py-8">
-              <BarChart3 className="h-12 w-12 text-gray-300 mx-auto mb-2" />
-              <p className="text-sm text-gray-500">
-                No analytics data available
-              </p>
-            </div>
-          </div>
-        )}
+          ) : (
+            <AnalyticsChart
+              data={analyticsData?.chartData || []}
+              title="Messages This Week"
+            />
+          )}
+        </AnimatedCard>
 
-        {/* Recent Activity */}
-        <div className="bg-white/90 dark:bg-gray-900/90 backdrop-blur-lg rounded-2xl shadow-xl border border-gray-200 dark:border-gray-800">
-          <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-800">
-            <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">
+        <AnimatedCard delay={0.4}>
+          <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-800">
+            <h3 className="text-lg font-bold text-gray-900 dark:text-white">
               Recent Activity
             </h3>
           </div>
           <div className="p-6 space-y-5">
-            {isLoading || loadingActivity ? (
-              <div className="bg-white/90 dark:bg-gray-900/90 backdrop-blur-lg rounded-2xl shadow-xl border border-gray-200 dark:border-gray-800 p-6">
-                <div className="flex items-center justify-center py-8">
-                  <Loader className="h-8 w-8 text-primary-600 animate-spin" />
-                </div>
-              </div>
+            {recentActivity.length > 0 ? (
+              recentActivity.map((activity, index) => (
+                <ActivityItem
+                  key={activity.id}
+                  icon={MessageCircle}
+                  title={`Message in ${activity.chatbot}`}
+                  description={activity.content}
+                  timestamp={activity.timestamp}
+                  delay={0.1 * index}
+                />
+              ))
             ) : (
-              <>
-                {recentActivity.length > 0 ? (
-                  recentActivity.map((activity) => (
-                    <div
-                      key={activity.id}
-                      className="flex items-center space-x-3"
-                    >
-                      <div className="h-8 w-8 bg-primary-100 rounded-full flex items-center justify-center">
-                        <MessageCircle className="h-4 w-4 text-primary-600" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-semibold text-gray-900">
-                          Message in {activity.chatbot}
-                        </p>
-                        <p className="text-xs text-gray-500 truncate">
-                          {activity.content}
-                        </p>
-                        <p className="text-xs text-gray-500">
-                          {activity.timestamp}
-                        </p>
-                      </div>
-                    </div>
-                  ))
-                ) : (
-                  <div className="text-center py-8">
-                    <Bot className="h-12 w-12 text-gray-300 dark:text-gray-600 mx-auto mb-2" />
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
-                      No recent activity
-                    </p>
-                  </div>
-                )}
-              </>
+              <motion.p
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="text-sm text-gray-500 dark:text-gray-400 text-center"
+              >
+                No recent activity
+              </motion.p>
             )}
           </div>
+        </AnimatedCard>
+      </div>
+
+      {/* Quick Actions Grid */}
+      <div>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.5 }}
+          className="flex items-center justify-between mb-4"
+        >
+          <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+            Quick Actions
+          </h2>
+          <Link
+            to="/wizard"
+            className="text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 text-sm font-medium flex items-center"
+          >
+            Setup Wizard
+            <ArrowRight className="h-4 w-4 ml-1" />
+          </Link>
+        </motion.div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <QuickActionCard
+            icon={Bot}
+            title="Create Chatbot"
+            description="Build a new AI chatbot in minutes"
+            to="/chatbots/new"
+            delay={0.6}
+          />
+          <QuickActionCard
+            icon={BookOpen}
+            title="Add Knowledge"
+            description="Upload documents or add text content"
+            to="/bot-knowledge"
+            delay={0.7}
+          />
+          <QuickActionCard
+            icon={Puzzle}
+            title="Integrations"
+            description="Connect with your favorite platforms"
+            to="/integrations"
+            delay={0.8}
+          />
         </div>
       </div>
 
       {/* Recent Chatbots */}
-      <div className="bg-white/90 dark:bg-gray-900/90 backdrop-blur-lg rounded-2xl shadow-xl border border-gray-200 dark:border-gray-800">
-        <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-          <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">
+      <AnimatedCard delay={0.9}>
+        <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between">
+          <h3 className="text-lg font-bold text-gray-900 dark:text-white">
             Recent Chatbots
           </h3>
           <Link
             to="/chatbots"
-            className="text-sm text-primary-600 hover:text-primary-500 font-medium"
+            className="text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 text-sm font-medium flex items-center"
           >
             View all
+            <ArrowRight className="h-4 w-4 ml-1" />
           </Link>
         </div>
         <div className="px-6 py-6">
           {isLoading ? (
-            <div className="text-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-500 mx-auto"></div>
-              <p className="mt-2 text-sm text-gray-500">Loading chatbots...</p>
+            <div className="flex justify-center py-8">
+              <Loader className="h-6 w-6 animate-spin text-primary-500" />
             </div>
           ) : chatbots.length === 0 ? (
             <div className="text-center py-8">
-              <Bot className="h-12 w-12 text-gray-300 mx-auto" />
-              <h3 className="mt-2 text-sm font-semibold text-gray-900">
+              <Bot className="h-12 w-12 text-gray-300 dark:text-gray-700 mx-auto mb-3" />
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
                 No chatbots yet
               </h3>
-              <p className="mt-1 text-sm text-gray-500">
-                Get started by creating your first chatbot.
+              <p className="text-gray-500 dark:text-gray-400 mb-4">
+                Create your first AI-powered chatbot to get started
               </p>
-              <div className="mt-6">
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
                 <Link
                   to="/chatbots/new"
-                  className={`inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-semibold rounded-xl text-white bg-primary-500 hover:bg-primary-600 ${
-                    !canCreateChatbot
-                      ? "opacity-50 cursor-not-allowed pointer-events-none"
-                      : ""
-                  }`}
-                  onClick={(e) => {
-                    if (!canCreateChatbot) {
-                      e.preventDefault();
-                      alert(
-                        "You've reached your chatbot limit. Please upgrade your plan to create more chatbots."
-                      );
-                    }
-                  }}
+                  className="inline-flex items-center px-4 py-2 bg-primary-600 dark:bg-primary-700 text-white rounded-xl font-medium shadow-md hover:shadow-lg transition-all"
                 >
                   <Plus className="h-4 w-4 mr-2" />
-                  New Chatbot
+                  Create First Chatbot
                 </Link>
-              </div>
+              </motion.div>
             </div>
           ) : (
             <div className="space-y-4">
-              {chatbots.slice(0, 3).map((chatbot) => (
-                <div
+              {chatbots.slice(0, 3).map((chatbot, index) => (
+                <motion.div
                   key={chatbot.id}
-                  className="flex items-center justify-between p-4 bg-primary-50 rounded-xl"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3, delay: 0.9 + index * 0.1 }}
+                  className="p-4 bg-gradient-to-r from-primary-50 to-white dark:from-gray-800 dark:to-gray-900 rounded-xl border border-gray-100 dark:border-gray-800 hover:shadow-md transition-all"
                 >
-                  <div className="flex items-center">
-                    <Bot className="h-8 w-8 text-primary-600" />
-                    <div className="ml-4">
-                      <p className="text-sm font-semibold text-gray-900">
-                        {chatbot.name}
-                      </p>
-                      <p className="text-xs text-gray-500">
-                        {chatbot.description}
-                      </p>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center">
+                      <Bot className="h-8 w-8 text-primary-600 dark:text-primary-400" />
+                      <div className="ml-3">
+                        <p className="text-sm font-semibold text-gray-900 dark:text-white">
+                          {chatbot.name}
+                        </p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-1">
+                          {chatbot.description}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <span
+                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                          chatbot.status === "ready"
+                            ? "bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300"
+                            : chatbot.status === "processing"
+                            ? "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300"
+                            : "bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-300"
+                        }`}
+                      >
+                        {chatbot.status}
+                      </span>
+                      <motion.div
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
+                      >
+                        <Link
+                          to={`/chatbots/${chatbot.id}`}
+                          className="text-sm text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 font-medium"
+                        >
+                          View
+                        </Link>
+                      </motion.div>
                     </div>
                   </div>
-                  <div className="flex items-center space-x-2">
-                    <span
-                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                        chatbot.status === "ready"
-                          ? "bg-green-100 text-green-800"
-                          : chatbot.status === "processing"
-                          ? "bg-yellow-100 text-yellow-800"
-                          : "bg-gray-100 text-gray-800"
-                      }`}
-                    >
-                      {chatbot.status}
-                    </span>
-                    <Link
-                      to={`/chatbots/${chatbot.id}`}
-                      className="text-sm text-primary-600 hover:text-primary-500 font-medium"
-                    >
-                      View
-                    </Link>
-                  </div>
-                </div>
+                </motion.div>
               ))}
             </div>
           )}
         </div>
-      </div>
+      </AnimatedCard>
 
-      {/* Quick Actions */}
-      <div className="bg-white/90 dark:bg-gray-900/90 backdrop-blur-lg rounded-2xl shadow-xl border border-gray-200 dark:border-gray-800">
-        <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-800">
-          <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">
-            Quick Actions
-          </h3>
+      {/* Features Highlight */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 1 }}
+        className="bg-gradient-to-r from-primary-50 to-accent-50 dark:from-gray-900 dark:to-gray-800 rounded-2xl p-6 border border-primary-100 dark:border-gray-700"
+      >
+        <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">
+          ChatterWise Features
+        </h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <FeatureHighlight
+            icon={Zap}
+            title="Fast Deployment"
+            description="Create and deploy chatbots in minutes, not months"
+            delay={1.1}
+          />
+          <FeatureHighlight
+            icon={Sparkles}
+            title="AI-Powered"
+            description="Leverages advanced GPT models for natural conversations"
+            delay={1.2}
+          />
+          <FeatureHighlight
+            icon={Users}
+            title="Multi-Channel"
+            description="Deploy to website, Slack, Discord and more"
+            delay={1.3}
+          />
+          <FeatureHighlight
+            icon={Smile}
+            title="User-Friendly"
+            description="No coding required - easy to use interface"
+            delay={1.4}
+          />
         </div>
-        <div className="px-6 py-6 grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Link
-            to="/chatbots/new"
-            className={`p-4 border border-gray-200 dark:border-gray-700 rounded-xl hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors duration-200 group ${
-              !canCreateChatbot
-                ? "opacity-50 cursor-not-allowed pointer-events-none"
-                : ""
-            }`}
-            onClick={(e) => {
-              if (!canCreateChatbot) {
-                e.preventDefault();
-                alert(
-                  "You've reached your chatbot limit. Please upgrade your plan to create more chatbots."
-                );
-              }
-            }}
-          >
-            <div className="flex items-center">
-              <Plus className="h-6 w-6 text-primary-600 group-hover:text-primary-700" />
-              <span className="ml-3 text-sm font-medium text-gray-900 dark:text-gray-100">
-                Create New Chatbot
-              </span>
-            </div>
-          </Link>
-          <Link
-            to="/bot-knowledge"
-            className="p-4 border border-gray-200 dark:border-gray-700 rounded-xl hover:bg-accent-50 dark:hover:bg-accent-900/20 transition-colors duration-200 group"
-          >
-            <div className="flex items-center">
-              <BookOpen className="h-6 w-6 text-accent-600 group-hover:text-accent-700" />
-              <span className="ml-3 text-sm font-medium text-gray-900 dark:text-gray-100">
-                Manage Bot Knowledge
-              </span>
-            </div>
-          </Link>
-          <Link
-            to="/integrations"
-            className="p-4 border border-gray-200 dark:border-gray-700 rounded-xl hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-colors duration-200 group"
-          >
-            <div className="flex items-center">
-              <Zap className="h-6 w-6 text-purple-600 group-hover:text-purple-700" />
-              <span className="ml-3 text-sm font-medium text-gray-900 dark:text-gray-100">
-                View Integrations
-              </span>
-            </div>
-          </Link>
-        </div>
-      </div>
+      </motion.div>
     </div>
   );
-};
+}

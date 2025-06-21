@@ -1,3 +1,4 @@
+// ChatPreview.tsx — Neo-skeuomorphic UI with light/dark mode
 import React, { useState, useEffect, useRef } from "react";
 import { Send, Bot, User, Loader } from "lucide-react";
 import { useSendMessage } from "../hooks/useChatMessages";
@@ -46,7 +47,6 @@ export const ChatPreview = ({ botId }: { botId?: string }) => {
     setMessages((prev) => [...prev, userMessage]);
     setInputValue("");
 
-    // Add loading message
     const loadingMessage: Message = {
       id: (Date.now() + 1).toString(),
       text: "",
@@ -63,7 +63,6 @@ export const ChatPreview = ({ botId }: { botId?: string }) => {
         userId: user?.id || "NO_USER",
       });
 
-      // Replace loading message with actual response
       setMessages((prev) =>
         prev.map((msg) =>
           msg.id === loadingMessage.id
@@ -72,7 +71,6 @@ export const ChatPreview = ({ botId }: { botId?: string }) => {
         )
       );
     } catch {
-      // Replace loading message with error
       setMessages((prev) =>
         prev.map((msg) =>
           msg.id === loadingMessage.id
@@ -95,24 +93,24 @@ export const ChatPreview = ({ botId }: { botId?: string }) => {
   };
 
   return (
-    <div className="bg-white/95 rounded-2xl shadow-xl border border-gray-100 h-96 flex flex-col">
-      {/* Header */}
-      <div className="px-6 py-4 border-b border-gray-100 bg-gradient-to-r from-primary-50 via-white to-accent-50 rounded-t-2xl">
+    <div className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-lg rounded-2xl shadow-xl border border-gray-100 dark:border-gray-800 h-96 flex flex-col">
+      <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-800 bg-gradient-to-r from-primary-50 via-white to-accent-50 dark:from-gray-800 dark:via-gray-900 dark:to-gray-800 rounded-t-2xl">
         <div className="flex items-center justify-between">
           <div className="flex items-center">
-            <Bot className="h-6 w-6 text-primary-600 mr-3" />
-            <h3 className="text-base font-semibold text-gray-900">
+            <Bot className="h-6 w-6 text-primary-600 dark:text-primary-400 mr-3" />
+            <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100">
               Chat Preview
             </h3>
           </div>
           <div className="flex items-center">
             <div className="h-2 w-2 bg-green-500 rounded-full mr-2"></div>
-            <span className="text-xs text-gray-600">Online</span>
+            <span className="text-xs text-gray-600 dark:text-gray-400">
+              Online
+            </span>
           </div>
         </div>
       </div>
 
-      {/* Messages */}
       <div className="flex-1 overflow-y-auto p-6 space-y-4">
         {messages.map((message) => (
           <div
@@ -125,12 +123,12 @@ export const ChatPreview = ({ botId }: { botId?: string }) => {
               className={`max-w-xs lg:max-w-md px-4 py-3 rounded-xl shadow-subtle ${
                 message.sender === "user"
                   ? "bg-primary-600 text-white"
-                  : "bg-gray-50 border border-gray-100 text-gray-900"
+                  : "bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-800 text-gray-900 dark:text-gray-100"
               }`}
             >
               <div className="flex items-start">
                 {message.sender === "bot" && (
-                  <Bot className="h-4 w-4 mr-2 mt-0.5 text-primary-600 flex-shrink-0" />
+                  <Bot className="h-4 w-4 mr-2 mt-0.5 text-primary-600 dark:text-primary-400 flex-shrink-0" />
                 )}
                 <div className="flex-1">
                   {message.isLoading ? (
@@ -147,7 +145,7 @@ export const ChatPreview = ({ botId }: { botId?: string }) => {
                     className={`text-xs opacity-75 mt-1 block ${
                       message.sender === "user"
                         ? "text-white/80"
-                        : "text-gray-500"
+                        : "text-gray-500 dark:text-gray-400"
                     }`}
                   >
                     {message.timestamp.toLocaleTimeString([], {
@@ -166,8 +164,7 @@ export const ChatPreview = ({ botId }: { botId?: string }) => {
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Input */}
-      <div className="px-6 py-4 border-t border-gray-100 rounded-b-2xl">
+      <div className="px-6 py-4 border-t border-gray-100 dark:border-gray-800 rounded-b-2xl">
         <div className="flex items-center space-x-2">
           <input
             type="text"
@@ -175,7 +172,7 @@ export const ChatPreview = ({ botId }: { botId?: string }) => {
             onChange={(e) => setInputValue(e.target.value)}
             onKeyPress={handleKeyPress}
             placeholder="Type your message..."
-            className="flex-1 px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-primary-400 transition"
+            className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-primary-400 transition"
             disabled={sendMessage.isPending || !botId}
           />
           <button
@@ -191,7 +188,7 @@ export const ChatPreview = ({ botId }: { botId?: string }) => {
           </button>
         </div>
         {!botId && (
-          <p className="text-xs text-gray-500 mt-2">
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
             Chat preview is only available for saved chatbots
           </p>
         )}

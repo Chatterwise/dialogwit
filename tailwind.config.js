@@ -5,30 +5,29 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        // Headings: Montserrat, UI: Inter (both are modern, geometric, and highly legible)
         sans: ["Inter", "system-ui", "sans-serif"],
-        display: ["Montserrat", "Inter", "system-ui", "sans-serif"],
+        display: ["Inter", "system-ui", "sans-serif"],
       },
       colors: {
         primary: {
-          50: "#fff5f2",
-          100: "#ffe4db",
-          200: "#ffc7b0",
-          300: "#ffa085",
-          400: "#ff7a5c",
-          500: "#ff5233", // Main Chatterwise orange
-          600: "#e64422",
-          700: "#b52e14",
-          800: "#8c210c",
-          900: "#701909",
+          50: "#f0f4ff",
+          100: "#dbe7ff",
+          200: "#b3cdff",
+          300: "#88b0ff",
+          400: "#6298ff",
+          500: "#3b82f6", // Tailwind default blue
+          600: "#2563eb",
+          700: "#1d4ed8",
+          800: "#1e40af",
+          900: "#1e3a8a",
         },
         accent: {
-          50: "#f3f8fd",
-          100: "#e1f0fa",
-          200: "#b8def2",
-          300: "#7fc6e6",
-          400: "#4faedb",
-          500: "#2497cf", // Vibrant blue accent
+          50: "#fffefc",
+          100: "#fef6e7",
+          200: "#fdeac5",
+          300: "#fbdc9d",
+          400: "#facc6d",
+          500: "#fbbf24", // gold/yellow accent (for stats or highlights)
         },
         gray: {
           50: "#f9fafb",
@@ -42,30 +41,25 @@ export default {
           800: "#1f2937",
           900: "#111827",
         },
-        // Optional: Success, warning, error for UI feedback
         success: "#22c55e",
-        warning: "#facc15",
+        warning: "#eab308",
         error: "#ef4444",
       },
       fontSize: {
-        // Bigger, bolder headings for modern UI
-        "display-2xl": ["3rem", { lineHeight: "1.1", fontWeight: "800" }],
-        "display-xl": ["2.25rem", { lineHeight: "1.15", fontWeight: "800" }],
-        "display-lg": ["1.875rem", { lineHeight: "1.2", fontWeight: "700" }],
-        "display-md": ["1.5rem", { lineHeight: "1.25", fontWeight: "700" }],
-      },
-      boxShadow: {
-        subtle: "0 1px 4px 0 rgba(31, 41, 55, 0.05)",
-        card: "0 2px 8px 0 rgba(255, 82, 51, 0.06)", // subtle orange shadow
+        "display-2xl": ["2.75rem", { lineHeight: "1.1", fontWeight: "800" }],
+        "display-xl": ["2rem", { lineHeight: "1.2", fontWeight: "700" }],
+        "display-lg": ["1.5rem", { lineHeight: "1.3", fontWeight: "700" }],
+        "display-md": ["1.25rem", { lineHeight: "1.4", fontWeight: "600" }],
       },
       borderRadius: {
         xl: "1rem",
-        "2xl": "1.5rem",
-        "3xl": "2rem",
+        "2xl": "1.25rem",
+        "3xl": "1.75rem",
       },
-      transitionProperty: {
-        colors:
-          "color, background-color, border-color, text-decoration-color, fill, stroke",
+      boxShadow: {
+        subtle: "0 1px 3px rgba(0, 0, 0, 0.04)",
+        card: "0 4px 12px rgba(0, 0, 0, 0.06)",
+        inner: "inset 0 1px 2px rgba(0, 0, 0, 0.05)",
       },
     },
   },

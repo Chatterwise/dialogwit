@@ -55,7 +55,7 @@ export const PublicChat = () => {
   }, [chatbot]);
 
   const handleSend = async () => {
-    if (!inputValue.trim() || !botId || sendMessage.isPending) return;
+    if (!inputValue.trim() || !chatbotId || sendMessage.isPending) return;
 
     const userMessage: Message = {
       id: Date.now().toString(),
@@ -78,7 +78,7 @@ export const PublicChat = () => {
 
     try {
       const response = await sendMessage.mutateAsync({
-        chatbotId: botId,
+        chatbotId: chatbotId,
         message: inputValue,
         userId: user?.id || "NO_USER",
       });

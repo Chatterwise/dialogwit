@@ -13,7 +13,7 @@ import { ChatbotBuilder } from "./components/ChatbotBuilder";
 import { ChatbotDetail } from "./components/ChatbotDetail";
 import { KnowledgeBase } from "./components/KnowledgeBase";
 import { AdvancedAnalytics } from "./components/AdvancedAnalytics";
-import { Integrations } from "./components/Integrations";
+import { Integrations } from "./components/Integrations/Integrations";
 import { TemplateGallery } from "./components/TemplateGallery";
 import { InstallationWizard } from "./components/InstallationWizard";
 import { Settings } from "./components/Settings";
@@ -32,6 +32,7 @@ import { TokenUsageDashboard } from "./components/TokenUsageDashboard";
 import CancelPage from "./components/CancelPage";
 import PricingPlans from "./components/PricingPlans";
 import SuccessPage from "./components/SuccessPage";
+import LandingPage from "./components/LandingPage";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -59,6 +60,10 @@ function AppContent() {
   return (
     <Routes>
       {/* Public routes */}
+      <Route
+        path="/"
+        element={!user ? <LandingPage /> : <Navigate to="/dashboard" />}
+      />
       <Route
         path="/auth"
         element={!user ? <Auth /> : <Navigate to="/dashboard" />}
@@ -107,7 +112,7 @@ function AppContent() {
               <EmailConfirmationRequired />
             )
           ) : (
-            <Navigate to="/auth" />
+            <Navigate to="/" />
           )
         }
       />

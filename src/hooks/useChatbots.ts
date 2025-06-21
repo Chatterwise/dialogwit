@@ -5,9 +5,10 @@ import { Database } from "../lib/supabase";
 type Chatbot = Database["public"]["Tables"]["chatbots"]["Row"];
 type ChatbotInsert = Database["public"]["Tables"]["chatbots"]["Insert"];
 
-export const useChatbots = (userId: string) => {
+export const useChatbots = (userId?: string) => {
   return useQuery({
     queryKey: ["chatbots", userId],
+    enabled: typeof userId === "string" && userId.length > 0,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("chatbots")
@@ -18,7 +19,6 @@ export const useChatbots = (userId: string) => {
       if (error) throw error;
       return data as Chatbot[];
     },
-    enabled: !!userId,
   });
 };
 

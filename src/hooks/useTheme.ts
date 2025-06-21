@@ -1,28 +1,58 @@
-import { useEffect, useState } from "react";
+import { useState, useEffect } from 'react';
 
-export function useTheme() {
-  const [theme, setTheme] = useState<"light" | "dark">("light");
+type Theme = 'light' | 'dark';
 
-  useEffect(() => {
-    const storedTheme = localStorage.getItem("theme");
-    if (storedTheme === "dark" || storedTheme === "light") {
-      setTheme(storedTheme as "light" | "dark");
-      document.documentElement.classList.toggle("dark", storedTheme === "dark");
-    } else {
-      const prefersDark = window.matchMedia(
-        "(prefers-color-scheme: dark)"
-      ).matches;
-      setTheme(prefersDark ? "dark" : "light");
-      document.documentElement.classList.toggle("dark", prefersDark);
+export const useTheme = () => {
+  // Check if user has a theme preference in localStorage
+  const getInitialTheme = (): Theme => {
+    if (typeof window !== 'undefined') {
+      const savedTheme = localStorage.getItem('theme') as Theme | null;
+      
+      // If user has a saved preference, use that
+      if (savedTheme) {
+        return savedTheme;
+      }
+      
+      // Otherwise, check system preference
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      return prefersDark ? 'dark' : 'light';
     }
+    
+    // Default to light if running on server
+    return 'light';
+  };
+
+  const [theme, setTheme] = useState<Theme>(getInitialTheme);
+
+  // Apply theme to document
+  useEffect(() => {
+    const root = window.document.documentElement;
+    
+    root.classList.remove('light', 'dark');
+    root.classList.add(theme);
+    
+    // Save to localStorage
+    localStorage.setItem('theme', theme);
+  }, [theme]);
+
+  // Listen for system preference changes
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    
+    const handleChange = () => {
+      // Only change if user hasn't set a preference
+      if (!localStorage.getItem('theme')) {
+        setTheme(mediaQuery.matches ? 'dark' : 'light');
+      }
+    };
+    
+    mediaQuery.addEventListener('change', handleChange);
+    return () => mediaQuery.removeEventListener('change', handleChange);
   }, []);
 
   const toggleTheme = () => {
-    const nextTheme = theme === "dark" ? "light" : "dark";
-    setTheme(nextTheme);
-    localStorage.setItem("theme", nextTheme);
-    document.documentElement.classList.toggle("dark", nextTheme === "dark");
+    setTheme(prevTheme => prevTheme === 'light' ? 'dark' : 'light');
   };
 
   return { theme, toggleTheme };
-}
+};

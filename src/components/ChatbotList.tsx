@@ -4,11 +4,14 @@ import { Link } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import { useChatbots, useDeleteChatbot } from "../hooks/useChatbots";
 import { ActionModal } from "./ActionModal";
+import { motion } from "framer-motion";
 
 export const ChatbotList = () => {
   const { user } = useAuth();
-  const { data: chatbots = [], isLoading } = useChatbots(user?.id || "");
+  const userId = user?.id;
+  const { data: chatbots = [], isLoading, isFetching } = useChatbots(userId);
   const deleteChatbot = useDeleteChatbot();
+
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [canCreateChatbot] = useState(true);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -16,8 +19,6 @@ export const ChatbotList = () => {
     id: string;
     name: string;
   } | null>(null);
-
-  // Check if user can create more chatbots
 
   const handleDeleteClick = (chatbotId: string, chatbotName: string) => {
     setChatbotToDelete({ id: chatbotId, name: chatbotName });
@@ -29,7 +30,6 @@ export const ChatbotList = () => {
     setDeletingId(chatbotToDelete.id);
     try {
       await deleteChatbot.mutateAsync(chatbotToDelete.id);
-      // After successful deletion, check if user can create more chatbots
     } catch (error) {
       console.error("Error deleting chatbot:", error);
       alert("Failed to delete chatbot. Please try again.");
@@ -41,11 +41,16 @@ export const ChatbotList = () => {
   };
 
   return (
-    <div className="space-y-8">
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.3 }}
+      className="space-y-8"
+    >
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-extrabold text-gray-900 dark:text-gray-100 font-display tracking-tight mb-1">
+          <h1 className="text-3xl font-display font-bold text-gray-900 dark:text-white mb-1">
             Chatbots
           </h1>
           <p className="text-gray-600 dark:text-gray-400">
@@ -54,7 +59,7 @@ export const ChatbotList = () => {
         </div>
         <Link
           to="/chatbots/new"
-          className={`inline-flex items-center px-5 py-2.5 border border-transparent text-sm font-semibold rounded-xl shadow-card text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-400 transition-colors duration-200 ${
+          className={`inline-flex items-center px-5 py-2.5 rounded-xl text-sm font-semibold shadow-md text-white bg-primary-600 hover:bg-primary-700 transition-colors duration-200 ${
             !canCreateChatbot
               ? "opacity-50 cursor-not-allowed pointer-events-none"
               : ""
@@ -75,9 +80,13 @@ export const ChatbotList = () => {
 
       {/* Plan Limit Warning */}
       {!canCreateChatbot && (
-        <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-xl p-4"
+        >
           <div className="flex items-start">
-            <Bot className="h-5 w-5 text-yellow-600 dark:text-yellow-400 mt-0.5 mr-3" />
+            <Bot className="h-5 w-5 text-yellow-600 dark:text-yellow-400 mt-1 mr-3" />
             <div>
               <h3 className="text-sm font-medium text-yellow-800 dark:text-yellow-200">
                 Chatbot Limit Reached
@@ -85,24 +94,14 @@ export const ChatbotList = () => {
               <p className="text-sm text-yellow-700 dark:text-yellow-300 mt-1">
                 You've reached the maximum number of chatbots allowed on your
                 current plan.
-                {/* {/* {!hasActiveSubscription &&
-                  " Consider upgrading to create more chatbots."} */}
               </p>
-              {/* {!hasActiveSubscription && (
-                <Link
-                  to="/pricing"
-                  className="mt-2 inline-flex items-center text-sm font-medium text-yellow-800 dark:text-yellow-200 hover:text-yellow-900 dark:hover:text-yellow-100"
-                >
-                  View upgrade options →
-                </Link>
-              )} */}
             </div>
           </div>
-        </div>
+        </motion.div>
       )}
 
       {/* Chatbots Grid */}
-      {isLoading ? (
+      {!userId || isLoading || isFetching ? (
         <div className="text-center py-16">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mx-auto mb-4"></div>
           <p className="text-sm text-gray-500 dark:text-gray-400">
@@ -110,9 +109,13 @@ export const ChatbotList = () => {
           </p>
         </div>
       ) : chatbots.length === 0 ? (
-        <div className="text-center py-16">
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="text-center py-16"
+        >
           <Bot className="h-16 w-16 text-gray-400 dark:text-gray-600 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
             No chatbots yet
           </h3>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
@@ -121,38 +124,34 @@ export const ChatbotList = () => {
           <div className="mt-6">
             <Link
               to="/chatbots/new"
-              className={`inline-flex items-center px-5 py-2.5 border border-transparent shadow-card text-sm font-semibold rounded-xl text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-400 transition-colors duration-200 ${
+              className={`inline-flex items-center px-5 py-2.5 rounded-xl text-sm font-semibold shadow-md text-white bg-primary-600 hover:bg-primary-700 transition-colors duration-200 ${
                 !canCreateChatbot
                   ? "opacity-50 cursor-not-allowed pointer-events-none"
                   : ""
               }`}
-              onClick={(e) => {
-                if (!canCreateChatbot) {
-                  e.preventDefault();
-                  alert(
-                    "You've reached your chatbot limit. Please upgrade your plan to create more chatbots."
-                  );
-                }
-              }}
             >
               <Plus className="h-4 w-4 mr-2" />
               Create Chatbot
             </Link>
           </div>
-        </div>
+        </motion.div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <motion.div
+          layout
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+        >
           {chatbots.map((chatbot) => (
-            <div
+            <motion.div
+              layout
               key={chatbot.id}
-              className="bg-white/90 dark:bg-gray-900/90 backdrop-blur-lg rounded-2xl shadow-xl border border-gray-100 dark:border-gray-800 overflow-hidden hover:shadow-lg transition-shadow duration-200"
+              className="bg-white/90 dark:bg-gray-900/90 backdrop-blur-lg rounded-2xl shadow-xl border border-gray-100 dark:border-gray-800 overflow-hidden hover:shadow-2xl transition duration-200"
             >
               <div className="p-6">
                 <div className="flex items-center justify-between mb-5">
                   <div className="flex items-center">
                     <Bot className="h-9 w-9 text-primary-600 dark:text-primary-400 drop-shadow" />
                     <div className="ml-4">
-                      <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                         {chatbot.name}
                       </h3>
                       <span
@@ -186,20 +185,20 @@ export const ChatbotList = () => {
                 <div className="flex space-x-2">
                   <Link
                     to={`/chatbots/${chatbot.id}`}
-                    className="flex-1 text-center py-2 px-4 rounded-xl text-sm font-semibold text-white bg-primary-600 hover:bg-primary-700 transition-colors duration-200"
+                    className="flex-1 text-center py-2 px-4 rounded-xl text-sm font-semibold text-white bg-primary-600 hover:bg-primary-700 transition-colors"
                   >
                     View
                   </Link>
                   <Link
                     to={`/chatbots/${chatbot.id}/settings`}
-                    className="flex items-center justify-center px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-200"
+                    className="flex items-center justify-center px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition"
                   >
                     <Settings className="h-4 w-4" />
                   </Link>
                   <button
                     onClick={() => handleDeleteClick(chatbot.id, chatbot.name)}
                     disabled={deletingId === chatbot.id}
-                    className="flex items-center justify-center px-3 py-2 border border-red-300 dark:border-red-900 text-red-600 dark:text-red-400 rounded-xl hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="flex items-center justify-center px-3 py-2 border border-red-300 dark:border-red-900 text-red-600 dark:text-red-400 rounded-xl hover:bg-red-50 dark:hover:bg-red-900/20 transition disabled:opacity-50"
                     title={`Delete ${chatbot.name}`}
                   >
                     {deletingId === chatbot.id ? (
@@ -210,11 +209,11 @@ export const ChatbotList = () => {
                   </button>
                 </div>
               </div>
-            </div>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
       )}
-      {/* Delete Confirmation Modal */}
+
       <ActionModal
         isOpen={showDeleteModal}
         onClose={() => setShowDeleteModal(false)}
@@ -236,6 +235,6 @@ export const ChatbotList = () => {
           actionIcon: <Trash2 className="h-4 w-4 mr-2" />,
         }}
       />
-    </div>
+    </motion.div>
   );
 };
