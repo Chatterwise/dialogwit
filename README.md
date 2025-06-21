@@ -1,3 +1,5 @@
+[![Netlify Status](https://api.netlify.com/api/v1/badges/558a24b5-c65e-4ee3-bcbf-e43fd0ae4291/deploy-status)](https://app.netlify.com/projects/jovial-sfogliatella-0211f2/deploys)
+
 # 🤖 AI Chatbot Integration Solution
 
 A complete chatbot integration solution that allows users to easily add AI-powered chatbots to any web application. Supports both React (headless approach) and universal script tag integration.

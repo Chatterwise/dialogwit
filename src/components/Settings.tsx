@@ -12,9 +12,16 @@ import {
 import { useAuth } from "../hooks/useAuth";
 import { EmailSettings } from "./EmailSettings";
 import { ProfileSettings } from "./ProfileSettings";
+import { useDeleteAccount } from "../hooks/useDeleteAccount";
+import { ActionModal } from "./ActionModal";
+import { useBilling } from "../hooks/useBilling";
 
 export const Settings = () => {
   const { user } = useAuth();
+  const deleteAccountMutation = useDeleteAccount();
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+  const { usage } = useBilling();
   const [activeTab, setActiveTab] = useState<
     "profile" | "notifications" | "security" | "danger" | "email"
   >("profile");
@@ -29,6 +36,8 @@ export const Settings = () => {
     twoFactorEnabled: false,
   });
 
+  const availableTokens = usage?.available_tokens ?? null;
+
   const tabs = [
     { id: "profile", name: "Profile", icon: User },
     { id: "notifications", name: "Notifications", icon: Bell },
@@ -42,15 +51,27 @@ export const Settings = () => {
     console.log("Saving settings:", settings);
   };
 
-  const handleDeleteAccount = () => {
-    if (
-      confirm(
-        "Are you sure you want to delete your account? This action cannot be undone."
-      )
-    ) {
-      // Delete account logic here
-      console.log("Deleting account...");
+  const handleDeleteConfirmed = async () => {
+    setDeleteError(null);
+    try {
+      await deleteAccountMutation.mutateAsync(user.id);
+      // Success is handled by the mutation's onSuccess (optional)
+    } catch (error) {
+      console.error("Failed to delete account:", error);
+      if (error.message.includes("active subscription")) {
+        setDeleteError(
+          "You cannot delete your account while you have an active subscription. Please cancel your subscription first."
+        );
+      } else {
+        setDeleteError("Failed to delete account: " + error.message);
+      }
+      setShowDeleteModal(false);
     }
+  };
+
+  const handleDeleteAccount = () => {
+    setDeleteError(null);
+    setShowDeleteModal(true);
   };
 
   return (
@@ -337,6 +358,33 @@ export const Settings = () => {
             )}
           </div>
         </div>
+        <ActionModal
+          isOpen={showDeleteModal}
+          onClose={() => setShowDeleteModal(false)}
+          action={{
+            title: "Delete Account",
+            description:
+              "This action cannot be undone. All associated data will be permanently deleted.",
+            affectedItems: [
+              "Your account and profile information",
+              "All chatbots and their data",
+              "Chat history and analytics",
+              "Connected Bot Knowledge content",
+              "Integration configurations",
+              ...(availableTokens !== null
+                ? [
+                    `You currently have ${availableTokens.toLocaleString()} unused tokens`,
+                  ]
+                : []),
+            ],
+            onConfirm: handleDeleteConfirmed,
+            actionLabel: "Delete Account",
+            actionColor: "red",
+            requireType: true,
+            confirmationWord: "DELETE",
+            actionIcon: <Trash2 className="h-4 w-4 mr-2" />,
+          }}
+        />
       </div>
     </div>
   );

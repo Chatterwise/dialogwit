@@ -138,32 +138,48 @@ export const Header = () => {
 
             {/* User dropdown menu */}
             {showUserMenu && (
-              <div className="absolute right-0 mt-2 w-48 rounded-xl shadow-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 z-30">
-                <div className="py-1">
-                  <div className="px-4 py-2 text-sm text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-700">
+              <div
+                className="absolute right-0 mt-2 w-60 rounded-2xl shadow-2xl bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-700 z-30 py-2 transition-all"
+                tabIndex={-1}
+                aria-label="User menu"
+              >
+                {/* Email */}
+                <div className="px-5 py-3 border-b border-gray-100 dark:border-gray-800">
+                  <span className="block font-semibold text-gray-900 dark:text-white truncate">
                     {user?.email}
-                  </div>
+                  </span>
+                </div>
+
+                {/* Menu Items */}
+                <div className="py-1">
                   <Link
                     to="/settings"
-                    className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                    className="block px-5 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-primary-50 dark:hover:bg-primary-900/30 rounded-lg transition-colors"
                     onClick={() => setShowUserMenu(false)}
                   >
                     Settings
                   </Link>
                   <Link
                     to="/billing"
-                    className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                    className="block px-5 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-primary-50 dark:hover:bg-primary-900/30 rounded-lg transition-colors"
                     onClick={() => setShowUserMenu(false)}
                   >
                     Billing
                   </Link>
                   <button
                     onClick={handleSignOut}
-                    className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                    className="flex items-center w-full text-left px-5 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-all group"
                   >
-                    <LogOut className="mr-2 h-4 w-4 inline" />
-                    Sign out
+                    <LogOut className="mr-2 h-4 w-4 text-gray-500 group-hover:text-red-600 transition-colors" />
+                    <span className="group-hover:text-red-600">Sign out</span>
                   </button>
+                </div>
+
+                {/* Version */}
+                <div className="px-5 py-2 border-t border-gray-100 dark:border-gray-800">
+                  <span className="text-xs text-gray-400 dark:text-gray-500">
+                    Version:{__APP_VERSION__}
+                  </span>
                 </div>
               </div>
             )}
