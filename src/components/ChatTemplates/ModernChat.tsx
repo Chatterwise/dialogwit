@@ -1,13 +1,13 @@
-import React from 'react'
-import { ChatTemplate } from './ChatTemplate'
+import React from "react";
+import { ChatTemplate } from "./ChatTemplate";
 
 interface ModernChatProps {
-  botId: string
-  apiUrl?: string
-  apiKey?: string
-  isOpen?: boolean
-  onToggle?: (isOpen: boolean) => void
-  theme?: 'light' | 'dark'
+  botId: string;
+  apiUrl?: string;
+  apiKey?: string;
+  isOpen?: boolean;
+  onToggle?: (isOpen: boolean) => void;
+  theme?: "light" | "dark";
 }
 
 export const ModernChat = (props: ModernChatProps) => {
@@ -20,5 +20,5 @@ export const ModernChat = (props: ModernChatProps) => {
       placeholder="Ask me anything..."
       className="animate-in slide-in-from-bottom-4 duration-300"
     />
-  )
-}
+  );
+};

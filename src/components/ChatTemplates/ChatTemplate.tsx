@@ -1,259 +1,352 @@
-import React, { useState, useEffect, useRef } from 'react'
-import { Send, Bot, User, Loader, X, Minimize2, Maximize2, Settings, MoreVertical } from 'lucide-react'
+import React, { useState, useEffect, useRef } from "react";
+import { Send, Bot, Loader, X, Minimize2, Maximize2 } from "lucide-react";
 
 interface Message {
-  id: string
-  text: string
-  sender: 'user' | 'bot'
-  timestamp: Date
-  isLoading?: boolean
+  id: string;
+  text: string;
+  sender: "user" | "bot";
+  timestamp: Date;
+  isLoading?: boolean;
 }
 
 interface ChatTemplateProps {
-  botId: string
-  apiUrl?: string
-  apiKey?: string
-  template?: 'modern' | 'minimal' | 'bubble' | 'professional' | 'gaming' | 'elegant' | 'corporate' | 'healthcare' | 'education' | 'retail'
-  theme?: 'light' | 'dark' | 'auto'
-  primaryColor?: string
-  botName?: string
-  botAvatar?: string
-  welcomeMessage?: string
-  placeholder?: string
-  position?: 'bottom-right' | 'bottom-left' | 'center' | 'fullscreen'
-  isOpen?: boolean
-  onToggle?: (isOpen: boolean) => void
-  className?: string
+  botId: string;
+  apiUrl?: string;
+  apiKey?: string;
+  template?:
+    | "modern"
+    | "minimal"
+    | "bubble"
+    | "professional"
+    | "gaming"
+    | "elegant"
+    | "corporate"
+    | "healthcare"
+    | "education"
+    | "retail";
+  theme?: "light" | "dark" | "auto";
+  primaryColor?: string;
+  botName?: string;
+  botAvatar?: string;
+  welcomeMessage?: string;
+  placeholder?: string;
+  position?: "bottom-right" | "bottom-left" | "center" | "fullscreen";
+  isOpen?: boolean;
+  onToggle?: (isOpen: boolean) => void;
+  className?: string;
 }
 
 export const ChatTemplate = ({
   botId,
-  apiUrl = '/api',
+  apiUrl = "/api",
   apiKey,
-  template = 'modern',
-  theme = 'light',
-  primaryColor = '#3B82F6',
-  botName = 'AI Assistant',
+  template = "modern",
+  theme = "light",
+  botName = "AI Assistant",
   botAvatar,
-  welcomeMessage = 'Hello! How can I help you today?',
-  placeholder = 'Type your message...',
-  position = 'bottom-right',
+  welcomeMessage = "Hello! How can I help you today?",
+  placeholder = "Type your message...",
+  position = "bottom-right",
   isOpen = false,
   onToggle,
-  className = ''
+  className = "",
 }: ChatTemplateProps) => {
-  const [messages, setMessages] = useState<Message[]>([])
-  const [inputValue, setInputValue] = useState('')
-  const [isLoading, setIsLoading] = useState(false)
-  const [isMinimized, setIsMinimized] = useState(false)
-  const messagesEndRef = useRef<HTMLDivElement>(null)
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [inputValue, setInputValue] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [isMinimized, setIsMinimized] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const baseStyles = {
-    light: 'bg-white text-gray-900',
-    dark: 'bg-gray-900 text-white'
-  }
+    light: "bg-white text-gray-900",
+    dark: "bg-gray-900 text-white",
+  };
 
   useEffect(() => {
     if (welcomeMessage && messages.length === 0) {
-      setMessages([{
-        id: '1',
-        text: welcomeMessage,
-        sender: 'bot',
-        timestamp: new Date()
-      }])
+      setMessages([
+        {
+          id: "1",
+          text: welcomeMessage,
+          sender: "bot",
+          timestamp: new Date(),
+        },
+      ]);
     }
-  }, [welcomeMessage])
+  }, [welcomeMessage]);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages])
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
 
   const sendMessage = async () => {
-    if (!inputValue.trim() || isLoading) return
+    if (!inputValue.trim() || isLoading) return;
 
     const userMessage: Message = {
       id: Date.now().toString(),
       text: inputValue,
-      sender: 'user',
-      timestamp: new Date()
-    }
+      sender: "user",
+      timestamp: new Date(),
+    };
 
-    setMessages(prev => [...prev, userMessage])
-    setInputValue('')
-    setIsLoading(true)
+    setMessages((prev) => [...prev, userMessage]);
+    setInputValue("");
+    setIsLoading(true);
 
     // Add loading message
     const loadingMessage: Message = {
       id: (Date.now() + 1).toString(),
-      text: '',
-      sender: 'bot',
+      text: "",
+      sender: "bot",
       timestamp: new Date(),
-      isLoading: true
-    }
-    setMessages(prev => [...prev, loadingMessage])
+      isLoading: true,
+    };
+    setMessages((prev) => [...prev, loadingMessage]);
 
     try {
       const response = await fetch(`${apiUrl}/chat`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          ...(apiKey && { 'Authorization': `Bearer ${apiKey}` })
+          "Content-Type": "application/json",
+          ...(apiKey && { Authorization: `Bearer ${apiKey}` }),
         },
         body: JSON.stringify({
-          botId,
-          message: inputValue
-        })
-      })
+          chatbot_id: botId,
+          message: inputValue,
+        }),
+      });
 
-      if (!response.ok) throw new Error('Failed to send message')
+      if (!response.ok) throw new Error("Failed to send message");
 
-      const data = await response.json()
+      const data = await response.json();
 
-      setMessages(prev =>
-        prev.map(msg =>
+      setMessages((prev) =>
+        prev.map((msg) =>
           msg.id === loadingMessage.id
             ? { ...msg, text: data.response, isLoading: false }
             : msg
         )
-      )
-    } catch (error) {
-      setMessages(prev =>
-        prev.map(msg =>
+      );
+    } catch {
+      setMessages((prev) =>
+        prev.map((msg) =>
           msg.id === loadingMessage.id
-            ? { ...msg, text: 'Sorry, I encountered an error. Please try again.', isLoading: false }
+            ? {
+                ...msg,
+                text: "Sorry, I encountered an error. Please try again.",
+                isLoading: false,
+              }
             : msg
         )
-      )
+      );
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault()
-      sendMessage()
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
     }
-  }
+  };
 
   const getTemplateStyles = () => {
     const templates = {
       modern: {
-        container: `rounded-2xl shadow-2xl border ${theme === 'dark' ? 'border-gray-700' : 'border-gray-200'}`,
+        container: `rounded-2xl shadow-2xl border ${
+          theme === "dark" ? "border-gray-700" : "border-gray-200"
+        }`,
         header: `bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-t-2xl`,
         message: {
           user: `bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-2xl rounded-br-md`,
-          bot: `${theme === 'dark' ? 'bg-gray-800' : 'bg-gray-100'} rounded-2xl rounded-bl-md`
-        }
+          bot: `${
+            theme === "dark" ? "bg-gray-800" : "bg-gray-100"
+          } rounded-2xl rounded-bl-md`,
+        },
       },
       minimal: {
-        container: `rounded-lg shadow-lg border ${theme === 'dark' ? 'border-gray-700' : 'border-gray-200'}`,
-        header: `${theme === 'dark' ? 'bg-gray-800' : 'bg-gray-50'} border-b ${theme === 'dark' ? 'border-gray-700' : 'border-gray-200'} rounded-t-lg`,
+        container: `rounded-lg shadow-lg border ${
+          theme === "dark" ? "border-gray-700" : "border-gray-200"
+        }`,
+        header: `${theme === "dark" ? "bg-gray-800" : "bg-gray-50"} border-b ${
+          theme === "dark" ? "border-gray-700" : "border-gray-200"
+        } rounded-t-lg`,
         message: {
           user: `bg-blue-500 text-white rounded-lg`,
-          bot: `${theme === 'dark' ? 'bg-gray-700' : 'bg-gray-100'} rounded-lg`
-        }
+          bot: `${theme === "dark" ? "bg-gray-700" : "bg-gray-100"} rounded-lg`,
+        },
       },
       bubble: {
-        container: `rounded-3xl shadow-xl border-2 ${theme === 'dark' ? 'border-gray-600' : 'border-gray-300'}`,
+        container: `rounded-3xl shadow-xl border-2 ${
+          theme === "dark" ? "border-gray-600" : "border-gray-300"
+        }`,
         header: `bg-gradient-to-r from-pink-500 to-rose-500 text-white rounded-t-3xl`,
         message: {
           user: `bg-gradient-to-r from-pink-500 to-rose-500 text-white rounded-full px-6 py-3`,
-          bot: `${theme === 'dark' ? 'bg-gray-700' : 'bg-gray-200'} rounded-full px-6 py-3`
-        }
+          bot: `${
+            theme === "dark" ? "bg-gray-700" : "bg-gray-200"
+          } rounded-full px-6 py-3`,
+        },
       },
       professional: {
-        container: `rounded-lg shadow-lg border ${theme === 'dark' ? 'border-gray-600' : 'border-gray-300'}`,
-        header: `${theme === 'dark' ? 'bg-gray-800' : 'bg-slate-800'} text-white rounded-t-lg`,
+        container: `rounded-lg shadow-lg border ${
+          theme === "dark" ? "border-gray-600" : "border-gray-300"
+        }`,
+        header: `${
+          theme === "dark" ? "bg-gray-800" : "bg-slate-800"
+        } text-white rounded-t-lg`,
         message: {
           user: `bg-slate-700 text-white rounded-lg`,
-          bot: `${theme === 'dark' ? 'bg-gray-700' : 'bg-slate-100'} rounded-lg`
-        }
+          bot: `${
+            theme === "dark" ? "bg-gray-700" : "bg-slate-100"
+          } rounded-lg`,
+        },
       },
       gaming: {
-        container: `rounded-xl shadow-2xl border-2 border-green-500 bg-gradient-to-b ${theme === 'dark' ? 'from-gray-900 to-black' : 'from-gray-100 to-white'}`,
+        container: `rounded-xl shadow-2xl border-2 border-green-500 bg-gradient-to-b ${
+          theme === "dark" ? "from-gray-900 to-black" : "from-gray-100 to-white"
+        }`,
         header: `bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-t-xl`,
         message: {
           user: `bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-lg border border-green-400`,
-          bot: `${theme === 'dark' ? 'bg-gray-800 border-gray-600' : 'bg-gray-100 border-gray-300'} rounded-lg border`
-        }
+          bot: `${
+            theme === "dark"
+              ? "bg-gray-800 border-gray-600"
+              : "bg-gray-100 border-gray-300"
+          } rounded-lg border`,
+        },
       },
       elegant: {
-        container: `rounded-2xl shadow-2xl border ${theme === 'dark' ? 'border-purple-500' : 'border-purple-200'} bg-gradient-to-b ${theme === 'dark' ? 'from-purple-900 to-gray-900' : 'from-purple-50 to-white'}`,
+        container: `rounded-2xl shadow-2xl border ${
+          theme === "dark" ? "border-purple-500" : "border-purple-200"
+        } bg-gradient-to-b ${
+          theme === "dark"
+            ? "from-purple-900 to-gray-900"
+            : "from-purple-50 to-white"
+        }`,
         header: `bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-t-2xl`,
         message: {
           user: `bg-gradient-to-r from-purple-500 to-indigo-500 text-white rounded-2xl`,
-          bot: `${theme === 'dark' ? 'bg-purple-800/30 border-purple-500' : 'bg-purple-100 border-purple-200'} rounded-2xl border`
-        }
+          bot: `${
+            theme === "dark"
+              ? "bg-purple-800/30 border-purple-500"
+              : "bg-purple-100 border-purple-200"
+          } rounded-2xl border`,
+        },
       },
       corporate: {
-        container: `rounded-lg shadow-lg border ${theme === 'dark' ? 'border-gray-600' : 'border-gray-300'} bg-white`,
+        container: `rounded-lg shadow-lg border ${
+          theme === "dark" ? "border-gray-600" : "border-gray-300"
+        } bg-white`,
         header: `bg-gradient-to-r from-gray-700 to-gray-800 text-white rounded-t-lg`,
         message: {
           user: `bg-gray-700 text-white rounded-lg`,
-          bot: `${theme === 'dark' ? 'bg-gray-700' : 'bg-gray-50 border-gray-200'} rounded-lg border`
-        }
+          bot: `${
+            theme === "dark" ? "bg-gray-700" : "bg-gray-50 border-gray-200"
+          } rounded-lg border`,
+        },
       },
       healthcare: {
-        container: `rounded-2xl shadow-xl border-2 ${theme === 'dark' ? 'border-teal-600' : 'border-teal-200'} bg-gradient-to-b ${theme === 'dark' ? 'from-teal-900 to-gray-900' : 'from-teal-50 to-white'}`,
+        container: `rounded-2xl shadow-xl border-2 ${
+          theme === "dark" ? "border-teal-600" : "border-teal-200"
+        } bg-gradient-to-b ${
+          theme === "dark"
+            ? "from-teal-900 to-gray-900"
+            : "from-teal-50 to-white"
+        }`,
         header: `bg-gradient-to-r from-teal-600 to-cyan-600 text-white rounded-t-2xl`,
         message: {
           user: `bg-gradient-to-r from-teal-500 to-cyan-500 text-white rounded-2xl`,
-          bot: `${theme === 'dark' ? 'bg-teal-800/30 border-teal-500' : 'bg-teal-50 border-teal-200'} rounded-2xl border`
-        }
+          bot: `${
+            theme === "dark"
+              ? "bg-teal-800/30 border-teal-500"
+              : "bg-teal-50 border-teal-200"
+          } rounded-2xl border`,
+        },
       },
       education: {
-        container: `rounded-2xl shadow-xl border-2 ${theme === 'dark' ? 'border-amber-600' : 'border-amber-200'} bg-gradient-to-b ${theme === 'dark' ? 'from-amber-900 to-gray-900' : 'from-amber-50 to-white'}`,
+        container: `rounded-2xl shadow-xl border-2 ${
+          theme === "dark" ? "border-amber-600" : "border-amber-200"
+        } bg-gradient-to-b ${
+          theme === "dark"
+            ? "from-amber-900 to-gray-900"
+            : "from-amber-50 to-white"
+        }`,
         header: `bg-gradient-to-r from-amber-600 to-orange-600 text-white rounded-t-2xl`,
         message: {
           user: `bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-2xl`,
-          bot: `${theme === 'dark' ? 'bg-amber-800/30 border-amber-500' : 'bg-amber-50 border-amber-200'} rounded-2xl border`
-        }
+          bot: `${
+            theme === "dark"
+              ? "bg-amber-800/30 border-amber-500"
+              : "bg-amber-50 border-amber-200"
+          } rounded-2xl border`,
+        },
       },
       retail: {
-        container: `rounded-2xl shadow-xl border-2 ${theme === 'dark' ? 'border-rose-600' : 'border-rose-200'} bg-gradient-to-b ${theme === 'dark' ? 'from-rose-900 to-gray-900' : 'from-rose-50 to-white'}`,
+        container: `rounded-2xl shadow-xl border-2 ${
+          theme === "dark" ? "border-rose-600" : "border-rose-200"
+        } bg-gradient-to-b ${
+          theme === "dark"
+            ? "from-rose-900 to-gray-900"
+            : "from-rose-50 to-white"
+        }`,
         header: `bg-gradient-to-r from-rose-600 to-pink-600 text-white rounded-t-2xl`,
         message: {
           user: `bg-gradient-to-r from-rose-500 to-pink-500 text-white rounded-2xl`,
-          bot: `${theme === 'dark' ? 'bg-rose-800/30 border-rose-500' : 'bg-rose-50 border-rose-200'} rounded-2xl border`
-        }
-      }
-    }
+          bot: `${
+            theme === "dark"
+              ? "bg-rose-800/30 border-rose-500"
+              : "bg-rose-50 border-rose-200"
+          } rounded-2xl border`,
+        },
+      },
+    };
 
-    return templates[template]
-  }
+    return templates[template];
+  };
 
-  const styles = getTemplateStyles()
+  const styles = getTemplateStyles();
 
-  if (!isOpen) return null
+  if (!isOpen) return null;
 
   const getPositionStyles = () => {
     switch (position) {
-      case 'bottom-left':
-        return 'fixed bottom-4 left-4 z-50'
-      case 'center':
-        return 'fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50'
-      case 'fullscreen':
-        return 'fixed inset-4 z-50'
+      case "bottom-left":
+        return "fixed bottom-4 left-4 z-50";
+      case "center":
+        return "fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50";
+      case "fullscreen":
+        return "fixed inset-4 z-50";
       default:
-        return 'fixed bottom-4 right-4 z-50'
+        return "fixed bottom-4 right-4 z-50";
     }
-  }
+  };
 
   const getContainerSize = () => {
-    if (position === 'fullscreen') return 'w-full h-full'
-    if (position === 'center') return 'w-96 h-[600px]'
-    return isMinimized ? 'w-80 h-16' : 'w-80 h-[500px]'
-  }
+    if (position === "fullscreen") return "w-full h-full";
+    if (position === "center") return "w-96 h-[600px]";
+    return isMinimized ? "w-80 h-16" : "w-80 h-[500px]";
+  };
 
   return (
-    <div className={`${getPositionStyles()} ${getContainerSize()} ${className}`}>
-      <div className={`${baseStyles[theme]} ${styles.container} h-full flex flex-col overflow-hidden transition-all duration-300`}>
+    <div
+      className={`${getPositionStyles()} ${getContainerSize()} ${className}`}
+    >
+      <div
+        className={`${baseStyles[theme]} ${styles.container} h-full flex flex-col overflow-hidden transition-all duration-300`}
+      >
         {/* Header */}
-        <div className={`${styles.header} px-4 py-3 flex items-center justify-between`}>
+        <div
+          className={`${styles.header} px-4 py-3 flex items-center justify-between`}
+        >
           <div className="flex items-center space-x-3">
             {botAvatar ? (
-              <img src={botAvatar} alt={botName} className="w-8 h-8 rounded-full" />
+              <img
+                src={botAvatar}
+                alt={botName}
+                className="w-8 h-8 rounded-full"
+              />
             ) : (
               <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
                 <Bot className="w-5 h-5" />
@@ -269,7 +362,11 @@ export const ChatTemplate = ({
               onClick={() => setIsMinimized(!isMinimized)}
               className="p-1 hover:bg-white/20 rounded transition-colors"
             >
-              {isMinimized ? <Maximize2 className="w-4 h-4" /> : <Minimize2 className="w-4 h-4" />}
+              {isMinimized ? (
+                <Maximize2 className="w-4 h-4" />
+              ) : (
+                <Minimize2 className="w-4 h-4" />
+              )}
             </button>
             <button
               onClick={() => onToggle?.(false)}
@@ -287,9 +384,15 @@ export const ChatTemplate = ({
               {messages.map((message) => (
                 <div
                   key={message.id}
-                  className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
+                  className={`flex ${
+                    message.sender === "user" ? "justify-end" : "justify-start"
+                  }`}
                 >
-                  <div className={`max-w-xs lg:max-w-sm px-4 py-2 ${styles.message[message.sender]}`}>
+                  <div
+                    className={`max-w-xs lg:max-w-sm px-4 py-2 ${
+                      styles.message[message.sender]
+                    }`}
+                  >
                     {message.isLoading ? (
                       <div className="flex items-center space-x-2">
                         <Loader className="w-4 h-4 animate-spin" />
@@ -297,9 +400,14 @@ export const ChatTemplate = ({
                       </div>
                     ) : (
                       <>
-                        <p className="text-sm whitespace-pre-wrap">{message.text}</p>
+                        <p className="text-sm whitespace-pre-wrap">
+                          {message.text}
+                        </p>
                         <span className="text-xs opacity-75 mt-1 block">
-                          {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          {message.timestamp.toLocaleTimeString([], {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
                         </span>
                       </>
                     )}
@@ -310,7 +418,11 @@ export const ChatTemplate = ({
             </div>
 
             {/* Input */}
-            <div className={`p-4 border-t ${theme === 'dark' ? 'border-gray-700' : 'border-gray-200'}`}>
+            <div
+              className={`p-4 border-t ${
+                theme === "dark" ? "border-gray-700" : "border-gray-200"
+              }`}
+            >
               <div className="flex space-x-2">
                 <input
                   type="text"
@@ -319,9 +431,9 @@ export const ChatTemplate = ({
                   onKeyPress={handleKeyPress}
                   placeholder={placeholder}
                   className={`flex-1 px-3 py-2 rounded-lg border ${
-                    theme === 'dark' 
-                      ? 'bg-gray-800 border-gray-600 text-white placeholder-gray-400' 
-                      : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
+                    theme === "dark"
+                      ? "bg-gray-800 border-gray-600 text-white placeholder-gray-400"
+                      : "bg-white border-gray-300 text-gray-900 placeholder-gray-500"
                   } focus:outline-none focus:ring-2 focus:ring-blue-500`}
                   disabled={isLoading}
                 />
@@ -330,7 +442,11 @@ export const ChatTemplate = ({
                   disabled={!inputValue.trim() || isLoading}
                   className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
-                  {isLoading ? <Loader className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                  {isLoading ? (
+                    <Loader className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Send className="w-4 h-4" />
+                  )}
                 </button>
               </div>
             </div>
@@ -338,5 +454,5 @@ export const ChatTemplate = ({
         )}
       </div>
     </div>
-  )
-}
+  );
+};

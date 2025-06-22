@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file. See [standa
 
 ### [0.0.2](https://github.com/MikeRubio/dialogwit/compare/v0.0.1...v0.0.2) (2025-06-22)
 
+### Fixed
+
+- token usage on the billing and dash section.
+
 ### 0.0.1 (2025-06-21)
 
 ## [1.0.0] - 2025-06-22

@@ -60,7 +60,7 @@ export const useBilling = () => {
         .from('usage_tracking')
         .select('metric_name, metric_value')
         .eq('user_id', user.id)
-        .eq('subscription_id', subId)
+        // .eq('subscription_id', subId)
         .gte('period_start', start)
         .lt('period_start', end);
 

@@ -20,6 +20,7 @@ import { supabase } from "../lib/supabase";
 import TokenUsageWidget from "./TokenUsageWidget";
 import { motion } from "framer-motion";
 import { AnalyticsChart } from "./AnalyticsChart";
+import { useBilling } from "../hooks/useBilling";
 
 // Animated card component
 const AnimatedCard = ({ children, delay = 0 }) => (
@@ -135,6 +136,8 @@ export function Dashboard() {
   const { data: chatbots = [], isLoading } = useChatbots(user?.id || "");
   const { data: analyticsData, isLoading: analyticsLoading } =
     useChatAnalytics("all");
+  const { usage } = useBilling();
+
   const [canCreateChatbot, setCanCreateChatbot] = useState(true);
   const [knowledgeBaseCount, setKnowledgeBaseCount] = useState(0);
   const [recentActivity, setRecentActivity] = useState([]);
@@ -152,6 +155,7 @@ export function Dashboard() {
     })();
   }, [user, authLoading, chatbots]);
 
+  console.log(user);
   useEffect(() => {
     if (!user || authLoading) return;
     (async () => {
@@ -193,7 +197,7 @@ export function Dashboard() {
     },
     {
       title: "Total Tokens Used",
-      value: analyticsData?.totalTokens ?? 0,
+      value: usage?.tokens_used?.toLocaleString() || 0,
       icon: MessageCircle,
       color:
         "text-purple-600 dark:text-purple-400 bg-purple-100 dark:bg-purple-900/30",
@@ -229,7 +233,7 @@ export function Dashboard() {
         <div className="flex flex-col md:flex-row md:items-center md:justify-between">
           <div>
             <h1 className="text-2xl md:text-3xl font-bold mb-2">
-              Welcome back, {user?.email?.split("@")[0] || "User"}!
+              Welcome back, {user?.user_metadata?.full_name || "User"}!
             </h1>
             <p className="text-primary-100">
               Build and deploy AI chatbots in minutes, not months.
