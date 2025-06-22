@@ -1,9 +1,12 @@
 import { generateEmbedding, generateChatCompletion, streamChatCompletion, OpenAIError } from '../utils/openai.ts';
-import { searchSimilarChunks, fallbackTextSearch, getChatbot } from '../utils/database.ts';
+import { searchSimilarChunks, fallbackTextSearch } from '../utils/database.ts';
 export async function generateRAGResponse(message, botId, supabaseClient, options = {}, userId) {
   const { enableCitations = false, maxRetrievedChunks = 5, similarityThreshold = 0.7, enableStreaming = false, model = 'gpt-3.5-turbo', temperature = 0.7, maxTokens = 500 } = options;
   // Get chatbot info
-  const chatbot = await getChatbot(supabaseClient, botId);
+  const { data: chatbot, error: botError } = await supabaseClient.from('chatbots').select('*, bot_role_templates(*)').eq('id', botId).single();
+  if (botError || !chatbot) {
+    throw new Error('Chatbot not found');
+  }
   let retrievedChunks = [];
   let context = '';
   try {
@@ -30,7 +33,12 @@ export async function generateRAGResponse(message, botId, supabaseClient, option
       context = fallbackChunks.map((chunk, index)=>`[${index + 1}] ${chunk.content}`).join('\n\n');
     }
   }
-  const systemPrompt = buildSystemPrompt(chatbot.name, context, enableCitations);
+const systemPrompt = buildSystemPrompt(
+  chatbot.name,
+  context,
+  enableCitations,
+  chatbot.bot_role_templates?.system_instructions
+);
   const messages = [
     {
       role: 'system',
@@ -119,7 +127,10 @@ export async function generateRAGResponse(message, botId, supabaseClient, option
   return ragResponse;
 }
 export async function generateStreamingRAGResponse({ message, chatbotId, userId }, supabaseClient) {
-  const chatbot = await getChatbot(supabaseClient, chatbotId);
+  const { data: chatbot, error: botError } = await supabaseClient.from('chatbots').select('*, bot_role_templates(*)').eq('id', chatbotId).single();
+  if (botError || !chatbot) {
+    throw new Error('Chatbot not found');
+  }
   const embeddingResponse = await generateEmbedding(message);
   const queryEmbedding = embeddingResponse.data[0].embedding;
   const retrievedChunks = await searchSimilarChunks(supabaseClient, queryEmbedding, chatbotId, {
@@ -127,7 +138,12 @@ export async function generateStreamingRAGResponse({ message, chatbotId, userId 
     matchCount: 5
   });
   const context = retrievedChunks.map((chunk, i)=>`[${i + 1}] ${chunk.content}`).join('\n\n');
-  const systemPrompt = buildSystemPrompt(chatbot.name, context, false);
+const systemPrompt = buildSystemPrompt(
+  chatbot.name,
+  context,
+  false,
+  chatbot.bot_role_templates?.system_instructions
+);
   const messages = [
     {
       role: 'system',
@@ -181,22 +197,34 @@ export async function generateReadableStreamChatCompletion(messages, options = {
   });
   return stream;
 }
-function buildSystemPrompt(botName, context, enableCitations) {
-  const basePrompt = `You are ${botName}, an AI assistant that ONLY answers questions based on the provided knowledge base.`;
+function buildSystemPrompt(botName, context, enableCitations, customInstructions) {
+  const basePrompt = `You are ${botName}, an AI assistant that ONLY answers questions based on the provided knowledge base.
+
+However:
+- You MAY greet users in a friendly way (e.g., say hello, welcome them, etc.).
+- You MAY express your willingness to help.
+- You MAY respond in the user's language, detected automatically from their message.
+- When answering questions, translate responses into the user's language if possible.`;
+
   if (!context) {
     return `${basePrompt}
 
 No knowledge base context was provided, so you cannot answer any questions.
 
 Instructions:
-- Do NOT answer questions.
-- Respond with: "I'm sorry, I don't have any information available to answer that question."
-- DO NOT try to be helpful beyond this.`;
+- Greet the user in their language.
+- DO NOT attempt to answer questions without knowledge base context.
+- Respond to questions with: "I'm sorry, I don't have any information available to answer that question."
+- DO NOT use external knowledge.
+${customInstructions ? `\n\nAdditional Role Instructions:\n${customInstructions}` : ''}`;
   }
+
   const contextSection = `Knowledge Base Context:
 ${context}
 
 Instructions:
+- You MAY greet the user in a friendly way (e.g., say "Hi", "Hello", etc.) and let them know you're here to help.
+- Detect the user's language and respond in that language.
 - ONLY answer questions using the provided knowledge base.
 - DO NOT use any external knowledge.
 - If the context does NOT contain relevant information to a question (including follow-ups), reply with:
@@ -206,11 +234,13 @@ Instructions:
 - DO NOT try to remember previous messages unless they are relevant **and** supported by the context.
 - Be friendly and clear, but remain strictly limited to the context.
 ${enableCitations ? '- When referencing information, mention it comes from the knowledge base.' : ''}
-`;
+${customInstructions ? `\n\nAdditional Role Instructions:\n${customInstructions}` : ''}`;
+
   return `${basePrompt}
 
 ${contextSection}`;
 }
+
 function estimatePromptTokens(messages) {
   const total = messages.map((m)=>m.content).join(' ');
   return Math.ceil(total.length / 4) + messages.length * 10;

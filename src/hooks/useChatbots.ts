@@ -1,9 +1,18 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "../lib/supabase";
-import { Database } from "../lib/supabase";
+import { Database } from "../lib/databaseTypes";
 
 type Chatbot = Database["public"]["Tables"]["chatbots"]["Row"];
 type ChatbotInsert = Database["public"]["Tables"]["chatbots"]["Insert"];
+type RoleTemplate = {
+  id: string;
+  name: string;
+  description: string;
+  system_instructions: string;
+  bot_avatar?: string;
+  placeholder?: string;
+  welcome_message?: string;
+};
 
 export const useChatbots = (userId?: string) => {
   return useQuery({
@@ -12,7 +21,7 @@ export const useChatbots = (userId?: string) => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("chatbots")
-        .select("*")
+        .select("*, bot_role_templates(name, icon_name)")
         .eq("user_id", userId)
         .order("created_at", { ascending: false });
 
@@ -105,3 +114,20 @@ export const useChatbot = (id: string) => {
     enabled: !!id,
   });
 };
+
+export const useRoleTemplates = () => {
+  return useQuery({
+    queryKey: ["role_templates"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("bot_role_templates")
+        .select("id, name, description, system_instructions, bot_avatar, placeholder, welcome_message")
+        .eq("is_default", true)
+        .order("name", { ascending: true });
+
+      if (error) throw error;
+      return data as RoleTemplate[];
+    },
+  });
+};
+

@@ -1,14 +1,14 @@
 {
   "name": "ai-chatbot-builder",
   "private": true,
-  "version": "0.0.3",
+  "version": "0.0.4",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "release": "standard-version --no-commit",
+    "release": "standard-version --skip.commit --skip.changelog",
     "postrelease": "git push --follow-tags origin main",
     "gen:types": "npx supabase gen types typescript --project-id bpzfivbuhgjpkngcjpzc > src/lib/databaseTypes.ts"
   },

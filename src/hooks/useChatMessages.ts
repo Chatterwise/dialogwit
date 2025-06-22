@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "../lib/supabase";
-import { Database } from "../lib/supabase";
+import { Database } from "../lib/databaseTypes";
 
 type ChatMessage = Database["public"]["Tables"]["chat_messages"]["Row"];
 

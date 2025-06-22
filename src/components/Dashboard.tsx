@@ -21,6 +21,7 @@ import TokenUsageWidget from "./TokenUsageWidget";
 import { motion } from "framer-motion";
 import { AnalyticsChart } from "./AnalyticsChart";
 import { useBilling } from "../hooks/useBilling";
+import { ProfessionalChat } from "./ChatTemplates/ProfessionalChat";
 
 // Animated card component
 const AnimatedCard = ({ children, delay = 0 }) => (
@@ -141,6 +142,9 @@ export function Dashboard() {
   const [canCreateChatbot, setCanCreateChatbot] = useState(true);
   const [knowledgeBaseCount, setKnowledgeBaseCount] = useState(0);
   const [recentActivity, setRecentActivity] = useState([]);
+
+  // chatbot test
+  const [isChatOpen, setIsChatOpen] = useState(false);
 
   useEffect(() => {
     if (!user || authLoading || chatbots.length === 0) return;
@@ -340,7 +344,12 @@ export function Dashboard() {
             <ArrowRight className="h-4 w-4 ml-1" />
           </Link>
         </motion.div>
-
+        <button
+          onClick={() => setIsChatOpen(true)}
+          className="fixed bottom-6 right-6 w-14 h-14 bg-primary-600 text-white rounded-full shadow-lg hover:bg-primary-700 transition-colors flex items-center justify-center z-40"
+        >
+          💬
+        </button>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <QuickActionCard
             icon={Bot}
@@ -497,6 +506,14 @@ export function Dashboard() {
             delay={1.4}
           />
         </div>
+        <ProfessionalChat
+          botId="ccc93bab-518f-45d6-8ec7-e7f408694be0"
+          apiUrl="https://bpzfivbuhgjpkngcjpzc.supabase.co/functions/v1"
+          apiKey="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJwemZpdmJ1aGdqcGtuZ2NqcHpjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAwOTI3MzIsImV4cCI6MjA2NTY2ODczMn0.fBkQQJiLLfSwW3yH3rJ1HOLj-fs27tEfBJtOBpWtdx4"
+          isOpen={isChatOpen}
+          onToggle={setIsChatOpen}
+          theme="dark"
+        />
       </motion.div>
     </div>
   );

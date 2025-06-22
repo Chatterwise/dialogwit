@@ -9,6 +9,13 @@ interface Message {
   isLoading?: boolean;
 }
 
+interface BotMetadata {
+  name: string;
+  welcome_message: string;
+  placeholder: string;
+  bot_avatar?: string;
+}
+
 interface ChatTemplateProps {
   botId: string;
   apiUrl?: string;
@@ -26,10 +33,10 @@ interface ChatTemplateProps {
     | "retail";
   theme?: "light" | "dark" | "auto";
   primaryColor?: string;
-  botName?: string;
+  // botName?: string;
   botAvatar?: string;
-  welcomeMessage?: string;
-  placeholder?: string;
+  // welcomeMessage?: string;
+  // placeholder?: string;
   position?: "bottom-right" | "bottom-left" | "center" | "fullscreen";
   isOpen?: boolean;
   onToggle?: (isOpen: boolean) => void;
@@ -42,10 +49,7 @@ export const ChatTemplate = ({
   apiKey,
   template = "modern",
   theme = "light",
-  botName = "AI Assistant",
   botAvatar,
-  welcomeMessage = "Hello! How can I help you today?",
-  placeholder = "Type your message...",
   position = "bottom-right",
   isOpen = false,
   onToggle,
@@ -56,24 +60,56 @@ export const ChatTemplate = ({
   const [isLoading, setIsLoading] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-
+  const [botMetadata, setBotMetadata] = useState<BotMetadata>({
+    name: "",
+    welcome_message: "",
+    placeholder: "",
+  });
   const baseStyles = {
     light: "bg-white text-gray-900",
     dark: "bg-gray-900 text-white",
   };
 
   useEffect(() => {
-    if (welcomeMessage && messages.length === 0) {
+    async function fetchBotMetadata() {
+      try {
+        const response = await fetch(
+          `${apiUrl}/bot-metadata?chatbot_id=${botId}`,
+          {
+            headers: {
+              "Content-Type": "application/json",
+              ...(apiKey && { Authorization: `Bearer ${apiKey}` }),
+            },
+          }
+        );
+        const data = await response.json();
+        if (data?.name) {
+          setBotMetadata({
+            name: data.name,
+            welcome_message: data.welcome_message || "Hello!",
+            placeholder: data.placeholder || "Type your question...",
+            bot_avatar: data.bot_avatar || undefined,
+          });
+        }
+      } catch (err) {
+        console.error("Failed to fetch bot metadata", err);
+      }
+    }
+    fetchBotMetadata();
+  }, [botId]);
+
+  useEffect(() => {
+    if (messages.length === 0 && botMetadata?.welcome_message !== "") {
       setMessages([
         {
           id: "1",
-          text: welcomeMessage,
+          text: botMetadata.welcome_message,
           sender: "bot",
           timestamp: new Date(),
         },
       ]);
     }
-  }, [welcomeMessage]);
+  }, [botMetadata]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -344,7 +380,7 @@ export const ChatTemplate = ({
             {botAvatar ? (
               <img
                 src={botAvatar}
-                alt={botName}
+                alt={botMetadata?.name ?? "Bot Avatar"}
                 className="w-8 h-8 rounded-full"
               />
             ) : (
@@ -353,7 +389,9 @@ export const ChatTemplate = ({
               </div>
             )}
             <div>
-              <h3 className="font-semibold text-sm">{botName}</h3>
+              <h3 className="font-semibold text-sm">
+                {botMetadata?.name ?? "ChatBot"}
+              </h3>
               <p className="text-xs opacity-90">Online</p>
             </div>
           </div>
@@ -429,7 +467,7 @@ export const ChatTemplate = ({
                   value={inputValue}
                   onChange={(e) => setInputValue(e.target.value)}
                   onKeyPress={handleKeyPress}
-                  placeholder={placeholder}
+                  placeholder={botMetadata.placeholder}
                   className={`flex-1 px-3 py-2 rounded-lg border ${
                     theme === "dark"
                       ? "bg-gray-800 border-gray-600 text-white placeholder-gray-400"

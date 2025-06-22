@@ -5,6 +5,7 @@ import { useAuth } from "../hooks/useAuth";
 import { useChatbots, useDeleteChatbot } from "../hooks/useChatbots";
 import { ActionModal } from "./ActionModal";
 import { motion } from "framer-motion";
+import * as LucideIcons from "lucide-react";
 
 export const ChatbotList = () => {
   const { user } = useAuth();
@@ -149,7 +150,14 @@ export const ChatbotList = () => {
               <div className="p-6">
                 <div className="flex items-center justify-between mb-5">
                   <div className="flex items-center">
-                    <Bot className="h-9 w-9 text-primary-600 dark:text-primary-400 drop-shadow" />
+                    {(() => {
+                      const iconName =
+                        chatbot?.bot_role_templates?.icon_name || "Bot";
+                      const Icon = LucideIcons[iconName] || Bot;
+                      return (
+                        <Icon className="h-9 w-9 text-primary-600 dark:text-primary-400 drop-shadow" />
+                      );
+                    })()}{" "}
                     <div className="ml-4">
                       <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                         {chatbot.name}
@@ -171,6 +179,13 @@ export const ChatbotList = () => {
 
                 <p className="text-sm text-gray-600 dark:text-gray-400 mb-5 line-clamp-2">
                   {chatbot.description}
+                </p>
+
+                <p className="text-xs text-gray-500 dark:text-gray-400 mb-5">
+                  Role Template:{" "}
+                  <span className="font-medium">
+                    {chatbot?.bot_role_templates?.name ?? "None assigned"}
+                  </span>
                 </p>
 
                 <div className="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400 mb-5">

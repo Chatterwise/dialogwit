@@ -8,11 +8,11 @@ serve(async (req)=>{
   }
   try {
     const body = await req.json();
-    const { message, chatbot_id, user_ip, stream = false } = body;
+    const { message, chatbot_id, user_ip, stream = false, system_prompt_template } = body;
     if (!message || !chatbot_id) {
       return createErrorResponse('Message and chatbot_id are required', 400);
     }
-    const supabaseClient = createClient(Deno.env.get("SUPABASE_URL") ?? "", Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "");
+    const supabaseClient = createClient(Deno.env.get('SUPABASE_URL') ?? '', Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '');
     const { data: chatbot, error: chatbotError } = await supabaseClient.from('chatbots').select('id, name, user_id, status').eq('id', chatbot_id).single();
     if (chatbotError || !chatbot) {
       return createErrorResponse('Chatbot not found', 404);
@@ -51,13 +51,7 @@ serve(async (req)=>{
           }
         });
       } else {
-        const result = await generateRAGResponse(
-          message,
-          chatbot_id,
-          supabaseClient,
-          {},
-          userId
-        );
+        const result = await generateRAGResponse(message, chatbot_id, supabaseClient, { system_prompt_template }, userId);
         const { data: chatMessage, error: insertError } = await supabaseClient.from('chat_messages').insert({
           chatbot_id,
           message,

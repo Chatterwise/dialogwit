@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Bot,
@@ -8,7 +8,6 @@ import {
   Zap,
   Brain,
   Database,
-  AlertTriangle,
   ChevronLeft,
   ChevronRight,
   X,
@@ -16,11 +15,10 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
-import { useCreateChatbot } from "../hooks/useChatbots";
+import { useCreateChatbot, useRoleTemplates } from "../hooks/useChatbots";
 import { useAddKnowledgeBase } from "../hooks/useKnowledgeBase";
 import { useTrainChatbot } from "../hooks/useTraining";
 import { useEmail } from "../hooks/useEmail";
-import { Link } from "react-router-dom";
 
 function EnhancedTrainingDataDropzone({
   value,
@@ -255,10 +253,9 @@ function EnhancedTrainingDataDropzone({
                     <CheckCircle className="h-4 w-4 text-green-600" />
                   )}
                   {file.status === "error" && (
-                    <AlertCircle
-                      className="h-4 w-4 text-red-600"
-                      title={file.error}
-                    />
+                    <span title={file.error}>
+                      <AlertCircle className="h-4 w-4 text-red-600" />
+                    </span>
                   )}
                   <button
                     onClick={() => removeFile(file.id)}
@@ -283,6 +280,7 @@ export const ChatbotBuilder = () => {
   const addKnowledgeBase = useAddKnowledgeBase();
   const trainChatbot = useTrainChatbot();
   const { sendNewChatbotEmail } = useEmail();
+  const { data: templates } = useRoleTemplates();
 
   const [step, setStep] = useState(1);
   const [createdChatbotId, setCreatedChatbotId] = useState<string>("");
@@ -293,39 +291,32 @@ export const ChatbotBuilder = () => {
     trainingDataType: "text" as "text" | "document",
     useOpenAI: true,
     openAIModel: "gpt-3.5-turbo",
+    role_template_id: null as string | null,
   });
-  // const [limitReached, setLimitReached] = useState(false);
-
-  // useEffect(() => {
-  //   const checkChatbotLimit = async () => {
-  //     if (!user) return;
-  //     try {
-  //       const allowed = await checkLimit("chatbots");
-  //       setLimitReached(!allowed);
-  //     } catch (error) {
-  //       console.error("Failed to check chatbot limit:", error);
-  //     }
-  //   };
-  //   checkChatbotLimit();
-  // }, [user]);
 
   const handleNext = () => setStep(Math.min(step + 1, 5));
   const handleBack = () => setStep(Math.max(step - 1, 1));
-
+  // console.log(
+  //   "Form Data:",
+  //   (templates ?? []).find((t) => t.id === formData.role_template_id)
+  // );
   const handleSubmit = async () => {
     if (!user) return;
     try {
-      // const allowed = await checkLimit("chatbots");
-      // if (!allowed) {
-      //   setLimitReached(true);
-      //   return;
-      // }
+      // Get selected template data
+      const selectedTemplate = (templates ?? []).find(
+        (t) => t.id === formData.role_template_id
+      );
 
       // Create chatbot
       const chatbot = await createChatbot.mutateAsync({
         name: formData.name,
         description: formData.description,
         user_id: user.id,
+        role_template_id: formData.role_template_id,
+        welcome_message: selectedTemplate?.welcome_message ?? "Hello!",
+        placeholder: selectedTemplate?.placeholder ?? "Ask me anything...",
+        bot_avatar: selectedTemplate?.bot_avatar ?? null,
         status: "creating",
       });
       setCreatedChatbotId(chatbot.id);
@@ -366,36 +357,6 @@ export const ChatbotBuilder = () => {
   };
 
   const handleFinish = () => navigate(`/chatbots/${createdChatbotId}`);
-
-  // if (limitReached) {
-  //   return (
-  //     <div className="max-w-3xl mx-auto">
-  //       <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-2xl p-6">
-  //         <div className="flex items-start">
-  //           <AlertTriangle className="h-6 w-6 text-red-600 dark:text-red-400 mt-1 mr-3" />
-  //           <div>
-  //             <h3 className="text-lg font-semibold text-red-900 dark:text-red-100">
-  //               Chatbot Limit Reached
-  //             </h3>
-  //             <p className="text-red-700 dark:text-red-300 mt-1">
-  //               You've reached the maximum number of chatbots allowed on your
-  //               current plan.
-  //             </p>
-  //             <div className="mt-4">
-  //               <Link
-  //                 to="/pricing"
-  //                 className="inline-flex items-center px-5 py-2.5 border border-transparent rounded-xl text-sm font-semibold text-white bg-red-600 hover:bg-red-700 shadow-card transition-colors duration-200"
-  //               >
-  //                 <Zap className="h-4 w-4 mr-2" />
-  //                 Upgrade Plan
-  //               </Link>
-  //             </div>
-  //           </div>
-  //         </div>
-  //       </div>
-  //     </div>
-  //   );
-  // }
 
   return (
     <div className="max-w-3xl mx-auto">
@@ -445,6 +406,33 @@ export const ChatbotBuilder = () => {
                   className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-primary-400 transition"
                   placeholder="e.g., Customer Support Bot"
                 />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Role Template
+                </label>
+                <select
+                  value={formData.role_template_id ?? ""}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      role_template_id: e.target.value || null,
+                    })
+                  }
+                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-primary-400 transition"
+                >
+                  <option value="">No role template</option>
+                  {templates?.map((template) => (
+                    <option key={template.id} value={template.id}>
+                      {template.name}
+                    </option>
+                  ))}
+                </select>
+                <p className="text-xs text-gray-500 mt-1">
+                  Select a predefined chatbot behavior, the can be change at
+                  anytime.
+                </p>
               </div>
 
               <div>
