@@ -1,14 +1,16 @@
 {
   "name": "ai-chatbot-builder",
   "private": true,
-  "version": "0.0.2",
+  "version": "0.0.3",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "release": "standard-version"
+    "release": "standard-version --no-commit",
+    "postrelease": "git push --follow-tags origin main",
+    "gen:types": "npx supabase gen types typescript --project-id bpzfivbuhgjpkngcjpzc > src/lib/databaseTypes.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.39.0",
