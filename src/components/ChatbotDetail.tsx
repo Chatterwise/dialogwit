@@ -240,7 +240,7 @@ export const ChatbotDetail = () => {
 
         {/* Actions */}
         <div className="flex flex-wrap gap-2">
-          <div className="flex items-center gap-2">
+          {/* <div className="flex items-center gap-2">
             <input
               type="text"
               value={publicChatUrl}
@@ -259,7 +259,7 @@ export const ChatbotDetail = () => {
               )}
               {copiedUrl ? "Copied!" : "Copy URL"}
             </button>
-          </div>
+          </div> */}
           <a
             href={publicChatUrl}
             target="_blank"
@@ -283,13 +283,13 @@ export const ChatbotDetail = () => {
             <Code className="h-4 w-4 mr-2" />
             Get Code
           </Link>
-          <button
+          {/* <button
             onClick={() => setShowDeleteModal(true)}
             className="inline-flex items-center px-4 py-2 border border-red-300 rounded-lg text-sm font-medium text-red-600 dark:text-red-400 bg-white dark:bg-gray-800 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors duration-200"
           >
             <Trash2 className="h-4 w-4 mr-2" />
             Delete
-          </button>
+          </button> */}
         </div>
       </div>
 

@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [Unreleased]
+
+### Added
+
+- Redesigned the **Chatbot Settings Page** for improved UX:
+  - Refactored layout and form sections for clarity.
+  - Added bot status toggle switch (uses `status` column).
+  - Moved **Delete Chatbot** and **Copy Chatbot URL** into settings.
+  - Included visual save confirmation and error states.
+- Introduced **Advanced Settings** section (UI only, logic pending):
+  - Response temperature and max tokens fields (disabled for now).
+
 ### 0.0.4 (2025-06-22)
 
 ### Added

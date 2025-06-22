@@ -33,6 +33,7 @@ import CancelPage from "./components/CancelPage";
 import PricingPlans from "./components/PricingPlans";
 import SuccessPage from "./components/SuccessPage";
 import LandingPage from "./components/LandingPage";
+import { ChatbotSettings } from "./components/ChatbotSettings";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -94,6 +95,10 @@ function AppContent() {
                   {/* Other protected routes */}
                   <Route path="/dashboard" element={<Dashboard />} />
                   <Route path="/chatbots" element={<ChatbotList />} />
+                  <Route
+                    path="/chatbots/:id/settings"
+                    element={<ChatbotSettings />}
+                  />
                   <Route path="/bot-knowledge" element={<KnowledgeBase />} />
                   <Route path="/usage" element={<TokenUsageDashboard />} />
                   <Route path="/analytics" element={<AdvancedAnalytics />} />
