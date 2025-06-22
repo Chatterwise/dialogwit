@@ -679,12 +679,12 @@ const LandingPage: React.FC = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <PricingCard
-              name="Free"
+              name="Chatterwise Free"
               price="0"
-              description="Perfect for getting started and testing the platform."
+              description="Get started with building AI-powered chatbots at no cost. Ideal for experimenting and testing."
               features={[
                 "1 chatbot",
-                "10,000 tokens per month",
+                "20,000 tokens per month",
                 "10 document uploads",
                 "Basic analytics",
                 "Community support",
@@ -693,14 +693,14 @@ const LandingPage: React.FC = () => {
               delay={0.1}
             />
             <PricingCard
-              name="Pro"
+              name="Chatterwise Starter"
               price="19"
-              description="For professionals and growing businesses."
+              description="Perfect for indie developers or small teams. Includes GPT-3.5 and increased document uploads."
               features={[
                 "5 chatbots",
-                "100,000 tokens per month",
+                "200,000 tokens per month",
                 "50 document uploads",
-                "Advanced analytics",
+                "Standard analytics",
                 "Email support",
                 "API access",
               ]}
@@ -708,16 +708,17 @@ const LandingPage: React.FC = () => {
               delay={0.3}
             />
             <PricingCard
-              name="Enterprise"
+              name="Chatterwise Growth"
               price="79"
-              description="For organizations with advanced needs."
+              description="For scaling teams and products. Includes GPT-4, high token limits, and webhook integrations."
               features={[
-                "Unlimited chatbots",
-                "500,000 tokens per month",
-                "Unlimited document uploads",
-                "Custom integrations",
+                "25 chatbots",
+                "1,000,000 tokens per month",
+                "250 document uploads",
+                "Advanced analytics",
                 "Priority support",
-                "SSO & advanced security",
+                "Webhook integrations",
+                "GPT-4 model access",
               ]}
               popular={false}
               delay={0.5}

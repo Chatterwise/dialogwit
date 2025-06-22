@@ -1,65 +1,109 @@
 import { generateEmbedding, generateChatCompletion, streamChatCompletion, OpenAIError } from '../utils/openai.ts';
 import { searchSimilarChunks, fallbackTextSearch } from '../utils/database.ts';
+
 export async function generateRAGResponse(message, botId, supabaseClient, options = {}, userId) {
-  const { enableCitations = false, maxRetrievedChunks = 5, similarityThreshold = 0.7, enableStreaming = false, model = 'gpt-3.5-turbo', temperature = 0.7, maxTokens = 500 } = options;
-  // Get chatbot info
-  const { data: chatbot, error: botError } = await supabaseClient.from('chatbots').select('*, bot_role_templates(*)').eq('id', botId).single();
-  if (botError || !chatbot) {
-    throw new Error('Chatbot not found');
-  }
+  const {
+    enableCitations = false,
+    maxRetrievedChunks = 3,
+    similarityThreshold = 0.7,
+    enableStreaming = false,
+    model = 'gpt-3.5-turbo',
+    temperature = 0.7,
+    maxTokens = 500,
+    chunkCharLimit = 200
+  } = options;
+
+  const { data: chatbot, error: botError } = await supabaseClient
+    .from('chatbots')
+    .select('*, bot_role_templates(*)')
+    .eq('id', botId)
+    .single();
+  if (botError || !chatbot) throw new Error('Chatbot not found');
+
+  // ⛔️ Auto-disable RAG for very short inputs
+  const wordCount = message.trim().split(/\s+/).length;
+if (wordCount <= 5) {
+  console.log(`Skipping RAG for short message: "${message}"`);
+
+  const fallbackResponse = await generateFallbackResponse(message, botId, chatbot.name, supabaseClient);
+
+  // Estimate fallback token usage
+  const estimatedPromptTokens = Math.ceil(message.length / 4) + 10;
+  const estimatedResponseTokens = Math.ceil(fallbackResponse.length / 4);
+  const estimatedTotalTokens = estimatedPromptTokens + estimatedResponseTokens;
+  const costPerToken = 0.0015 / 1000; // gpt-3.5-turbo
+  const estimatedCost = estimatedTotalTokens * costPerToken;
+
+  console.log(`Estimated tokens used (fallback): ${estimatedTotalTokens}`);
+  console.log(`Estimated cost (USD): $${estimatedCost.toFixed(6)}`);
+
+  return { response: fallbackResponse, citations_enabled: false };
+}
+
   let retrievedChunks = [];
   let context = '';
+
   try {
-    // Step 1: Create embedding for the user's query
     const embeddingResponse = await generateEmbedding(message);
     const queryEmbedding = embeddingResponse.data[0].embedding;
-    // Step 2: Search for similar chunks
+
     retrievedChunks = await searchSimilarChunks(supabaseClient, queryEmbedding, botId, {
       matchThreshold: similarityThreshold,
       matchCount: maxRetrievedChunks
     });
-    // Step 3: Build context from retrieved chunks
+
     if (retrievedChunks.length > 0) {
-      context = retrievedChunks.map((chunk, index)=>`[${index + 1}] ${chunk.content}`).join('\n\n');
+      context = retrievedChunks
+        .map((chunk, index) => `Chunk [${index + 1}]: ${chunk.content.slice(0, chunkCharLimit)}`)
+        .join('\n\n');
     }
   } catch (error) {
-    if (error instanceof OpenAIError) {
-      throw error;
-    }
+    if (error instanceof OpenAIError) throw error;
     console.error('RAG retrieval error:', error);
-    // Fallback to text search
+
     const fallbackChunks = await fallbackTextSearch(supabaseClient, message, botId);
     if (fallbackChunks.length > 0) {
-      context = fallbackChunks.map((chunk, index)=>`[${index + 1}] ${chunk.content}`).join('\n\n');
+      context = fallbackChunks
+        .map((chunk, index) => `Chunk [${index + 1}]: ${chunk.content.slice(0, chunkCharLimit)}`)
+        .join('\n\n');
     }
   }
-  const systemPrompt = buildSystemPrompt(chatbot.name, context, enableCitations, chatbot.bot_role_templates?.system_instructions);
+
+  const systemPrompt = buildSystemPrompt(
+    chatbot.name,
+    context,
+    enableCitations,
+    chatbot.bot_role_templates?.system_instructions
+  );
+
   const messages = [
-    {
-      role: 'system',
-      content: systemPrompt
-    },
-    {
-      role: 'user',
-      content: message
-    }
+    { role: 'system', content: systemPrompt },
+    { role: 'user', content: message }
   ];
-  // Streaming not supported here
+
   if (enableStreaming) {
     throw new Error('Streaming is only supported via generateStreamingRAGResponse(). Please call that instead.');
   }
-  // Step 4: Generate chat completion
+
   const chatResponse = await generateChatCompletion(messages, {
     model,
     temperature,
     max_tokens: maxTokens
   });
-  const responseText = chatResponse.choices?.[0]?.message?.content || 'I apologize, but I encountered an error processing your request.';
-  // ✅ Token tracking after generation
+
+  const responseText = chatResponse.choices?.[0]?.message?.content ||
+    'I apologize, but I encountered an error processing your request.';
+
+  const totalTokens =
+    chatResponse.usage?.total_tokens ??
+    estimatePromptTokens(messages) + Math.ceil(responseText.length / 4);
+
+  console.log(chatResponse.usage?.total_tokens
+    ? `Total tokens used OPENAI: ${totalTokens}`
+    : `Using own token estimation: ${totalTokens}`);
+
   if (userId && supabaseClient) {
-      const totalTokens = estimatePromptTokens(messages) + Math.ceil(responseText.length / 4);
-      // 🔥 Accurate token usage logging to `usage_tracking`
-    const {error} = await supabaseClient.rpc('track_token_usage', {
+    const { error } = await supabaseClient.rpc('track_token_usage', {
       p_user_id: userId,
       p_chatbot_id: botId,
       p_metric_name: 'chat_tokens_per_month',
@@ -73,26 +117,33 @@ export async function generateRAGResponse(message, botId, supabaseClient, option
         estimated_tokens: totalTokens
       }
     });
+
     if (error) {
       console.error('Error tracking token usage:', error);
     } else {
       console.log(`Tracked ${totalTokens} tokens for user ${userId} in chatbot ${botId}`);
     }
   }
+
   const ragResponse = {
     response: responseText,
     citations_enabled: enableCitations
   };
+
   if (enableCitations && retrievedChunks.length > 0) {
-    ragResponse.sources = retrievedChunks.map((chunk)=>({
-        content: chunk.content.substring(0, 200) + '...',
-        similarity: chunk.similarity,
-        chunk_index: chunk.chunk_index,
-        source_url: chunk.source_url
-      }));
+    ragResponse.sources = retrievedChunks.map((chunk) => ({
+      content: chunk.content.slice(0, 200) + '...',
+      similarity: chunk.similarity,
+      chunk_index: chunk.chunk_index,
+      source_url: chunk.source_url
+    }));
   }
+
   return ragResponse;
 }
+
+
+//generateStreamingRAGResponse
 export async function generateStreamingRAGResponse({ message, chatbotId, userId }, supabaseClient) {
   const { data: chatbot, error: botError } = await supabaseClient.from('chatbots').select('*, bot_role_templates(*)').eq('id', chatbotId).single();
   if (botError || !chatbot) {
@@ -160,46 +211,28 @@ export async function generateReadableStreamChatCompletion(messages, options = {
   return stream;
 }
 function buildSystemPrompt(botName, context, enableCitations, customInstructions) {
-  const basePrompt = `You are ${botName}, an AI assistant that ONLY answers questions based on the provided knowledge base.
-
-However:
-- You MAY greet users in a friendly way (e.g., say hello, welcome them, etc.).
-- You MAY express your willingness to help.
-- You MAY respond in the user's language, detected automatically from their message.
-- When answering questions, translate responses into the user's language if possible.`;
   if (!context) {
-    return `${basePrompt}
+    return `You are ${botName}, an AI assistant who can only answer questions using a provided knowledge base.
 
-No knowledge base context was provided, so you cannot answer any questions.
+No context was found, so you must not answer any question.
 
-Instructions:
-- Greet the user in their language.
-- DO NOT attempt to answer questions without knowledge base context.
-- Respond to questions with: "I'm sorry, I don't have any information available to answer that question."
-- DO NOT use external knowledge.
-${customInstructions ? `\n\nAdditional Role Instructions:\n${customInstructions}` : ''}`;
+Reply with: "I'm sorry, I don't have any information available to answer that question."`;
   }
-  const contextSection = `Knowledge Base Context:
+
+  return `You are ${botName}, an AI assistant answering questions strictly using the knowledge base below.
+
+Knowledge Base:
 ${context}
 
 Instructions:
-- You MAY greet the user in a friendly way (e.g., say "Hi", "Hello", etc.) and let them know you're here to help.
-- Detect the user's language and respond in that language.
-- ONLY answer questions using the provided knowledge base.
-- DO NOT use any external knowledge.
-- If the context does NOT contain relevant information to a question (including follow-ups), reply with:
-  "I'm sorry, I can only answer questions based on the knowledge provided to me."
-- DO NOT infer or assume anything not clearly stated in the context.
-- Treat each user message independently unless it's clearly related to the prior one **AND** the context supports it.
-- DO NOT try to remember previous messages unless they are relevant **and** supported by the context.
-- Be friendly and clear, but remain strictly limited to the context.
-${enableCitations ? '- When referencing information, mention it comes from the knowledge base.' : ''}
-${customInstructions ? `\n\nAdditional Role Instructions:\n${customInstructions}` : ''}`;
-  return `${basePrompt}
-
-${contextSection}`;
+- Be brief and clear.
+- Only use the provided knowledge base. Do not use external information.
+- If the context doesn't include a relevant answer, say: "Thanks for your question! I don’t have the information to answer that right now based on my sources. Please try asking something else or rephrase your question."
+${enableCitations ? '- Mention that your answers come from the knowledge base.' : ''}
+${customInstructions ? `- Additional Role Instructions:\n${customInstructions}` : ''}`;
 }
 function estimatePromptTokens(messages) {
   const total = messages.map((m)=>m.content).join(' ');
   return Math.ceil(total.length / 4) + messages.length * 10;
 }
+

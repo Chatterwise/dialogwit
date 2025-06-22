@@ -10,7 +10,7 @@ export const stripeConfig = {
       price: 0,
       interval: "month" as const,
       features: [
-        "10,000 tokens per month",
+        "20,000 tokens per month",
         "10 document uploads",
         "1 chatbot",
         "GPT-3.5 model",
@@ -18,7 +18,7 @@ export const stripeConfig = {
         "Community access",
       ],
       limits: {
-        tokens_per_month: 10000,
+        tokens_per_month: 20000,
         max_documents: 10,
         max_chatbots: 1,
         api_requests_per_minute: 10,
@@ -31,12 +31,12 @@ export const stripeConfig = {
       productId: "prod_SWhCbpoJi4LtBz",
       name: "Chatterwise Starter",
       description:
-        "Perfect for indie developers or small teams. Includes more monthly tokens, access to GPT-3.5, and increased document uploads.",
+        "Perfect for indie developers or small teams. Includes GPT-3.5 and increased document uploads.",
       mode: "subscription" as const,
       price: 19,
       interval: "month" as const,
       features: [
-        "100,000 tokens per month",
+        "200,000 tokens per month",
         "50 document uploads",
         "5 chatbots",
         "GPT-3.5 model",
@@ -45,7 +45,7 @@ export const stripeConfig = {
         "API access",
       ],
       limits: {
-        tokens_per_month: 100000,
+        tokens_per_month: 200000,
         max_documents: 50,
         max_chatbots: 5,
         api_requests_per_minute: 50,
@@ -58,12 +58,12 @@ export const stripeConfig = {
       productId: "prod_SWhEWyc9pjQIZe",
       name: "Chatterwise Growth",
       description:
-        "For scaling teams and products. Includes access to GPT-4, high token limits, and robust document processing capacity.",
+        "For scaling teams and products. Includes access to GPT-4, high token limits, and robust document processing.",
       mode: "subscription" as const,
       price: 79,
       interval: "month" as const,
       features: [
-        "500,000 tokens per month",
+        "1,000,000 tokens per month",
         "250 document uploads",
         "25 chatbots",
         "GPT-4 model access",
@@ -73,7 +73,7 @@ export const stripeConfig = {
         "Custom branding",
       ],
       limits: {
-        tokens_per_month: 500000,
+        tokens_per_month: 1000000,
         max_documents: 250,
         max_chatbots: 25,
         api_requests_per_minute: 200,
@@ -91,18 +91,17 @@ export const stripeConfig = {
       price: 249,
       interval: "month" as const,
       features: [
-        "2,000,000 tokens per month",
+        "5,000,000 tokens per month",
         "1,000 document uploads",
         "100 chatbots",
         "GPT-4 model access",
         "Dedicated support",
         "Custom integrations",
-        "White-label options",
         "SLA guarantee",
         "Advanced security",
       ],
       limits: {
-        tokens_per_month: 2000000,
+        tokens_per_month: 5000000,
         max_documents: 1000,
         max_chatbots: 100,
         api_requests_per_minute: 1000,
