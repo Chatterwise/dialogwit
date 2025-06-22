@@ -31,19 +31,21 @@ export const useBilling = () => {
         metadata: data?.metadata || {}
       };
     },
-    staleTime: 300000,
+    staleTime: 5 * 60 * 1000,
   });
 
   const usageQuery = useQuery({
     queryKey: ['usage', subscriptionQuery.data?.id],
     queryFn: async () => {
       const { data: { user } } = await supabase.auth.getUser();
-      const subId = subscriptionQuery.data?.id || null;
-      const planTokens = subscriptionQuery.data?.limits?.tokens_per_month || 10000;
+      const subId = subscriptionQuery.data?.id;
+      const planTokens = subscriptionQuery.data?.limits?.tokens_per_month ?? 10000;
 
       if (!user) {
         return {
           tokens_used: 0,
+          chat_tokens_used: 0,
+          training_tokens_used: 0,
           rolled_over: 0,
           available_tokens: 10000,
           chatbots_created: 0,
@@ -53,32 +55,40 @@ export const useBilling = () => {
         };
       }
 
-      const start = '2025-06-01T00:00:00Z';
-      const end = '2025-07-01T00:00:00Z';
+      const now = new Date();
+      const start = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+      const end = new Date(now.getFullYear(), now.getMonth() + 1, 1).toISOString();
 
       const { data: usageData } = await supabase
         .from('usage_tracking')
-        .select('metric_name, metric_value')
+        .select('metric_name, metric_value, usage_source')
         .eq('user_id', user.id)
-        // .eq('subscription_id', subId)
         .gte('period_start', start)
         .lt('period_start', end);
 
+      let chatTokensUsed = 0;
+      let trainingTokensUsed = 0;
       const usageMap = new Map();
+
       usageData?.forEach((u) => {
-        usageMap.set(u.metric_name, u.metric_value);
-        if (DEBUG_BILLING) {
-          console.log('🔑 usage metric:', u.metric_name, 'value:', u.metric_value);
+        if (u.metric_name === 'chat_tokens_per_month' && u.usage_source === 'chat') {
+          chatTokensUsed += u.metric_value;
         }
+
+        if (u.metric_name === 'training_tokens_per_month' && u.usage_source === 'training') {
+          trainingTokensUsed += u.metric_value;
+        }
+
+        const key = `${u.metric_name}:${u.usage_source}`;
+        usageMap.set(key, (usageMap.get(key) || 0) + u.metric_value);
       });
 
-      const tokensUsed = usageMap.get('chat_tokens_per_month') || 0;
+      const tokensUsed = chatTokensUsed + trainingTokensUsed;
 
       const { data: rolledOverData } = await supabase
         .from('token_rollovers')
         .select('tokens_rolled_over')
-        .eq('user_id', user.id)
-        // .eq('subscription_id', subId);
+        .eq('user_id', user.id);
 
       const rolledOver = rolledOverData?.reduce((sum, row) => sum + (row.tokens_rolled_over || 0), 0) || 0;
       const availableTokens = planTokens + rolledOver - tokensUsed;
@@ -92,22 +102,24 @@ export const useBilling = () => {
         console.log('📊 Tokens used:', tokensUsed);
         console.log('📦 Rolled-over Tokens:', rolledOver);
         console.log('💰 Available Tokens:', availableTokens);
-        console.log('🤖 Chatbots created:', chatbotsCount);
-        console.log('Rollover data:', rolledOverData);
+        console.log('💬 Chat Tokens Used:', chatTokensUsed)
+        console.log('📚 Training Tokens Used:', trainingTokensUsed);
+        // console.log('Rollover data:', rolledOverData);
       }
-
       return {
         tokens_used: tokensUsed,
+        chat_tokens_used: chatTokensUsed,
+        training_tokens_used: trainingTokensUsed,
         rolled_over: rolledOver,
         available_tokens: availableTokens,
         chatbots_created: chatbotsCount || 0,
         documents_uploaded: 0,
-        api_requests: usageMap.get('api_requests_per_minute') || 0,
-        emails_sent: usageMap.get('emails_per_month') || 0
+        api_requests: usageMap.get('api_requests_per_minute:chat') || 0,
+        emails_sent: usageMap.get('emails_per_month:chat') || 0
       };
     },
     enabled: !!subscriptionQuery.data?.id,
-    staleTime: 120000,
+    staleTime: 2 * 60 * 1000,
   });
 
   const invoicesQuery = useQuery({
@@ -123,7 +135,7 @@ export const useBilling = () => {
       if (error) throw error;
       return data;
     },
-    staleTime: 300000,
+    staleTime: 5 * 60 * 1000,
   });
 
   useEffect(() => {

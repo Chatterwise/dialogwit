@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file. See [standa
 
 ## [Unreleased]
 
+### 0.0.4 (2025-06-22)
+
 ### Added
 
 - Redesigned the **Chatbot Settings Page** for improved UX:
@@ -17,6 +19,7 @@ All notable changes to this project will be documented in this file. See [standa
 ### Fixed
 
 - fixing broken UI for analytics on the dashboard
+- fix basic token calculation to enable proper analitycs and a divition between chat and trainning
 
 ### 0.0.4 (2025-06-22)
 

@@ -36,6 +36,9 @@ export async function processKnowledgeBaseWithRAG(knowledgeBase, chatbotId, mode
         try {
           // Create embeddings for the batch
           const embeddingResponse = await generateEmbedding(batch);
+          if (!embeddingResponse.usage?.total_tokens) {
+            console.warn('⚠️ No token usage reported in embedding response');
+          }
           totalTokensUsed += embeddingResponse.usage?.total_tokens || 0;
           // Prepare chunk data for batch insert
           for(let j = 0; j < batch.length; j++){
@@ -84,31 +87,27 @@ export async function processKnowledgeBaseWithRAG(knowledgeBase, chatbotId, mode
     console.log(`Created ${totalChunks} chunks with ${embeddingsCreated} embeddings`);
     console.log(`Used ${totalTokensUsed} tokens`);
     // Insert token usage into usage_tracking
-    const now = new Date();
-    const periodStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
+
     if (userId && totalTokensUsed > 0) {
       const { data: userSub } = await supabaseClient.from('user_subscriptions').select('id').eq('user_id', userId).eq('status', 'active').maybeSingle();
       const subscriptionId = userSub?.id ?? null;
       console.log("👀 Subscription ID for usage_tracking:", subscriptionId);
-      // await supabaseClient.rpc('track_token_usage', {
-      //   p_user_id: userId,
-      //   p_metric_name: 'chat_tokens_per_month',
-      //   p_token_count: totalTokensUsed,
-      //   p_metadata: {
-      //     model,
-      //     processing_type: 'training',
-      //     subscription_id: subscriptionId
-      //   }
-      // });
-      await supabaseClient.rpc('track_token_usage', {
+      const { error } = await supabaseClient.rpc('track_token_usage', {
         p_user_id: userId,
-        p_metric_name: 'chat_tokens_per_month',
-        p_increment: totalTokensUsed,
+        p_metric_name: 'training_tokens_per_month',
+        p_token_count: totalTokensUsed,
         p_metadata: {
           model,
           processing_type: 'training'
-        }
+        },
+        p_usage_source: 'training',
+        p_chatbot_id: chatbotId
       });
+      if (error) {
+        console.error('❌ Failed to track training token usage', error);
+      } else {
+        console.log('✅ Training usage tracked');
+      }
     } else {
       console.warn("⚠️ Skipped usage tracking insert (missing user or tokens = 0)", {
         userId,

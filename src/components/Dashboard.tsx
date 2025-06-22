@@ -138,8 +138,6 @@ export function Dashboard() {
   const { data: analyticsData, isLoading: analyticsLoading } =
     useChatAnalytics("all");
   const { usage } = useBilling();
-
-  const [canCreateChatbot, setCanCreateChatbot] = useState(true);
   const [knowledgeBaseCount, setKnowledgeBaseCount] = useState(0);
   const [recentActivity, setRecentActivity] = useState([]);
 
@@ -159,7 +157,6 @@ export function Dashboard() {
     })();
   }, [user, authLoading, chatbots]);
 
-  console.log(user);
   useEffect(() => {
     if (!user || authLoading) return;
     (async () => {
@@ -275,9 +272,9 @@ export function Dashboard() {
       </div>
 
       {/* Token Usage Widget */}
-      <AnimatedCard delay={0.2}>
+      {/* <AnimatedCard delay={0.2}>
         <TokenUsageWidget showDetails={true} />
-      </AnimatedCard>
+      </AnimatedCard> */}
 
       {/* Charts and Recent Activity */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -507,7 +504,7 @@ export function Dashboard() {
           />
         </div>
         <ProfessionalChat
-          botId="0ab13765-da3a-4467-b12c-60b1c728c164"
+          botId="e2a90e41-dad1-4164-80ac-c1b1dd3d840b"
           apiUrl="https://bpzfivbuhgjpkngcjpzc.supabase.co/functions/v1"
           apiKey="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJwemZpdmJ1aGdqcGtuZ2NqcHpjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAwOTI3MzIsImV4cCI6MjA2NTY2ODczMn0.fBkQQJiLLfSwW3yH3rJ1HOLj-fs27tEfBJtOBpWtdx4"
           isOpen={isChatOpen}

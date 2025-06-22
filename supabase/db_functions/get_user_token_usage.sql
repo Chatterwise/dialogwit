@@ -1,11 +1,9 @@
-
 DECLARE
   result jsonb := '{}';
   current_period_start timestamptz;
   current_period_end timestamptz;
   subscription_data record;
   usage_data record;
-  limits_data record;
   trends_data jsonb;
   cost_data jsonb;
 BEGIN
@@ -16,11 +14,11 @@ BEGIN
   -- Get user subscription and plan details
   SELECT 
     us.plan_id,
-    sp.name as plan_name,
+    sp.name AS plan_name,
     sp.price_monthly,
     us.current_period_start,
     us.current_period_end,
-    us.status as subscription_status
+    us.status AS subscription_status
   INTO subscription_data
   FROM user_subscriptions us
   LEFT JOIN subscription_plans sp ON us.plan_id = sp.id
@@ -36,8 +34,8 @@ BEGIN
   WITH current_usage AS (
     SELECT 
       metric_name,
-      COALESCE(SUM(metric_value), 0) as total_usage,
-      COUNT(*) as usage_events
+      COALESCE(SUM(metric_value), 0) AS total_usage,
+      COUNT(*) AS usage_events
     FROM usage_tracking 
     WHERE user_id = p_user_id 
       AND period_start >= current_period_start 
@@ -76,7 +74,7 @@ BEGIN
         'overage_price_per_token', COALESCE(ul.overage_price, 0),
         'usage_events', cu.usage_events
       )
-    ) as usage_breakdown
+    ) AS usage_breakdown
   INTO usage_data
   FROM current_usage cu
   LEFT JOIN usage_limits ul ON cu.metric_name = ul.metric_name;
@@ -84,9 +82,9 @@ BEGIN
   -- Get daily usage trends for the current period
   WITH daily_trends AS (
     SELECT 
-      date_trunc('day', period_start) as usage_date,
+      date_trunc('day', period_start) AS usage_date,
       metric_name,
-      SUM(metric_value) as daily_total
+      SUM(metric_value) AS daily_total
     FROM usage_tracking 
     WHERE user_id = p_user_id 
       AND period_start >= current_period_start - interval '30 days'
@@ -102,17 +100,16 @@ BEGIN
   ) INTO trends_data
   FROM daily_trends;
 
-  -- Calculate cost breakdown and projections
+  -- Calculate cost breakdown and projections (split aggregation to avoid nesting)
   WITH cost_breakdown AS (
     SELECT 
       metric_name,
-      SUM(metric_value) as total_tokens,
-      -- Estimate costs based on OpenAI pricing
+      SUM(metric_value) AS total_tokens,
       CASE 
-        WHEN metric_name = 'chat_completion_tokens_per_month' THEN SUM(metric_value) * 0.000002 -- $0.002 per 1K tokens
-        WHEN metric_name = 'embedding_tokens_per_month' THEN SUM(metric_value) * 0.0000001 -- $0.0001 per 1K tokens
+        WHEN metric_name = 'chat_completion_tokens_per_month' THEN SUM(metric_value) * 0.000002
+        WHEN metric_name = 'embedding_tokens_per_month' THEN SUM(metric_value) * 0.0000001
         ELSE 0
-      END as estimated_cost
+      END AS estimated_cost
     FROM usage_tracking 
     WHERE user_id = p_user_id 
       AND period_start >= current_period_start 
@@ -120,16 +117,23 @@ BEGIN
       AND metric_name LIKE '%_tokens%'
     GROUP BY metric_name
   ),
-  projection_data AS (
+  totals AS (
     SELECT 
-      SUM(estimated_cost) as current_month_cost,
-      -- Project based on current usage rate
-      CASE 
-        WHEN EXTRACT(day FROM now() - current_period_start) > 0 
-        THEN SUM(estimated_cost) * (EXTRACT(day FROM current_period_end - current_period_start) / EXTRACT(day FROM now() - current_period_start))
-        ELSE SUM(estimated_cost)
-      END as projected_month_cost
+      SUM(estimated_cost) AS current_month_cost
     FROM cost_breakdown
+  ),
+  projection_data AS (
+    SELECT
+      current_month_cost,
+      CASE
+        WHEN EXTRACT(day FROM now() - current_period_start) > 0 THEN
+          current_month_cost * (
+            EXTRACT(day FROM current_period_end - current_period_start)
+            / EXTRACT(day FROM now() - current_period_start)
+          )
+        ELSE current_month_cost
+      END AS projected_month_cost
+    FROM totals
   )
   SELECT jsonb_build_object(
     'breakdown', jsonb_object_agg(cb.metric_name, 
@@ -144,7 +148,7 @@ BEGIN
   ) INTO cost_data
   FROM cost_breakdown cb, projection_data pd;
 
-  -- Build final result
+  -- Final result build
   result := jsonb_build_object(
     'user_id', p_user_id,
     'billing_period', jsonb_build_object(

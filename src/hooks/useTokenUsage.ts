@@ -74,7 +74,6 @@ export function useTokenUsage() {
         "get_user_token_usage",
         { p_user_id: user.id }
       );
-
       if (usageError) throw usageError;
 
       // Get trends data

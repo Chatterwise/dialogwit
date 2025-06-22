@@ -33,12 +33,7 @@ export async function generateRAGResponse(message, botId, supabaseClient, option
       context = fallbackChunks.map((chunk, index)=>`[${index + 1}] ${chunk.content}`).join('\n\n');
     }
   }
-const systemPrompt = buildSystemPrompt(
-  chatbot.name,
-  context,
-  enableCitations,
-  chatbot.bot_role_templates?.system_instructions
-);
+  const systemPrompt = buildSystemPrompt(chatbot.name, context, enableCitations, chatbot.bot_role_templates?.system_instructions);
   const messages = [
     {
       role: 'system',
@@ -49,24 +44,6 @@ const systemPrompt = buildSystemPrompt(
       content: message
     }
   ];
-  // ✅ Optional: Check token limit before proceeding
-  // if (userId && supabaseClient) {
-  //   try {
-  //     const estimatedTokens = estimatePromptTokens(messages);
-  //     const { data: limitCheck, error } = await supabaseClient.rpc('check_token_limit', {
-  //       p_user_id: userId,
-  //       p_metric_name: 'chat_tokens_per_month',
-  //       p_estimated_tokens: estimatedTokens
-  //     });
-  //     if (error) throw new Error('Token limit check failed');
-  //     if (!limitCheck.allowed) {
-  //       throw new Error(`Token limit exceeded. Usage: ${limitCheck.current_usage}/${limitCheck.limit}`);
-  //     }
-  //   } catch (err) {
-  //     console.error('Token limit error:', err);
-  //     throw err;
-  //   }
-  // }
   // Streaming not supported here
   if (enableStreaming) {
     throw new Error('Streaming is only supported via generateStreamingRAGResponse(). Please call that instead.');
@@ -80,36 +57,26 @@ const systemPrompt = buildSystemPrompt(
   const responseText = chatResponse.choices?.[0]?.message?.content || 'I apologize, but I encountered an error processing your request.';
   // ✅ Token tracking after generation
   if (userId && supabaseClient) {
-    try {
       const totalTokens = estimatePromptTokens(messages) + Math.ceil(responseText.length / 4);
-      // await supabaseClient.rpc('track_token_usage', {
-      //   p_user_id: userId,
-      //   p_metric_name: 'chat_tokens_per_month',
-      //   p_token_count: totalTokens,
-      //   p_metadata: {
-      //     chatbot_id: botId,
-      //     message_length: message.length,
-      //     response_length: responseText.length,
-      //     context_chunks: retrievedChunks.length,
-      //     model,
-      //     estimated_tokens: totalTokens
-      //   }
-      // });
-      await supabaseClient.rpc('track_token_usage', {
-        p_user_id: userId,
-        p_metric_name: 'chat_tokens_per_month',
-        p_increment: totalTokens,
-        p_metadata: {
-          chatbot_id: botId,
-          message_length: message.length,
-          response_length: responseText.length,
-          context_chunks: retrievedChunks.length,
-          model,
-          estimated_tokens: totalTokens
-        }
-      });
-    } catch (err) {
-      console.error('Token usage tracking failed:', err);
+      // 🔥 Accurate token usage logging to `usage_tracking`
+    const {error} = await supabaseClient.rpc('track_token_usage', {
+      p_user_id: userId,
+      p_chatbot_id: botId,
+      p_metric_name: 'chat_tokens_per_month',
+      p_token_count: totalTokens,
+      p_usage_source: 'chat',
+      p_metadata: {
+        message_length: message.length,
+        response_length: responseText.length,
+        context_chunks: retrievedChunks.length,
+        model,
+        estimated_tokens: totalTokens
+      }
+    });
+    if (error) {
+      console.error('Error tracking token usage:', error);
+    } else {
+      console.log(`Tracked ${totalTokens} tokens for user ${userId} in chatbot ${botId}`);
     }
   }
   const ragResponse = {
@@ -138,12 +105,7 @@ export async function generateStreamingRAGResponse({ message, chatbotId, userId 
     matchCount: 5
   });
   const context = retrievedChunks.map((chunk, i)=>`[${i + 1}] ${chunk.content}`).join('\n\n');
-const systemPrompt = buildSystemPrompt(
-  chatbot.name,
-  context,
-  false,
-  chatbot.bot_role_templates?.system_instructions
-);
+  const systemPrompt = buildSystemPrompt(chatbot.name, context, false, chatbot.bot_role_templates?.system_instructions);
   const messages = [
     {
       role: 'system',
@@ -205,7 +167,6 @@ However:
 - You MAY express your willingness to help.
 - You MAY respond in the user's language, detected automatically from their message.
 - When answering questions, translate responses into the user's language if possible.`;
-
   if (!context) {
     return `${basePrompt}
 
@@ -218,7 +179,6 @@ Instructions:
 - DO NOT use external knowledge.
 ${customInstructions ? `\n\nAdditional Role Instructions:\n${customInstructions}` : ''}`;
   }
-
   const contextSection = `Knowledge Base Context:
 ${context}
 
@@ -235,12 +195,10 @@ Instructions:
 - Be friendly and clear, but remain strictly limited to the context.
 ${enableCitations ? '- When referencing information, mention it comes from the knowledge base.' : ''}
 ${customInstructions ? `\n\nAdditional Role Instructions:\n${customInstructions}` : ''}`;
-
   return `${basePrompt}
 
 ${contextSection}`;
 }
-
 function estimatePromptTokens(messages) {
   const total = messages.map((m)=>m.content).join(' ');
   return Math.ceil(total.length / 4) + messages.length * 10;
