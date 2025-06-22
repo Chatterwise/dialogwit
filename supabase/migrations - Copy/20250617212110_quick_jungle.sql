@@ -1,39 +1,25 @@
 /*
   # Email Confirmation and Welcome Email Tracking
 
-  1. New Tables
-    - Adds columns to `users` table for tracking email confirmation and welcome email status
-    
-  2. Security
-    - Functions use SECURITY DEFINER for proper access control
-    - Proper grants for authenticated and service_role users
-    
-  3. Features
-    - Track welcome email sent status to prevent duplicates
-    - Track email confirmation independently of auth schema
-    - Safe handling of auth schema variations
+  1. New Columns
+    - `welcome_email_sent` (boolean) - tracks if welcome email was sent
+    - `email_confirmed_at` (timestamptz) - tracks when email was confirmed
+
+  2. Functions
+    - `check_and_mark_welcome_email()` - prevents duplicate welcome emails
+    - `mark_email_confirmed()` - marks email as confirmed
+    - `is_email_confirmed()` - checks confirmation status
+    - `sync_email_confirmation()` - syncs confirmation from auth events
+
+  3. Security
+    - All functions use SECURITY DEFINER
+    - Proper permissions granted to authenticated and service_role
+    - Safe column existence checks throughout
 */
 
 -- Add columns to users table for email tracking
-DO $$
-BEGIN
-  IF NOT EXISTS (
-    SELECT 1 FROM information_schema.columns
-    WHERE table_name = 'users' AND column_name = 'welcome_email_sent'
-  ) THEN
-    ALTER TABLE users ADD COLUMN welcome_email_sent boolean DEFAULT false;
-  END IF;
-END $$;
-
-DO $$
-BEGIN
-  IF NOT EXISTS (
-    SELECT 1 FROM information_schema.columns
-    WHERE table_name = 'users' AND column_name = 'email_confirmed_at'
-  ) THEN
-    ALTER TABLE users ADD COLUMN email_confirmed_at timestamptz DEFAULT null;
-  END IF;
-END $$;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS welcome_email_sent boolean DEFAULT false;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS email_confirmed_at timestamptz DEFAULT null;
 
 -- Function to check and mark welcome email as sent
 CREATE OR REPLACE FUNCTION check_and_mark_welcome_email(p_user_id uuid)
@@ -123,7 +109,6 @@ LANGUAGE plpgsql
 SECURITY DEFINER
 AS $$
 BEGIN
-  -- Mark email as confirmed in our tracking
   UPDATE users
   SET email_confirmed_at = COALESCE(email_confirmed_at, now())
   WHERE id = p_user_id
@@ -138,13 +123,13 @@ GRANT EXECUTE ON FUNCTION is_email_confirmed(uuid) TO authenticated, service_rol
 GRANT EXECUTE ON FUNCTION sync_email_confirmation(uuid) TO authenticated, service_role;
 
 -- Add indexes for performance
--- CREATE INDEX IF NOT EXISTS idx_users_welcome_email_sent ON users(welcome_email_sent);
--- CREATE INDEX IF NOT EXISTS idx_users_email_confirmed_at ON users(email_confirmed_at);
+CREATE INDEX IF NOT EXISTS idx_users_welcome_email_sent ON users(welcome_email_sent);
+CREATE INDEX IF NOT EXISTS idx_users_email_confirmed_at ON users(email_confirmed_at);
 
 -- Update existing users to mark emails as confirmed if they're older accounts
 -- This prevents issues with existing users who should already have access
--- UPDATE users 
--- SET email_confirmed_at = created_at,
---     welcome_email_sent = true
--- WHERE email_confirmed_at IS NULL 
---   AND created_at < now() - interval '1 hour'; -- Only for users created more than 1 hour ago
+UPDATE users 
+SET email_confirmed_at = created_at,
+    welcome_email_sent = true
+WHERE email_confirmed_at IS NULL 
+  AND created_at < now() - interval '1 hour'; -- Only for users created more than 1 hour ago

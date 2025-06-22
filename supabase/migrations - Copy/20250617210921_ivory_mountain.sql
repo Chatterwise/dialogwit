@@ -1,18 +1,28 @@
 /*
-  # Create usage limit checking functions
+  # Create Usage Tracking Functions
 
   1. New Functions
-    - `check_usage_limit` - Checks if user has exceeded usage limits for a specific metric
-    - `increment_usage` - Increments usage counter for a user and metric
-    - `get_current_usage` - Gets current usage for a user and metric
+    - `check_usage_limit` - Check if user has exceeded usage limits
+    - `increment_usage` - Increment usage tracking for a metric
+    - `get_current_usage` - Get current usage for a metric
 
   2. Security
-    - Functions are accessible to authenticated users and service role
-    - RLS policies ensure users can only check their own usage
+    - Functions use SECURITY DEFINER for proper access control
+    - Grant execute permissions to authenticated and service_role
+
+  3. Features
+    - Monthly usage tracking periods
+    - Default limits for users without specific plans
+    - Proper error handling and fallbacks
 */
 
--- Function to check usage limits
+-- Drop existing functions if they exist to avoid conflicts
+DROP FUNCTION IF EXISTS check_usage_limit(uuid, text);
+DROP FUNCTION IF EXISTS increment_usage(uuid, text, integer);
+DROP FUNCTION IF EXISTS increment_usage(uuid, text);
+DROP FUNCTION IF EXISTS get_current_usage(uuid, text);
 
+-- Function to check usage limits
 CREATE OR REPLACE FUNCTION check_usage_limit(
   p_user_id uuid,
   p_metric_name text
@@ -84,7 +94,6 @@ END;
 $$;
 
 -- Function to increment usage
-
 CREATE OR REPLACE FUNCTION increment_usage(
   p_user_id uuid,
   p_metric_name text,

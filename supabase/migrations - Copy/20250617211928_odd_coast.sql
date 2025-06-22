@@ -1,3 +1,19 @@
+/*
+  # Email Confirmation and Welcome Email Tracking
+
+  1. New Tables
+    - Adds columns to `users` table for tracking email confirmation and welcome email status
+    
+  2. Security
+    - Functions use SECURITY DEFINER for proper access control
+    - Proper grants for authenticated and service_role users
+    
+  3. Features
+    - Track welcome email sent status to prevent duplicates
+    - Track email confirmation independently of auth schema
+    - Safe handling of auth schema variations
+*/
+
 -- Add columns to users table for email tracking
 DO $$
 BEGIN
@@ -54,16 +70,10 @@ LANGUAGE plpgsql
 SECURITY DEFINER
 AS $$
 BEGIN
-  -- Only update if the column exists and user exists
-  IF EXISTS (
-    SELECT 1 FROM information_schema.columns
-    WHERE table_name = 'users' AND column_name = 'email_confirmed_at'
-  ) THEN
-    UPDATE users
-    SET email_confirmed_at = now()
-    WHERE id = p_user_id
-      AND email_confirmed_at IS NULL;
-  END IF;
+  UPDATE users
+  SET email_confirmed_at = now()
+  WHERE id = p_user_id
+    AND email_confirmed_at IS NULL;
 END;
 $$;
 
@@ -76,20 +86,11 @@ AS $$
 DECLARE
   v_confirmed_at timestamptz;
   v_auth_confirmed boolean := false;
-  v_column_exists boolean := false;
 BEGIN
-  -- Check if our email_confirmed_at column exists
-  SELECT EXISTS (
-    SELECT 1 FROM information_schema.columns
-    WHERE table_name = 'users' AND column_name = 'email_confirmed_at'
-  ) INTO v_column_exists;
-  
-  -- Check our custom confirmation tracking if column exists
-  IF v_column_exists THEN
-    SELECT email_confirmed_at INTO v_confirmed_at
-    FROM users
-    WHERE id = p_user_id;
-  END IF;
+  -- Check our custom confirmation tracking
+  SELECT email_confirmed_at INTO v_confirmed_at
+  FROM users
+  WHERE id = p_user_id;
   
   -- Check Supabase auth confirmation status (safely)
   BEGIN
@@ -122,16 +123,11 @@ LANGUAGE plpgsql
 SECURITY DEFINER
 AS $$
 BEGIN
-  -- Only update if the column exists
-  IF EXISTS (
-    SELECT 1 FROM information_schema.columns
-    WHERE table_name = 'users' AND column_name = 'email_confirmed_at'
-  ) THEN
-    UPDATE users
-    SET email_confirmed_at = COALESCE(email_confirmed_at, now())
-    WHERE id = p_user_id
-      AND email_confirmed_at IS NULL;
-  END IF;
+  -- Mark email as confirmed in our tracking
+  UPDATE users
+  SET email_confirmed_at = COALESCE(email_confirmed_at, now())
+  WHERE id = p_user_id
+    AND email_confirmed_at IS NULL;
 END;
 $$;
 
@@ -141,43 +137,14 @@ GRANT EXECUTE ON FUNCTION mark_email_confirmed(uuid) TO authenticated, service_r
 GRANT EXECUTE ON FUNCTION is_email_confirmed(uuid) TO authenticated, service_role;
 GRANT EXECUTE ON FUNCTION sync_email_confirmation(uuid) TO authenticated, service_role;
 
--- Add indexes for performance (only if columns exist)
-DO $$
-BEGIN
-  IF EXISTS (
-    SELECT 1 FROM information_schema.columns
-    WHERE table_name = 'users' AND column_name = 'welcome_email_sent'
-  ) THEN
-    CREATE INDEX IF NOT EXISTS idx_users_welcome_email_sent ON users(welcome_email_sent);
-  END IF;
-END $$;
-
--- DO $$
--- BEGIN
---   IF EXISTS (
---     SELECT 1 FROM information_schema.columns
---     WHERE table_name = 'users' AND column_name = 'email_confirmed_at'
---   ) THEN
---     CREATE INDEX IF NOT EXISTS idx_users_email_confirmed_at ON users(email_confirmed_at);
---   END IF;
--- END $$;
+-- Add indexes for performance
+CREATE INDEX IF NOT EXISTS idx_users_welcome_email_sent ON users(welcome_email_sent);
+CREATE INDEX IF NOT EXISTS idx_users_email_confirmed_at ON users(email_confirmed_at);
 
 -- Update existing users to mark emails as confirmed if they're older accounts
 -- This prevents issues with existing users who should already have access
--- DO $$
--- BEGIN
---   -- Only run this update if both columns exist
---   IF EXISTS (
---     SELECT 1 FROM information_schema.columns
---     WHERE table_name = 'users' AND column_name = 'email_confirmed_at'
---   ) AND EXISTS (
---     SELECT 1 FROM information_schema.columns
---     WHERE table_name = 'users' AND column_name = 'welcome_email_sent'
---   ) THEN
---     UPDATE users 
---     SET email_confirmed_at = created_at,
---         welcome_email_sent = true
---     WHERE email_confirmed_at IS NULL 
---       AND created_at < now() - interval '1 hour'; -- Only for users created more than 1 hour ago
---   END IF;
--- END $$;
+UPDATE users 
+SET email_confirmed_at = created_at,
+    welcome_email_sent = true
+WHERE email_confirmed_at IS NULL 
+  AND created_at < now() - interval '1 hour'; -- Only for users created more than 1 hour ago

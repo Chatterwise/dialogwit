@@ -33,15 +33,45 @@ export const useAddKnowledgeBase = () => {
         .insert(knowledgeBase)
         .select()
         .single();
-
+      console.log("Adding knowledge base:", knowledgeBase);
       if (error) throw error;
       return data as KnowledgeBase;
     },
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({
-        queryKey: ["knowledge_base", data.chatbot_id],
-      });
-    },
+onSuccess: async (data) => {
+  // 1. Invalidate the cache
+  queryClient.invalidateQueries({
+    queryKey: ["knowledge_base", data.chatbot_id],
+  });
+
+  // 2. Call the training function
+  try {
+    console.log("🚀 Triggering training for chatbot:", data.chatbot_id);
+
+    const response = await fetch(
+      `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/process-knowledge-base`,
+      {
+        method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+          },
+        body: JSON.stringify({
+          chatbotId: data.chatbot_id,
+        }),
+      }
+    );
+
+    if (!response.ok) {
+      const errText = await response.text();
+      console.error("Training function failed:", errText);
+    } else {
+      console.log("✅ Training triggered successfully");
+    }
+  } catch (e) {
+    console.error("❌ Error calling training function:", e);
+  }
+}
+
   });
 };
 

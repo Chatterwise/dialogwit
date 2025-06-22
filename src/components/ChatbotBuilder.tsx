@@ -291,21 +291,21 @@ export const ChatbotBuilder = () => {
     trainingDataType: "text" as "text" | "document",
     useOpenAI: true,
     openAIModel: "gpt-3.5-turbo",
-    role_template_id: null as string | null,
+    bot_role_template_id: null as string | null,
   });
 
   const handleNext = () => setStep(Math.min(step + 1, 5));
   const handleBack = () => setStep(Math.max(step - 1, 1));
   // console.log(
   //   "Form Data:",
-  //   (templates ?? []).find((t) => t.id === formData.role_template_id)
+  //   (templates ?? []).find((t) => t.id === formData.bot_role_template_id)
   // );
   const handleSubmit = async () => {
     if (!user) return;
     try {
       // Get selected template data
       const selectedTemplate = (templates ?? []).find(
-        (t) => t.id === formData.role_template_id
+        (t) => t.id === formData.bot_role_template_id
       );
 
       // Create chatbot
@@ -313,7 +313,7 @@ export const ChatbotBuilder = () => {
         name: formData.name,
         description: formData.description,
         user_id: user.id,
-        role_template_id: formData.role_template_id,
+        bot_role_template_id: formData.bot_role_template_id,
         welcome_message: selectedTemplate?.welcome_message ?? "Hello!",
         placeholder: selectedTemplate?.placeholder ?? "Ask me anything...",
         bot_avatar: selectedTemplate?.bot_avatar ?? null,
@@ -413,11 +413,11 @@ export const ChatbotBuilder = () => {
                   Role Template
                 </label>
                 <select
-                  value={formData.role_template_id ?? ""}
+                  value={formData.bot_role_template_id ?? ""}
                   onChange={(e) =>
                     setFormData({
                       ...formData,
-                      role_template_id: e.target.value || null,
+                      bot_role_template_id: e.target.value || null,
                     })
                   }
                   className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-primary-400 transition"

@@ -1,6 +1,7 @@
 import { generateEmbedding, OpenAIError } from '../utils/openai.ts';
 import { chunkText, validateChunkSize } from '../utils/chunking.ts';
 import { batchInsertChunks } from '../utils/database.ts';
+
 export async function processKnowledgeBaseWithRAG(knowledgeBase, chatbotId, model, supabaseClient) {
   try {
     // Validate OpenAI API key first
@@ -187,4 +188,69 @@ export async function processKnowledgeItemWithChunking(item, supabaseClient) {
     }
   }
   console.log(`Finished processing item: ${item.id}`);
+}
+export async function processKnowledgeBase(chatbotId, supabaseClient, options = {}) {
+  console.log(`🔍 Starting processKnowledgeBase for chatbot: ${chatbotId}`);
+
+  // Step 1: Fetch all knowledge base items and their chunk count
+  const { data: knowledgeBaseItems, error } = await supabaseClient
+    .from('knowledge_base')
+    .select('*, kb_chunks(count)')
+    .eq('chatbot_id', chatbotId);
+
+  if (error) {
+    console.error('❌ Error fetching knowledge base:', error.message);
+    throw new Error(`Failed to fetch knowledge base: ${error.message}`);
+  }
+
+  console.log(`📄 Found ${knowledgeBaseItems.length} knowledge base items`);
+
+  // Step 2: Filter only those that are new or need reprocessing
+  const itemsToProcess = knowledgeBaseItems.filter(item =>
+    item.kb_chunks?.length === 0 || item.force_reprocess === true
+  );
+
+  console.log(`🧠 Items to process: ${itemsToProcess.length}`);
+
+  // Step 3: Delete old chunks for retrained items
+  for (const item of itemsToProcess) {
+    console.log(`🗑️ Deleting old chunks for item ${item.id}`);
+    await supabaseClient
+      .from('kb_chunks')
+      .delete()
+      .eq('knowledge_base_id', item.id)
+      .eq('chatbot_id', chatbotId);
+  }
+
+  // Step 4: Pass to the real embedding processor
+  console.log(`🚀 Sending ${itemsToProcess.length} items to processKnowledgeBaseWithRAG`);
+  const result = await processKnowledgeBaseWithRAG(
+    itemsToProcess,
+    chatbotId,
+    'text-embedding-ada-002',
+    supabaseClient
+  );
+
+  console.log(`✅ RAG Processing complete`);
+  console.log(`🧾 Chunks: ${result.totalChunks}, Tokens: ${result.tokensUsed}, Cost Estimate: $${(result.tokensUsed / 1000 * 0.0001).toFixed(6)}`);
+
+  // Step 5: Reset force_reprocess and set processed_at
+  for (const item of itemsToProcess) {
+    console.log(`✅ Marking item ${item.id} as processed`);
+    await supabaseClient
+      .from('knowledge_base')
+      .update({
+        force_reprocess: false,
+        processed_at: new Date().toISOString()
+      })
+      .eq('id', item.id);
+  }
+
+  return {
+    itemsProcessed: itemsToProcess.length,
+    totalChunks: result.totalChunks,
+    totalTokensUsed: result.tokensUsed,
+    totalCostEstimate: (result.tokensUsed / 1000) * 0.0001,
+    hasEmbeddings: result.embeddingsCreated > 0
+  };
 }

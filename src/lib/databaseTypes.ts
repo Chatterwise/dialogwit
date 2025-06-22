@@ -264,7 +264,7 @@ export type Database = {
           knowledge_base_processed: boolean | null
           name: string
           placeholder: string | null
-          role_template_id: string | null
+          bot_role_template_id: string | null
           status: Database["public"]["Enums"]["chatbot_status"] | null
           updated_at: string | null
           user_id: string
@@ -278,7 +278,7 @@ export type Database = {
           knowledge_base_processed?: boolean | null
           name: string
           placeholder?: string | null
-          role_template_id?: string | null
+          bot_role_template_id?: string | null
           status?: Database["public"]["Enums"]["chatbot_status"] | null
           updated_at?: string | null
           user_id: string
@@ -292,7 +292,7 @@ export type Database = {
           knowledge_base_processed?: boolean | null
           name?: string
           placeholder?: string | null
-          role_template_id?: string | null
+          bot_role_template_id?: string | null
           status?: Database["public"]["Enums"]["chatbot_status"] | null
           updated_at?: string | null
           user_id?: string
@@ -301,7 +301,7 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "chatbots_role_template_id_fkey"
-            columns: ["role_template_id"]
+            columns: ["bot_role_template_id"]
             isOneToOne: false
             referencedRelation: "bot_role_templates"
             referencedColumns: ["id"]

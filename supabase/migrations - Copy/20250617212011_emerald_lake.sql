@@ -152,32 +152,32 @@ BEGIN
   END IF;
 END $$;
 
--- DO $$
--- BEGIN
---   IF EXISTS (
---     SELECT 1 FROM information_schema.columns
---     WHERE table_name = 'users' AND column_name = 'email_confirmed_at'
---   ) THEN
---     CREATE INDEX IF NOT EXISTS idx_users_email_confirmed_at ON users(email_confirmed_at);
---   END IF;
--- END $$;
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_name = 'users' AND column_name = 'email_confirmed_at'
+  ) THEN
+    CREATE INDEX IF NOT EXISTS idx_users_email_confirmed_at ON users(email_confirmed_at);
+  END IF;
+END $$;
 
 -- Update existing users to mark emails as confirmed if they're older accounts
 -- This prevents issues with existing users who should already have access
--- DO $$
--- BEGIN
---   -- Only run this update if both columns exist
---   IF EXISTS (
---     SELECT 1 FROM information_schema.columns
---     WHERE table_name = 'users' AND column_name = 'email_confirmed_at'
---   ) AND EXISTS (
---     SELECT 1 FROM information_schema.columns
---     WHERE table_name = 'users' AND column_name = 'welcome_email_sent'
---   ) THEN
---     UPDATE users 
---     SET email_confirmed_at = created_at,
---         welcome_email_sent = true
---     WHERE email_confirmed_at IS NULL 
---       AND created_at < now() - interval '1 hour'; -- Only for users created more than 1 hour ago
---   END IF;
--- END $$;
+DO $$
+BEGIN
+  -- Only run this update if both columns exist
+  IF EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_name = 'users' AND column_name = 'email_confirmed_at'
+  ) AND EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_name = 'users' AND column_name = 'welcome_email_sent'
+  ) THEN
+    UPDATE users 
+    SET email_confirmed_at = created_at,
+        welcome_email_sent = true
+    WHERE email_confirmed_at IS NULL 
+      AND created_at < now() - interval '1 hour'; -- Only for users created more than 1 hour ago
+  END IF;
+END $$;

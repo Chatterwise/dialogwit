@@ -187,11 +187,11 @@ GRANT EXECUTE ON FUNCTION handle_email_confirmation() TO service_role;
 
 -- Add indexes for performance
 CREATE INDEX IF NOT EXISTS idx_users_welcome_email_sent ON users(welcome_email_sent);
--- CREATE INDEX IF NOT EXISTS idx_users_email_confirmed_at ON users(email_confirmed_at);
+CREATE INDEX IF NOT EXISTS idx_users_email_confirmed_at ON users(email_confirmed_at);
 
 -- Update existing users to mark emails as confirmed if they can already log in
 -- This prevents issues with existing users
--- UPDATE users 
--- SET email_confirmed_at = created_at
--- WHERE email_confirmed_at IS NULL 
---   AND created_at < now() - interval '1 hour';
+UPDATE users 
+SET email_confirmed_at = created_at
+WHERE email_confirmed_at IS NULL 
+  AND created_at < now() - interval '1 hour'; -- Only for users created more than 1 hour ago

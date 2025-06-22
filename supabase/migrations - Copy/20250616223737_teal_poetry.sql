@@ -36,8 +36,8 @@ CREATE INDEX IF NOT EXISTS idx_kb_chunks_source_url ON kb_chunks(source_url);
 CREATE INDEX IF NOT EXISTS idx_kb_chunks_metadata ON kb_chunks USING GIN (metadata);
 
 -- Update the search function to return additional metadata
-DROP FUNCTION IF EXISTS search_similar_chunks(vector(1536), uuid, float, int);
-CREATE FUNCTION search_similar_chunks(  query_embedding vector(1536),
+CREATE OR REPLACE FUNCTION search_similar_chunks(
+  query_embedding vector(1536),
   target_chatbot_id uuid,
   match_threshold float DEFAULT 0.7,
   match_count int DEFAULT 5

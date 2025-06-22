@@ -1,14 +1,17 @@
 /*
-  # Update kb_chunks table schema
+  # Update kb_chunks schema and search functions
 
-  1. Schema Updates
-    - Add source_url column for citation support
-    - Add metadata jsonb column for additional chunk information
-    - Update search function to return additional metadata
+  1. Schema Changes
+    - Add source_url column to kb_chunks table
+    - Add metadata jsonb column to kb_chunks table
+    - Create indexes for new columns
 
-  2. Indexes
-    - Add index on source_url for citation queries
-    - Add GIN index on metadata for JSON queries
+  2. Function Updates
+    - Drop and recreate search_similar_chunks function with new return type
+    - Create search_chunks_by_text function for fallback text search
+
+  3. Security
+    - Maintain existing RLS policies
 */
 
 -- Add new columns to kb_chunks table
@@ -35,9 +38,13 @@ END $$;
 CREATE INDEX IF NOT EXISTS idx_kb_chunks_source_url ON kb_chunks(source_url);
 CREATE INDEX IF NOT EXISTS idx_kb_chunks_metadata ON kb_chunks USING GIN (metadata);
 
--- Update the search function to return additional metadata
-DROP FUNCTION IF EXISTS search_similar_chunks(vector(1536), uuid, float, int);
-CREATE FUNCTION search_similar_chunks(  query_embedding vector(1536),
+-- Drop existing search function if it exists
+DROP FUNCTION IF EXISTS search_similar_chunks(vector, uuid, double precision, integer);
+DROP FUNCTION IF EXISTS search_similar_chunks(vector, uuid, float, integer);
+
+-- Create the updated search function with new return type
+CREATE OR REPLACE FUNCTION search_similar_chunks(
+  query_embedding vector(1536),
   target_chatbot_id uuid,
   match_threshold float DEFAULT 0.7,
   match_count int DEFAULT 5

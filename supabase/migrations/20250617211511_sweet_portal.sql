@@ -144,4 +144,3 @@ GRANT EXECUTE ON FUNCTION handle_email_confirmation() TO service_role;
 
 -- Add index for performance
 CREATE INDEX IF NOT EXISTS idx_users_welcome_email_sent ON users(welcome_email_sent);
-CREATE INDEX IF NOT EXISTS idx_users_email_confirmed_at ON users(email_confirmed_at);

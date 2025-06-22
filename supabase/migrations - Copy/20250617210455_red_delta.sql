@@ -12,7 +12,6 @@
 */
 
 -- Function to check usage limits
-
 CREATE OR REPLACE FUNCTION check_usage_limit(
   p_user_id uuid,
   p_metric_name text
@@ -84,7 +83,6 @@ END;
 $$;
 
 -- Function to increment usage
-
 CREATE OR REPLACE FUNCTION increment_usage(
   p_user_id uuid,
   p_metric_name text,

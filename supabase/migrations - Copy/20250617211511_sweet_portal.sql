@@ -1,17 +1,19 @@
 /*
-  # Email Confirmation and Welcome Email Tracking
+  # Fix Authentication and Email Confirmation Flow
 
-  1. New Tables
-    - Adds columns to `users` table for tracking email confirmation and welcome email status
-    
+  1. Database Functions
+    - Add function to check if welcome email was already sent
+    - Add function to mark welcome email as sent
+    - Add email confirmation tracking
+
   2. Security
-    - Functions use SECURITY DEFINER for proper access control
-    - Proper grants for authenticated and service_role users
-    
-  3. Features
-    - Track welcome email sent status to prevent duplicates
-    - Track email confirmation independently of auth schema
-    - Safe handling of auth schema variations
+    - Ensure proper RLS policies
+    - Add audit logging for email events
+
+  3. Changes
+    - Add welcome_email_sent flag to users table
+    - Add email_confirmed_at timestamp
+    - Create functions to prevent duplicate welcome emails
 */
 
 -- Add columns to users table for email tracking
@@ -92,59 +94,54 @@ BEGIN
   FROM users
   WHERE id = p_user_id;
   
-  -- Check Supabase auth confirmation status (safely)
-  BEGIN
-    -- Try to check if user exists in auth.users and has any confirmation
-    SELECT EXISTS(
-      SELECT 1 FROM auth.users 
-      WHERE id = p_user_id 
-      AND (
-        -- Check various possible confirmation indicators
-        raw_user_meta_data->>'email_verified' = 'true'
-        OR raw_app_meta_data->>'email_verified' = 'true'
-        OR created_at < now() - interval '1 hour' -- Assume older users are confirmed
-      )
-    ) INTO v_auth_confirmed;
-  EXCEPTION
-    WHEN OTHERS THEN
-      -- If we can't access auth.users, fall back to our tracking only
-      v_auth_confirmed := false;
-  END;
+  -- Also check Supabase auth confirmation
+  SELECT email_confirmed_at IS NOT NULL INTO v_auth_confirmed
+  FROM auth.users
+  WHERE id = p_user_id;
   
   -- Return true if either is confirmed
   RETURN (v_confirmed_at IS NOT NULL) OR v_auth_confirmed;
 END;
 $$;
 
--- Function to sync email confirmation from auth events (called manually)
-CREATE OR REPLACE FUNCTION sync_email_confirmation(p_user_id uuid)
-RETURNS void
+-- Trigger to automatically mark email as confirmed when auth.users is updated
+CREATE OR REPLACE FUNCTION handle_email_confirmation()
+RETURNS trigger
 LANGUAGE plpgsql
 SECURITY DEFINER
 AS $$
 BEGIN
-  -- Mark email as confirmed in our tracking
-  UPDATE users
-  SET email_confirmed_at = COALESCE(email_confirmed_at, now())
-  WHERE id = p_user_id
-    AND email_confirmed_at IS NULL;
+  -- If email_confirmed_at is being set in auth.users, update our users table
+  IF NEW.email_confirmed_at IS NOT NULL AND OLD.email_confirmed_at IS NULL THEN
+    UPDATE users
+    SET email_confirmed_at = NEW.email_confirmed_at
+    WHERE id = NEW.id;
+  END IF;
+  
+  RETURN NEW;
 END;
 $$;
+
+-- Create trigger on auth.users (if it doesn't exist)
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.triggers
+    WHERE trigger_name = 'on_auth_email_confirmed'
+  ) THEN
+    CREATE TRIGGER on_auth_email_confirmed
+      AFTER UPDATE ON auth.users
+      FOR EACH ROW
+      EXECUTE FUNCTION handle_email_confirmation();
+  END IF;
+END $$;
 
 -- Grant execute permissions
 GRANT EXECUTE ON FUNCTION check_and_mark_welcome_email(uuid) TO authenticated, service_role;
 GRANT EXECUTE ON FUNCTION mark_email_confirmed(uuid) TO authenticated, service_role;
 GRANT EXECUTE ON FUNCTION is_email_confirmed(uuid) TO authenticated, service_role;
-GRANT EXECUTE ON FUNCTION sync_email_confirmation(uuid) TO authenticated, service_role;
+GRANT EXECUTE ON FUNCTION handle_email_confirmation() TO service_role;
 
--- Add indexes for performance
--- CREATE INDEX IF NOT EXISTS idx_users_welcome_email_sent ON users(welcome_email_sent);
--- CREATE INDEX IF NOT EXISTS idx_users_email_confirmed_at ON users(email_confirmed_at);
-
--- Update existing users to mark emails as confirmed if they're older accounts
--- This prevents issues with existing users who should already have access
--- UPDATE users 
--- SET email_confirmed_at = created_at,
---     welcome_email_sent = true
--- WHERE email_confirmed_at IS NULL 
---   AND created_at < now() - interval '1 hour'; -- Only for users created more than 1 hour ago
+-- Add index for performance
+CREATE INDEX IF NOT EXISTS idx_users_welcome_email_sent ON users(welcome_email_sent);
+CREATE INDEX IF NOT EXISTS idx_users_email_confirmed_at ON users(email_confirmed_at);
