@@ -35,6 +35,15 @@ import SuccessPage from "./components/SuccessPage";
 import LandingPage from "./components/LandingPage";
 import { ChatbotSettings } from "./components/ChatbotSettings";
 import { ToastRenderer } from "./components/ToastRenderer";
+import AboutUsPage from "./pages/AboutUsPage";
+import ApiReferencePage from "./pages/ApiReferencePage";
+import BlogPage from "./pages/BlogPage";
+import CommunityPage from "./pages/CommunityPage";
+import ContactPage from "./pages/ContactPage";
+import DocumentationPage from "./pages/DocumentationPage";
+import EnterprisePage from "./pages/EnterprisePage";
+import FeaturesPage from "./pages/FeaturesPage";
+import LegalPage from "./pages/LegalPage";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -77,6 +86,16 @@ function AppContent() {
       <Route path="/cancel" element={<CancelPage />} />
       <Route path="/reset-password" element={<ResetPasswordForm />} />
 
+      {/* Documentation pages - publicly accessible */}
+      <Route path="/documentation" element={<DocumentationPage />} />
+      <Route path="/api-reference" element={<ApiReferencePage />} />
+      <Route path="/features" element={<FeaturesPage />} />
+      <Route path="/enterprise" element={<EnterprisePage />} />
+      <Route path="/community" element={<CommunityPage />} />
+      <Route path="/blog" element={<BlogPage />} />
+      <Route path="/about" element={<AboutUsPage />} />
+      <Route path="/contact" element={<ContactPage />} />
+      <Route path="/legal" element={<LegalPage />} />
       {/* Protected routes */}
       <Route
         path="/*"

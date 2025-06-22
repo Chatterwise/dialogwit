@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file. See [standa
 
 ## [Unreleased]
 
+### Added
+
+- footer links with their pages.
+
 ### 0.0.5 (2025-06-23)
 
 ### Added

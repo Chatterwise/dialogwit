@@ -6,7 +6,6 @@ import {
   Database,
   Globe,
   Shield,
-  MessageSquare,
   Users,
   BarChart3,
   ChevronRight,
@@ -300,6 +299,18 @@ const LandingPage: React.FC = () => {
                 Pricing
               </Link>
               <Link
+                to="/documentation"
+                className="text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 px-3 py-2 text-sm font-medium"
+              >
+                Documentation
+              </Link>
+              <Link
+                to="/blog"
+                className="text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 px-3 py-2 text-sm font-medium"
+              >
+                Blog
+              </Link>
+              <Link
                 to="/auth"
                 className="text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 px-3 py-2 text-sm font-medium"
               >
@@ -380,10 +391,10 @@ const LandingPage: React.FC = () => {
                   whileTap={{ scale: 0.95 }}
                 >
                   <Link
-                    to="/demo"
+                    to="/documentation"
                     className="w-full sm:w-auto bg-white dark:bg-gray-800 text-primary-600 dark:text-primary-400 border border-primary-200 dark:border-primary-800 px-8 py-4 rounded-xl text-lg font-semibold shadow-sm hover:shadow-md transition-all flex items-center justify-center"
                   >
-                    See Demo
+                    Learn More
                   </Link>
                 </motion.div>
               </motion.div>
@@ -792,9 +803,9 @@ const LandingPage: React.FC = () => {
       </section>
 
       {/* Footer */}
-      <footer className="bg-gray-900 text-white py-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+      <footer className="bg-gray-900 text-white py-12  relative z-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 z-50">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 z-50">
             <div>
               <div className="flex items-center">
                 <Bot className="h-8 w-8 text-primary-400" />
@@ -854,36 +865,36 @@ const LandingPage: React.FC = () => {
               <h3 className="text-lg font-semibold mb-4">Product</h3>
               <ul className="space-y-2">
                 <li>
-                  <a
-                    href="#"
+                  <Link
+                    to="/features"
                     className="text-gray-400 hover:text-white transition-colors"
                   >
                     Features
-                  </a>
+                  </Link>
                 </li>
                 <li>
-                  <a
-                    href="#"
+                  <Link
+                    to="/pricing"
                     className="text-gray-400 hover:text-white transition-colors"
                   >
                     Pricing
-                  </a>
+                  </Link>
                 </li>
                 <li>
-                  <a
-                    href="#"
+                  <Link
+                    to="/integrations"
                     className="text-gray-400 hover:text-white transition-colors"
                   >
                     Integrations
-                  </a>
+                  </Link>
                 </li>
                 <li>
-                  <a
-                    href="#"
+                  <Link
+                    to="/enterprise"
                     className="text-gray-400 hover:text-white transition-colors"
                   >
                     Enterprise
-                  </a>
+                  </Link>
                 </li>
               </ul>
             </div>
@@ -891,36 +902,36 @@ const LandingPage: React.FC = () => {
               <h3 className="text-lg font-semibold mb-4">Resources</h3>
               <ul className="space-y-2">
                 <li>
-                  <a
-                    href="#"
+                  <Link
+                    to="/documentation"
                     className="text-gray-400 hover:text-white transition-colors"
                   >
                     Documentation
-                  </a>
+                  </Link>
                 </li>
                 <li>
-                  <a
-                    href="#"
+                  <Link
+                    to="/api-reference"
                     className="text-gray-400 hover:text-white transition-colors"
                   >
                     API Reference
-                  </a>
+                  </Link>
                 </li>
                 <li>
-                  <a
-                    href="#"
+                  <Link
+                    to="/blog"
                     className="text-gray-400 hover:text-white transition-colors"
                   >
                     Blog
-                  </a>
+                  </Link>
                 </li>
                 <li>
-                  <a
-                    href="#"
+                  <Link
+                    to="/community"
                     className="text-gray-400 hover:text-white transition-colors"
                   >
                     Community
-                  </a>
+                  </Link>
                 </li>
               </ul>
             </div>
@@ -928,36 +939,28 @@ const LandingPage: React.FC = () => {
               <h3 className="text-lg font-semibold mb-4">Company</h3>
               <ul className="space-y-2">
                 <li>
-                  <a
-                    href="#"
+                  <Link
+                    to="/about"
                     className="text-gray-400 hover:text-white transition-colors"
                   >
                     About Us
-                  </a>
+                  </Link>
                 </li>
                 <li>
-                  <a
-                    href="#"
-                    className="text-gray-400 hover:text-white transition-colors"
-                  >
-                    Careers
-                  </a>
-                </li>
-                <li>
-                  <a
-                    href="#"
+                  <Link
+                    to="/contact"
                     className="text-gray-400 hover:text-white transition-colors"
                   >
                     Contact
-                  </a>
+                  </Link>
                 </li>
                 <li>
-                  <a
-                    href="#"
+                  <Link
+                    to="/legal"
                     className="text-gray-400 hover:text-white transition-colors"
                   >
                     Legal
-                  </a>
+                  </Link>
                 </li>
               </ul>
             </div>
@@ -967,44 +970,28 @@ const LandingPage: React.FC = () => {
               © 2025 ChatterWise. All rights reserved.
             </p>
             <div className="flex space-x-6 mt-4 md:mt-0">
-              <a
-                href="#"
+              <Link
+                to="/legal"
                 className="text-gray-400 hover:text-white transition-colors"
               >
                 Privacy Policy
-              </a>
-              <a
-                href="#"
+              </Link>
+              <Link
+                to="/legal"
                 className="text-gray-400 hover:text-white transition-colors"
               >
                 Terms of Service
-              </a>
-              <a
-                href="#"
+              </Link>
+              <Link
+                to="/legal"
                 className="text-gray-400 hover:text-white transition-colors"
               >
                 Cookie Policy
-              </a>
+              </Link>
             </div>
           </div>
         </div>
       </footer>
-
-      {/* Floating chat button */}
-      {/* <motion.div
-        initial={{ opacity: 0, scale: 0 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.5, delay: 1 }}
-        className="fixed bottom-6 right-6 z-50"
-      >
-        <motion.button
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.9 }}
-          className="bg-primary-600 text-white rounded-full w-16 h-16 flex items-center justify-center shadow-lg hover:bg-primary-700 transition-colors"
-        >
-          <MessageSquare className="h-7 w-7" />
-        </motion.button>
-      </motion.div> */}
     </div>
   );
 };
