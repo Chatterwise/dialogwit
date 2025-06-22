@@ -147,7 +147,7 @@ export type Database = {
           is_default: boolean | null
           name: string
           placeholder: string | null
-          system_instructions: string
+          system_instructions: string | null
           welcome_message: string | null
         }
         Insert: {
@@ -159,7 +159,7 @@ export type Database = {
           is_default?: boolean | null
           name: string
           placeholder?: string | null
-          system_instructions: string
+          system_instructions?: string | null
           welcome_message?: string | null
         }
         Update: {
@@ -171,7 +171,7 @@ export type Database = {
           is_default?: boolean | null
           name?: string
           placeholder?: string | null
-          system_instructions?: string
+          system_instructions?: string | null
           welcome_message?: string | null
         }
         Relationships: []
@@ -258,13 +258,13 @@ export type Database = {
       chatbots: {
         Row: {
           bot_avatar: string | null
+          bot_role_template_id: string | null
           created_at: string | null
           description: string
           id: string
           knowledge_base_processed: boolean | null
           name: string
           placeholder: string | null
-          bot_role_template_id: string | null
           status: Database["public"]["Enums"]["chatbot_status"] | null
           updated_at: string | null
           user_id: string
@@ -272,13 +272,13 @@ export type Database = {
         }
         Insert: {
           bot_avatar?: string | null
+          bot_role_template_id?: string | null
           created_at?: string | null
           description: string
           id?: string
           knowledge_base_processed?: boolean | null
           name: string
           placeholder?: string | null
-          bot_role_template_id?: string | null
           status?: Database["public"]["Enums"]["chatbot_status"] | null
           updated_at?: string | null
           user_id: string
@@ -286,13 +286,13 @@ export type Database = {
         }
         Update: {
           bot_avatar?: string | null
+          bot_role_template_id?: string | null
           created_at?: string | null
           description?: string
           id?: string
           knowledge_base_processed?: boolean | null
           name?: string
           placeholder?: string | null
-          bot_role_template_id?: string | null
           status?: Database["public"]["Enums"]["chatbot_status"] | null
           updated_at?: string | null
           user_id?: string
@@ -300,7 +300,7 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "chatbots_role_template_id_fkey"
+            foreignKeyName: "chatbots_bot_role_template_id_fkey"
             columns: ["bot_role_template_id"]
             isOneToOne: false
             referencedRelation: "bot_role_templates"
@@ -420,7 +420,6 @@ export type Database = {
           created_at: string | null
           filename: string | null
           id: string
-          metadata: Json | null
           processed: boolean | null
         }
         Insert: {
@@ -430,7 +429,6 @@ export type Database = {
           created_at?: string | null
           filename?: string | null
           id?: string
-          metadata?: Json | null
           processed?: boolean | null
         }
         Update: {
@@ -440,7 +438,6 @@ export type Database = {
           created_at?: string | null
           filename?: string | null
           id?: string
-          metadata?: Json | null
           processed?: boolean | null
         }
         Relationships: [
@@ -889,28 +886,28 @@ export type Database = {
       token_rollovers: {
         Row: {
           created_at: string | null
-          from_period_end: string
-          from_period_start: string
           id: string
-          subscription_id: string
+          period_end: string
+          period_start: string
+          subscription_id: string | null
           tokens_rolled_over: number
           user_id: string
         }
         Insert: {
           created_at?: string | null
-          from_period_end: string
-          from_period_start: string
           id?: string
-          subscription_id: string
-          tokens_rolled_over: number
+          period_end: string
+          period_start: string
+          subscription_id?: string | null
+          tokens_rolled_over?: number
           user_id: string
         }
         Update: {
           created_at?: string | null
-          from_period_end?: string
-          from_period_start?: string
           id?: string
-          subscription_id?: string
+          period_end?: string
+          period_start?: string
+          subscription_id?: string | null
           tokens_rolled_over?: number
           user_id?: string
         }
@@ -961,6 +958,7 @@ export type Database = {
       }
       usage_tracking: {
         Row: {
+          chatbot_id: string | null
           created_at: string | null
           id: string
           metadata: Json | null
@@ -970,9 +968,11 @@ export type Database = {
           period_start: string
           subscription_id: string | null
           updated_at: string | null
+          usage_source: string
           user_id: string | null
         }
         Insert: {
+          chatbot_id?: string | null
           created_at?: string | null
           id?: string
           metadata?: Json | null
@@ -982,9 +982,11 @@ export type Database = {
           period_start: string
           subscription_id?: string | null
           updated_at?: string | null
+          usage_source?: string
           user_id?: string | null
         }
         Update: {
+          chatbot_id?: string | null
           created_at?: string | null
           id?: string
           metadata?: Json | null
@@ -994,9 +996,17 @@ export type Database = {
           period_start?: string
           subscription_id?: string | null
           updated_at?: string | null
+          usage_source?: string
           user_id?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "usage_tracking_chatbot_id_fkey"
+            columns: ["chatbot_id"]
+            isOneToOne: false
+            referencedRelation: "chatbots"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "usage_tracking_subscription_id_fkey"
             columns: ["subscription_id"]
@@ -1345,7 +1355,7 @@ export type Database = {
       }
       l2_normalize: {
         Args: { "": string } | { "": unknown } | { "": unknown }
-        Returns: unknown
+        Returns: string
       }
       mark_email_confirmed: {
         Args: { p_user_id: string }
@@ -1408,11 +1418,13 @@ export type Database = {
       track_token_usage: {
         Args: {
           p_user_id: string
+          p_chatbot_id: string
           p_metric_name: string
-          p_increment: number
-          p_metadata?: Json
+          p_token_count: number
+          p_usage_source: string
+          p_metadata: Json
         }
-        Returns: Json
+        Returns: undefined
       }
       vector_avg: {
         Args: { "": number[] }
@@ -1440,7 +1452,13 @@ export type Database = {
       }
     }
     Enums: {
-      chatbot_status: "creating" | "processing" | "ready" | "error"
+      chatbot_status:
+        | "creating"
+        | "processing"
+        | "ready"
+        | "error"
+        | "deleted"
+        | "paused"
       content_type: "text" | "document"
       stripe_order_status: "pending" | "completed" | "canceled"
       stripe_subscription_status:
@@ -1568,7 +1586,14 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      chatbot_status: ["creating", "processing", "ready", "error"],
+      chatbot_status: [
+        "creating",
+        "processing",
+        "ready",
+        "error",
+        "deleted",
+        "paused",
+      ],
       content_type: ["text", "document"],
       stripe_order_status: ["pending", "completed", "canceled"],
       stripe_subscription_status: [

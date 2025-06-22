@@ -23,6 +23,7 @@ export const useChatbots = (userId?: string) => {
         .from("chatbots")
         .select("*, bot_role_templates(name, icon_name)")
         .eq("user_id", userId)
+        //.neq("status", "deleted") // ← filter out deleted
         .order("created_at", { ascending: false });
 
       if (error) throw error;
@@ -84,8 +85,11 @@ export const useDeleteChatbot = () => {
 
   return useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.from("chatbots").delete().eq("id", id);
-
+      // const { error } = await supabase.from("chatbots").delete().eq("id", id);
+      const { error } = await supabase
+        .from("chatbots")
+        .update({ status: "deleted" })
+        .eq("id", id);
       if (error) throw error;
       return { id };
     },
@@ -106,12 +110,33 @@ export const useChatbot = (id: string) => {
         .from("chatbots")
         .select("*")
         .eq("id", id)
+        //.neq("status", "deleted") // ← filter out deleted
         .single();
 
       if (error) throw error;
       return data as Chatbot;
     },
     enabled: !!id,
+  });
+};
+
+export const useRestoreChatbot = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from("chatbots")
+        .update({ status: "ready" }) // or previous status if you track it
+        .eq("id", id);
+
+      if (error) throw error;
+      return { id };
+    },
+    onSuccess: (_, id) => {
+      queryClient.invalidateQueries({ queryKey: ["chatbots"] });
+      queryClient.invalidateQueries({ queryKey: ["chatbot", id] });
+    },
   });
 };
 

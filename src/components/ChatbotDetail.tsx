@@ -189,13 +189,14 @@ export const ChatbotDetail = () => {
         action={{
           title: "Delete Chatbot",
           description:
-            "This action cannot be undone. All associated data will be permanently deleted:",
+            "This chatbot will be marked as deleted and scheduled for permanent removal in 30 days. You can recover it at any time before then.",
           affectedItems: [
-            "Chatbot configuration and settings",
-            "All chat history and analytics",
-            "Connected Bot Knowledge content",
-            "Integration configurations",
+            "Chatbot settings and configuration",
+            "All chat history and usage analytics",
+            "Linked knowledge base documents",
+            "Integration and API configurations",
           ],
+          note: "After 30 days, all associated data will be permanently deleted and cannot be recovered.",
           onConfirm: handleDeleteConfirmed,
           actionLabel: "Delete Chatbot",
           actionColor: "red",

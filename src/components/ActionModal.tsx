@@ -20,6 +20,7 @@ type Action = {
   requireType?: boolean;
   /** Confirmation word to type (default: "CONFIRM") */
   confirmationWord?: string;
+  note?: string; // Additional note or instruction
 };
 
 interface ActionModalProps {
@@ -121,6 +122,11 @@ export const ActionModal: React.FC<ActionModalProps> = ({
                   <li key={i}>{item}</li>
                 ))}
               </ul>
+            )}
+            {action.note && (
+              <p className="mt-4 text-xs text-gray-500 dark:text-gray-400 italic">
+                {action.note}
+              </p>
             )}
           </div>
 
