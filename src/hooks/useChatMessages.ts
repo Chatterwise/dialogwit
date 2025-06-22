@@ -71,11 +71,18 @@ export const useSendMessage = () => {
 export const useChatAnalytics = (chatbotId: string) => {
   return useQuery({
     queryKey: ["chat_analytics", chatbotId],
+    enabled: !!chatbotId,
     queryFn: async () => {
-      const { data, error } = await supabase
+      const baseQuery = supabase
         .from("chat_messages")
-        .select("created_at, message, response")
-        .eq("chatbot_id", chatbotId);
+        .select("created_at, message, response");
+
+      // If chatbotId is not "all", filter by it
+      if (chatbotId !== "all") {
+        baseQuery.eq("chatbot_id", chatbotId);
+      }
+
+      const { data, error } = await baseQuery;
 
       if (error) throw error;
 
@@ -126,6 +133,5 @@ export const useChatAnalytics = (chatbotId: string) => {
         chartData,
       };
     },
-    enabled: !!chatbotId,
   });
 };
