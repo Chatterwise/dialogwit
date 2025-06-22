@@ -42,7 +42,7 @@ export const AnalyticsChart = ({
   }
 
   return (
-    <div className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl rounded-2xl shadow-xl border border-gray-100 dark:border-gray-800 p-6 transition-colors duration-300">
+    <div className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl rounded-2xl p-6 transition-colors duration-300">
       <div className="flex items-center justify-between mb-6">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 font-display">
           {title}

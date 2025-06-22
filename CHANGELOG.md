@@ -14,6 +14,10 @@ All notable changes to this project will be documented in this file. See [standa
 - Introduced **Advanced Settings** section (UI only, logic pending):
   - Response temperature and max tokens fields (disabled for now).
 
+### Fixed
+
+- fixing broken UI for analytics on the dashboard
+
 ### 0.0.4 (2025-06-22)
 
 ### Added
