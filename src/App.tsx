@@ -34,6 +34,7 @@ import PricingPlans from "./components/PricingPlans";
 import SuccessPage from "./components/SuccessPage";
 import LandingPage from "./components/LandingPage";
 import { ChatbotSettings } from "./components/ChatbotSettings";
+import { ToastRenderer } from "./components/ToastRenderer";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -130,6 +131,7 @@ export default function App() {
     <QueryClientProvider client={queryClient}>
       <Router>
         <AppContent />
+        <ToastRenderer />
       </Router>
     </QueryClientProvider>
   );

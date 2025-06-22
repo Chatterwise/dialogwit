@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file. See [standa
 
 ## [Unreleased]
 
+### 0.0.5 (2025-06-23)
+
+### Added
+
+- toast notification
+
 ### 0.0.4 (2025-06-22)
 
 ### Added

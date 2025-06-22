@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "../lib/supabase";
 import { Database } from "../lib/databaseTypes";
+import { useToast } from "../lib/toastStore";
 
 type Chatbot = Database["public"]["Tables"]["chatbots"]["Row"];
 type ChatbotInsert = Database["public"]["Tables"]["chatbots"]["Insert"];
@@ -34,6 +35,7 @@ export const useChatbots = (userId?: string) => {
 
 export const useCreateChatbot = () => {
   const queryClient = useQueryClient();
+  const toast = useToast();
 
   return useMutation({
     mutationFn: async (chatbot: ChatbotInsert) => {
@@ -49,12 +51,16 @@ export const useCreateChatbot = () => {
     onSuccess: (data) => {
       // Invalidate and refetch chatbots
       queryClient.invalidateQueries({ queryKey: ["chatbots", data.user_id] });
+      toast.success("Chatbot successfully created");
+    },onError: () => {
+      toast.error("Failed to create chatbot");
     },
   });
 };
 
 export const useUpdateChatbot = () => {
   const queryClient = useQueryClient();
+  const toast = useToast();
 
   return useMutation({
     mutationFn: async ({
@@ -76,12 +82,17 @@ export const useUpdateChatbot = () => {
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["chatbots", data.user_id] });
+      toast.success("Chatbot updated");
+    },
+    onError: () => {
+      toast.error("Failed to update");
     },
   });
 };
 
 export const useDeleteChatbot = () => {
   const queryClient = useQueryClient();
+  const toast = useToast();
 
   return useMutation({
     mutationFn: async (id: string) => {
@@ -98,6 +109,10 @@ export const useDeleteChatbot = () => {
       queryClient.invalidateQueries({ queryKey: ["chatbots"] });
       // Also invalidate the specific chatbot query
       queryClient.invalidateQueries({ queryKey: ["chatbot", deletedId] });
+      toast.success("Chatbot successfully marked for deletion");
+    },
+    onError: () => {
+      toast.error("Failed to mark for deletion");
     },
   });
 };
@@ -122,6 +137,7 @@ export const useChatbot = (id: string) => {
 
 export const useRestoreChatbot = () => {
   const queryClient = useQueryClient();
+  const toast = useToast();
 
   return useMutation({
     mutationFn: async (id: string) => {
@@ -136,6 +152,10 @@ export const useRestoreChatbot = () => {
     onSuccess: (_, id) => {
       queryClient.invalidateQueries({ queryKey: ["chatbots"] });
       queryClient.invalidateQueries({ queryKey: ["chatbot", id] });
+      toast.success("Chatbot successfully restored");
+    },
+    onError: () => {
+      toast.error("Failed to restore chatbot");
     },
   });
 };

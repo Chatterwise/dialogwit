@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '../lib/supabase'
+import { useToast } from '../lib/toastStore'
 
 export interface RateLimitConfig {
   requests_per_minute: number
@@ -48,6 +49,7 @@ export const useRateLimitConfig = (userId: string) => {
 
 export const useUpdateRateLimitConfig = () => {
   const queryClient = useQueryClient()
+const toast = useToast()
 
   return useMutation({
     mutationFn: async ({ 
@@ -81,6 +83,9 @@ export const useUpdateRateLimitConfig = () => {
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['rate_limit_config', variables.userId] })
       queryClient.invalidateQueries({ queryKey: ['rate_limit_status'] })
+      toast.success("Rate limit config updated")
+    },onError: () => {
+      toast.error("Failed to update config")
     }
   })
 }
@@ -132,6 +137,7 @@ export const useRateLimitStatus = () => {
 
 export const useClearRateLimit = () => {
   const queryClient = useQueryClient()
+  const toast = useToast()
 
   return useMutation({
     mutationFn: async ({
@@ -157,6 +163,9 @@ export const useClearRateLimit = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['rate_limit_status'] })
+      toast.success("Rate limit cleared successfully")
+    },onError: () => {
+       toast.error("Failed to clear rate limit")
     }
   })
 }

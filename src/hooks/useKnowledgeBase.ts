@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "../lib/supabase";
 import { Database } from "../lib/databaseTypes";
+import { useToast } from "../lib/toastStore";
 
 type KnowledgeBase = Database["public"]["Tables"]["knowledge_base"]["Row"];
 type KnowledgeBaseInsert =
@@ -25,6 +26,7 @@ export const useKnowledgeBase = (chatbotId: string) => {
 
 export const useAddKnowledgeBase = () => {
   const queryClient = useQueryClient();
+const toast = useToast()
 
   return useMutation({
     mutationFn: async (knowledgeBase: KnowledgeBaseInsert) => {
@@ -66,17 +68,19 @@ onSuccess: async (data) => {
       console.error("Training function failed:", errText);
     } else {
       console.log("✅ Training triggered successfully");
+      toast.success("Knowledge base added and training started");
     }
   } catch (e) {
-    console.error("❌ Error calling training function:", e);
+    console.error("❌ Error calling training function:", e)
+    toast.error("Failed to start training");
   }
 }
-
   });
 };
 
 export const useDeleteKnowledgeBase = () => {
   const queryClient = useQueryClient();
+const toast = useToast()
 
   return useMutation({
     mutationFn: async (id: string) => {
@@ -89,7 +93,11 @@ export const useDeleteKnowledgeBase = () => {
       return { id };
     },
     onSuccess: (_, id) => {
-      queryClient.invalidateQueries({ queryKey: ["knowledge_base"] });
-    },
+      // queryClient.invalidateQueries({ queryKey: ["knowledge_base"] });
+      queryClient.invalidateQueries({ queryKey: ["knowledge_base", id] });
+      toast.success("Knowledge base deleted successfully");
+    },onError: () => {
+      toast.error("Failed to delete knowledge base");
+    }
   });
 };

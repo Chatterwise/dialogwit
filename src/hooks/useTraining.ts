@@ -1,4 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useToast } from '../lib/toastStore'
 
 interface TrainChatbotParams {
   chatbotId: string
@@ -7,6 +8,7 @@ interface TrainChatbotParams {
 
 export const useTrainChatbot = () => {
   const queryClient = useQueryClient()
+  const toast = useToast()
 
   return useMutation({
     mutationFn: async ({ chatbotId, model }: TrainChatbotParams) => {
@@ -18,7 +20,7 @@ export const useTrainChatbot = () => {
         },
         body: JSON.stringify({
           chatbotId,
-          model
+          model,
         }),
       })
 
@@ -30,9 +32,12 @@ export const useTrainChatbot = () => {
       return data
     },
     onSuccess: (_, variables) => {
-      // Invalidate chatbot queries to refetch updated status
       queryClient.invalidateQueries({ queryKey: ['chatbot', variables.chatbotId] })
       queryClient.invalidateQueries({ queryKey: ['chatbots'] })
-    }
+      toast.success('Chatbot training completed successfully')
+    },
+    onError: () => {
+      toast.error('Chatbot training failed. Please try again.')
+    },
   })
 }

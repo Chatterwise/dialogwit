@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '../lib/supabase'
+import { useToast } from '../lib/toastStore'
 
 export interface UserProfile {
   id: string
@@ -30,28 +31,36 @@ export const useUserProfile = (userId: string) => {
 }
 
 export const useUpdateUserProfile = () => {
-  const queryClient = useQueryClient()
+  const queryClient = useQueryClient();
+  const toast = useToast();
 
   return useMutation({
-    mutationFn: async ({ 
-      id, 
-      updates 
-    }: { 
-      id: string
-      updates: Partial<UserProfile> 
+    mutationFn: async ({
+      id,
+      updates,
+    }: {
+      id: string;
+      updates: Partial<UserProfile>;
     }) => {
       const { data, error } = await supabase
-        .from('users')
+        .from("users")
         .update(updates)
-        .eq('id', id)
+        .eq("id", id)
         .select()
-        .single()
+        .single();
 
-      if (error) throw error
-      return data as UserProfile
+      if (error) throw error;
+      return data as UserProfile;
     },
+
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ['user_profile', data.id] })
-    }
-  })
-}
+      queryClient.invalidateQueries({ queryKey: ["user_profile", data.id] });
+      toast.success("Profile updated successfully.");
+    },
+
+    onError: (error: Error) => {
+      console.error("Update failed:", error);
+      toast.error("Failed to update profile. Please try again.");
+    },
+  });
+};
