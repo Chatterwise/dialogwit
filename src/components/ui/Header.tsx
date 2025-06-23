@@ -40,7 +40,7 @@ export const Header = () => {
 
         {/* Search bar */}
         <div className="hidden md:flex items-center flex-1 max-w-md mx-4">
-          <div className="relative w-full">
+          {/* <div className="relative w-full">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
               <Search className="h-4 w-4 text-gray-400" />
             </div>
@@ -49,7 +49,7 @@ export const Header = () => {
               className="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
               placeholder="Search chatbots, knowledge base..."
             />
-          </div>
+          </div> */}
         </div>
 
         {/* Actions: Create, Notification, Theme Toggle, Avatar */}
@@ -129,9 +129,9 @@ export const Header = () => {
               onClick={() => setShowUserMenu(!showUserMenu)}
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
-              className="p-1.5 rounded-full bg-gradient-to-br from-primary-500 to-primary-600 shadow-inner flex items-center justify-center hover:from-primary-600 hover:to-primary-700 transition-all"
+              className="w-10 h-10 flex-shrink-0 rounded-full bg-gradient-to-br from-primary-500 to-primary-600 shadow-inner flex items-center justify-center hover:from-primary-600 hover:to-primary-700 transition-all"
             >
-              <span className="text-sm font-bold text-white">
+              <span className="text-base font-bold text-white">
                 {user?.email?.charAt(0).toUpperCase() || "U"}
               </span>
             </motion.button>

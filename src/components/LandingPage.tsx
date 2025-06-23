@@ -15,7 +15,8 @@ import {
   Cpu,
 } from "lucide-react";
 import ParticlesBg from "particles-bg";
-
+import { Logo } from "./ui/Logo";
+import BoltLogo from "../resources/bolt-logo-white.png";
 // Demo chatbot component
 const DemoChatbot = () => {
   const [messages, setMessages] = useState([
@@ -280,10 +281,11 @@ const LandingPage: React.FC = () => {
                 transition={{ duration: 0.5 }}
                 className="flex items-center"
               >
-                <Bot className="h-8 w-8 text-primary-600 dark:text-primary-400" />
+                {/* <Bot className="h-8 w-8 text-primary-600 dark:text-primary-400" />
                 <span className="ml-2 text-xl font-bold text-gray-900 dark:text-white">
                   ChatterWise
-                </span>
+                </span> */}
+                <Logo className="h-12 w-52" />
               </motion.div>
             </div>
             <motion.div
@@ -427,9 +429,8 @@ const LandingPage: React.FC = () => {
           </div>
         </div>
       </motion.section>
-
       {/* Hackathon Badge */}
-      <div className="flex justify-center -mt-8 mb-16 relative z-10">
+      <div className="flex justify-center items-center relative z-10 min-h-[120px]">
         <motion.a
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -439,10 +440,12 @@ const LandingPage: React.FC = () => {
           href="https://bolt.new"
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center px-4 py-2 bg-black text-white rounded-full text-sm font-medium shadow-md hover:shadow-lg transition-all"
         >
-          <span className="mr-2">🏆</span>
-          <span>Official Hackathon Project • Created with bolt.new</span>
+          <img
+            src={BoltLogo}
+            className="max-w-[120px] w-full h-auto mx-auto sm:w-32 md:w-48 lg:w-64"
+            alt="Bolt Logo"
+          />
         </motion.a>
       </div>
 
@@ -805,15 +808,17 @@ const LandingPage: React.FC = () => {
       {/* Footer */}
       <footer className="bg-gray-900 text-white py-12  relative z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 z-50">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 z-50">
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-8 z-50">
             <div>
               <div className="flex items-center">
-                <Bot className="h-8 w-8 text-primary-400" />
-                <span className="ml-2 text-xl font-bold">ChatterWise</span>
+                {/* <Bot className="h-8 w-8 text-primary-400" />
+                <span className="ml-2 text-xl font-bold">ChatterWise</span> */}
+                <Logo className="h-12 w-52" />
               </div>
               <p className="mt-4 text-gray-400">
                 Building the future of AI-powered conversations.
               </p>
+
               <div className="mt-4 flex space-x-4">
                 <a
                   href="#"
@@ -963,6 +968,25 @@ const LandingPage: React.FC = () => {
                   </Link>
                 </li>
               </ul>
+            </div>
+            {/* Hackathon Badge */}
+            <div className="flex justify-center items-center relative z-10 min-h-[120px]">
+              <motion.a
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.7 }}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                href="https://bolt.new"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <img
+                  src={BoltLogo}
+                  className="max-w-[120px] w-full h-auto mx-auto sm:w-32 md:w-48 lg:w-64"
+                  alt="Bolt Logo"
+                />
+              </motion.a>
             </div>
           </div>
           <div className="border-t border-gray-800 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center">

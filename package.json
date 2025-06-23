@@ -16,6 +16,7 @@
     "@supabase/supabase-js": "^2.39.0",
     "@tanstack/react-query": "^5.8.4",
     "clsx": "^2.1.1",
+    "date-fns": "^4.1.0",
     "framer-motion": "^12.18.1",
     "lucide-react": "^0.344.0",
     "openai": "^4.24.1",

@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file. See [standa
 ### Added
 
 - footer links with their pages.
+- bolt branding
 
 ### 0.0.5 (2025-06-23)
 

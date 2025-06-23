@@ -8,6 +8,7 @@ import {
   useDeleteKnowledgeBase,
 } from "../hooks/useKnowledgeBase";
 import { FileUpload } from "./FileUpload";
+import { ChatbotSelector } from "./ChatbotSelector";
 
 interface ProcessedFile {
   file: File;
@@ -52,6 +53,8 @@ export const KnowledgeBase = () => {
       filterType === "all" || item.content_type === filterType;
     return matchesSearch && matchesFilter;
   });
+
+  console.log(filteredKnowledge);
 
   const handleAddKnowledge = async () => {
     if (!selectedChatbot || !newContent.content.trim()) return;
@@ -164,43 +167,6 @@ export const KnowledgeBase = () => {
             Add Content
           </button>
         </div>
-      </div>
-
-      {/* Chatbot Selection */}
-      <div className="bg-white/80 rounded-2xl shadow-xl border border-gray-100 p-8">
-        <h3 className="text-lg font-bold text-gray-900 mb-5">Select Chatbot</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {chatbots.map((chatbot) => (
-            <button
-              key={chatbot.id}
-              onClick={() => setSelectedChatbot(chatbot.id)}
-              className={`p-5 border rounded-xl text-left transition-all duration-200 shadow-subtle ${
-                selectedChatbot === chatbot.id
-                  ? "border-primary-500 bg-primary-50 ring-2 ring-primary-200"
-                  : "border-gray-100 hover:bg-primary-50"
-              }`}
-            >
-              <div className="flex items-center">
-                <FileText className="h-5 w-5 text-primary-500 mr-3" />
-                <div>
-                  <p className="font-semibold text-gray-900">{chatbot.name}</p>
-                  <p className="text-sm text-gray-500">{chatbot.description}</p>
-                </div>
-              </div>
-            </button>
-          ))}
-        </div>
-        {chatbots.length === 0 && (
-          <div className="text-center py-8">
-            <FileText className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-            <h3 className="text-lg font-bold text-gray-900">
-              No chatbots found
-            </h3>
-            <p className="text-gray-400">
-              Create a chatbot first to manage its Bot Knowledge.
-            </p>
-          </div>
-        )}
       </div>
 
       {/* Bot Knowledge Content */}
@@ -359,6 +325,13 @@ export const KnowledgeBase = () => {
           </div>
         </div>
       )}
+
+      {/* Chatbot Selection */}
+      <ChatbotSelector
+        chatbots={chatbots}
+        selectedChatbot={selectedChatbot}
+        setSelectedChatbot={setSelectedChatbot}
+      />
 
       {/* File Upload Modal */}
       {showFileUpload && (

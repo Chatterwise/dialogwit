@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import { Header } from "./ui/Header";
 import { motion, AnimatePresence } from "framer-motion";
+import { Logo } from "./ui/Logo";
 
 const mainNavigation = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
@@ -225,14 +226,15 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
             <div className="flex-1 flex flex-col pt-8 pb-4 overflow-y-auto">
               <div className="flex items-center px-6 mb-8">
                 {/* Place your logo here */}
-                <img
+                {/* <img
                   src="/logo.svg"
                   alt="ChatterWise"
                   className="h-9 w-9 drop-shadow"
                 />{" "}
                 <span className="ml-2 text-2xl font-extrabold text-gray-900 dark:text-white tracking-tight font-display">
                   ChatterWise
-                </span>
+                </span> */}
+                <Logo />
               </div>
               <nav className="flex-1 px-3 space-y-1">
                 {mainNavigation.map((item) => {
