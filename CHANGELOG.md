@@ -4,10 +4,13 @@ All notable changes to this project will be documented in this file. See [standa
 
 ## [Unreleased]
 
+### 0.0.7 (2025-06-23)
+
 ### Added
 
 - footer links with their pages.
 - bolt branding
+- dark mode support
 
 ### 0.0.5 (2025-06-23)
 
