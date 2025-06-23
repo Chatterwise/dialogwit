@@ -54,8 +54,6 @@ export const KnowledgeBase = () => {
     return matchesSearch && matchesFilter;
   });
 
-  console.log(filteredKnowledge);
-
   const handleAddKnowledge = async () => {
     if (!selectedChatbot || !newContent.content.trim()) return;
 
@@ -138,14 +136,14 @@ export const KnowledgeBase = () => {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 dark:bg-gray-900 min-h-screen p-4">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-extrabold text-gray-900 font-display tracking-tight mb-1">
+          <h1 className="text-3xl font-extrabold text-gray-900 dark:text-white font-display tracking-tight mb-1">
             Bot Knowledge
           </h1>
-          <p className="text-gray-500">
+          <p className="text-gray-500 dark:text-gray-400">
             Manage the content that powers your chatbots.
           </p>
         </div>
@@ -153,7 +151,7 @@ export const KnowledgeBase = () => {
           <button
             onClick={() => setShowFileUpload(true)}
             disabled={!selectedChatbot}
-            className="inline-flex items-center px-4 py-2.5 border border-gray-300 text-sm font-medium rounded-xl text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+            className="inline-flex items-center px-4 py-2.5 border border-gray-300 dark:border-gray-700 text-sm font-medium rounded-xl text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
           >
             <Upload className="h-4 w-4 mr-2" />
             Upload Files
@@ -161,7 +159,7 @@ export const KnowledgeBase = () => {
           <button
             onClick={() => setShowAddModal(true)}
             disabled={!selectedChatbot}
-            className="inline-flex items-center px-5 py-2.5 border border-transparent text-sm font-semibold rounded-xl shadow-card text-white bg-primary-500 hover:bg-primary-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+            className="inline-flex items-center px-5 py-2.5 border border-transparent text-sm font-semibold rounded-xl shadow-card text-white bg-primary-500 hover:bg-primary-600 dark:bg-primary-600 dark:hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
           >
             <Plus className="h-4 w-4 mr-2" />
             Add Content
@@ -171,28 +169,28 @@ export const KnowledgeBase = () => {
 
       {/* Bot Knowledge Content */}
       {selectedChatbot && (
-        <div className="bg-white/80 rounded-2xl shadow-xl border border-gray-100">
+        <div className="bg-white/80 dark:bg-gray-800/80 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-700">
           {/* Filters */}
-          <div className="px-8 py-5 border-b border-gray-100 bg-gradient-to-r from-primary-50 via-white to-accent-50 rounded-t-2xl">
+          <div className="px-8 py-5 border-b border-gray-100 dark:border-gray-700 bg-gradient-to-r from-primary-50 via-white to-accent-50 dark:from-primary-900/20 dark:via-gray-900/40 dark:to-accent-900/20 rounded-t-2xl">
             <div className="flex items-center justify-between">
-              <h3 className="text-lg font-bold text-gray-900">
+              <h3 className="text-lg font-bold text-gray-900 dark:text-white">
                 Bot Knowledge Items
               </h3>
               <div className="flex items-center space-x-4">
                 <div className="relative">
-                  <Search className="h-4 w-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                  <Search className="h-4 w-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500" />
                   <input
                     type="text"
                     placeholder="Search content..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-primary-400 transition"
+                    className="pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-400 dark:focus:ring-primary-600 focus:border-primary-400 dark:focus:border-primary-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition"
                   />
                 </div>
                 <select
                   value={filterType}
                   onChange={(e) => setFilterType(e.target.value as any)}
-                  className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-primary-400 transition"
+                  className="px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-400 dark:focus:ring-primary-600 focus:border-primary-400 dark:focus:border-primary-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition"
                 >
                   <option value="all">All Types</option>
                   <option value="text">Text</option>
@@ -203,7 +201,7 @@ export const KnowledgeBase = () => {
 
             {/* Bulk Actions */}
             {filteredKnowledge.length > 0 && (
-              <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-100">
+              <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-100 dark:border-gray-700">
                 <div className="flex items-center space-x-4">
                   <label className="flex items-center">
                     <input
@@ -213,14 +211,14 @@ export const KnowledgeBase = () => {
                         filteredKnowledge.length > 0
                       }
                       onChange={toggleSelectAll}
-                      className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                      className="rounded border-gray-300 dark:border-gray-700 text-primary-600 dark:text-primary-400 focus:ring-primary-500 dark:focus:ring-primary-600"
                     />
-                    <span className="ml-2 text-sm text-gray-600">
+                    <span className="ml-2 text-sm text-gray-600 dark:text-gray-400">
                       Select all ({filteredKnowledge.length})
                     </span>
                   </label>
                   {selectedItems.length > 0 && (
-                    <span className="text-sm text-gray-600">
+                    <span className="text-sm text-gray-600 dark:text-gray-400">
                       {selectedItems.length} selected
                     </span>
                   )}
@@ -229,7 +227,7 @@ export const KnowledgeBase = () => {
                 {selectedItems.length > 0 && (
                   <button
                     onClick={handleBulkDelete}
-                    className="inline-flex items-center px-3 py-1.5 border border-red-300 text-sm font-medium rounded-lg text-red-600 bg-white hover:bg-red-50 transition-colors"
+                    className="inline-flex items-center px-3 py-1.5 border border-red-300 dark:border-red-700 text-sm font-medium rounded-lg text-red-600 dark:text-red-400 bg-white dark:bg-gray-800 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
                   >
                     <Trash2 className="h-4 w-4 mr-1" />
                     Delete Selected
@@ -244,19 +242,19 @@ export const KnowledgeBase = () => {
             {isLoading ? (
               <div className="text-center py-8">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-500 mx-auto"></div>
-                <p className="mt-2 text-sm text-gray-400">
+                <p className="mt-2 text-sm text-gray-400 dark:text-gray-500">
                   Loading Bot Knowledge...
                 </p>
               </div>
             ) : filteredKnowledge.length === 0 ? (
               <div className="text-center py-8">
-                <FileText className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-                <h3 className="text-lg font-bold text-gray-900">
+                <FileText className="h-12 w-12 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
+                <h3 className="text-lg font-bold text-gray-900 dark:text-white">
                   {searchTerm || filterType !== "all"
                     ? "No matching items"
                     : "No Bot Knowledge items"}
                 </h3>
-                <p className="text-gray-400">
+                <p className="text-gray-400 dark:text-gray-500">
                   {searchTerm || filterType !== "all"
                     ? "Try adjusting your search or filter criteria."
                     : "Add content to help your chatbot answer questions."}
@@ -267,7 +265,7 @@ export const KnowledgeBase = () => {
                 {filteredKnowledge.map((item) => (
                   <div
                     key={item.id}
-                    className="p-5 border border-gray-100 rounded-xl shadow-subtle bg-white/90"
+                    className="p-5 border border-gray-100 dark:border-gray-700 rounded-xl shadow-subtle bg-white/90 dark:bg-gray-700/90"
                   >
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center">
@@ -275,17 +273,17 @@ export const KnowledgeBase = () => {
                           type="checkbox"
                           checked={selectedItems.includes(item.id)}
                           onChange={() => toggleItemSelection(item.id)}
-                          className="rounded border-gray-300 text-primary-600 focus:ring-primary-500 mr-3"
+                          className="rounded border-gray-300 dark:border-gray-700 text-primary-600 dark:text-primary-400 focus:ring-primary-500 dark:focus:ring-primary-600 mr-3"
                         />
-                        <FileText className="h-5 w-5 text-gray-400 mr-2" />
-                        <span className="text-sm font-semibold text-gray-900">
+                        <FileText className="h-5 w-5 text-gray-400 dark:text-gray-500 mr-2" />
+                        <span className="text-sm font-semibold text-gray-900 dark:text-white">
                           {item.filename || `${item.content_type} content`}
                         </span>
                         <span
                           className={`ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                             item.content_type === "text"
-                              ? "bg-primary-100 text-primary-700"
-                              : "bg-accent-100 text-accent-700"
+                              ? "bg-primary-100 dark:bg-primary-900/20 text-primary-700 dark:text-primary-400"
+                              : "bg-accent-100 dark:bg-accent-900/20 text-accent-700 dark:text-accent-400"
                           }`}
                         >
                           {item.content_type}
@@ -295,24 +293,24 @@ export const KnowledgeBase = () => {
                         <span
                           className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                             item.processed
-                              ? "bg-green-100 text-green-700"
-                              : "bg-yellow-100 text-yellow-700"
+                              ? "bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-400"
+                              : "bg-yellow-100 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-400"
                           }`}
                         >
                           {item.processed ? "Processed" : "Processing"}
                         </span>
                         <button
                           onClick={() => handleDelete(item.id)}
-                          className="p-1 text-red-600 hover:bg-red-50 rounded transition-colors duration-200"
+                          className="p-1 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors duration-200"
                         >
                           <Trash2 className="h-4 w-4" />
                         </button>
                       </div>
                     </div>
-                    <p className="text-sm text-gray-600 line-clamp-2 mb-2">
+                    <p className="text-sm text-gray-600 dark:text-gray-300 line-clamp-2 mb-2">
                       {item.content.substring(0, 200)}...
                     </p>
-                    <div className="flex items-center justify-between text-xs text-gray-400">
+                    <div className="flex items-center justify-between text-xs text-gray-400 dark:text-gray-500">
                       <span>
                         Added {new Date(item.created_at).toLocaleDateString()}
                       </span>
@@ -335,20 +333,20 @@ export const KnowledgeBase = () => {
 
       {/* File Upload Modal */}
       {showFileUpload && (
-        <div className="fixed inset-0 bg-gray-800 bg-opacity-40 flex items-center justify-center z-50 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full mx-4 border border-gray-100 max-h-[90vh] overflow-y-auto">
-            <div className="px-8 py-5 border-b border-gray-100">
-              <h3 className="text-lg font-bold text-gray-900">
+        <div className="fixed inset-0 bg-gray-800 bg-opacity-40 dark:bg-gray-900/80 flex items-center justify-center z-50 backdrop-blur-sm">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-4xl w-full mx-4 border border-gray-100 dark:border-gray-700 max-h-[90vh] overflow-y-auto">
+            <div className="px-8 py-5 border-b border-gray-100 dark:border-gray-700">
+              <h3 className="text-lg font-bold text-gray-900 dark:text-white">
                 Upload Files to Bot Knowledge
               </h3>
             </div>
             <div className="p-8">
               <FileUpload onFilesSelected={handleFilesSelected} />
             </div>
-            <div className="px-8 py-5 border-t border-gray-100 flex justify-end space-x-3 bg-gradient-to-r from-white via-primary-50 to-accent-50 rounded-b-2xl">
+            <div className="px-8 py-5 border-t border-gray-100 dark:border-gray-700 flex justify-end space-x-3 bg-gradient-to-r from-white via-primary-50 to-accent-50 dark:from-gray-900/40 dark:via-primary-900/20 dark:to-accent-900/20 rounded-b-2xl">
               <button
                 onClick={() => setShowFileUpload(false)}
-                className="px-5 py-2 text-sm font-semibold text-gray-700 bg-white border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors duration-200"
+                className="px-5 py-2 text-sm font-semibold text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors duration-200"
               >
                 Close
               </button>
@@ -359,16 +357,16 @@ export const KnowledgeBase = () => {
 
       {/* Add Content Modal */}
       {showAddModal && (
-        <div className="fixed inset-0 bg-gray-800 bg-opacity-40 flex items-center justify-center z-50 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full mx-4 border border-gray-100">
-            <div className="px-8 py-5 border-b border-gray-100">
-              <h3 className="text-lg font-bold text-gray-900">
+        <div className="fixed inset-0 bg-gray-800 bg-opacity-40 dark:bg-gray-900/80 flex items-center justify-center z-50 backdrop-blur-sm">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-2xl w-full mx-4 border border-gray-100 dark:border-gray-700">
+            <div className="px-8 py-5 border-b border-gray-100 dark:border-gray-700">
+              <h3 className="text-lg font-bold text-gray-900 dark:text-white">
                 Add Bot Knowledge Content
               </h3>
             </div>
             <div className="p-8 space-y-5">
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                   Content Type
                 </label>
                 <select
@@ -379,7 +377,7 @@ export const KnowledgeBase = () => {
                       contentType: e.target.value as any,
                     })
                   }
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-primary-400 transition"
+                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-400 dark:focus:ring-primary-600 focus:border-primary-400 dark:focus:border-primary-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition"
                 >
                   <option value="text">Text Content</option>
                   <option value="document">Document</option>
@@ -388,7 +386,7 @@ export const KnowledgeBase = () => {
 
               {newContent.contentType === "document" && (
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                     Filename (optional)
                   </label>
                   <input
@@ -397,14 +395,14 @@ export const KnowledgeBase = () => {
                     onChange={(e) =>
                       setNewContent({ ...newContent, filename: e.target.value })
                     }
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-primary-400 transition"
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-400 dark:focus:ring-primary-600 focus:border-primary-400 dark:focus:border-primary-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition"
                     placeholder="document.pdf"
                   />
                 </div>
               )}
 
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                   Content
                 </label>
                 <textarea
@@ -413,15 +411,15 @@ export const KnowledgeBase = () => {
                     setNewContent({ ...newContent, content: e.target.value })
                   }
                   rows={8}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-primary-400 transition"
+                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-400 dark:focus:ring-primary-600 focus:border-primary-400 dark:focus:border-primary-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition"
                   placeholder="Paste your content here..."
                 />
               </div>
             </div>
-            <div className="px-8 py-5 border-t border-gray-100 flex justify-end space-x-3 bg-gradient-to-r from-white via-primary-50 to-accent-50 rounded-b-2xl">
+            <div className="px-8 py-5 border-t border-gray-100 dark:border-gray-700 flex justify-end space-x-3 bg-gradient-to-r from-white via-primary-50 to-accent-50 dark:from-gray-900/40 dark:via-primary-900/20 dark:to-accent-900/20 rounded-b-2xl">
               <button
                 onClick={() => setShowAddModal(false)}
-                className="px-5 py-2 text-sm font-semibold text-gray-700 bg-white border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors duration-200"
+                className="px-5 py-2 text-sm font-semibold text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors duration-200"
               >
                 Cancel
               </button>
@@ -430,7 +428,7 @@ export const KnowledgeBase = () => {
                 disabled={
                   !newContent.content.trim() || addKnowledgeBase.isPending
                 }
-                className="px-5 py-2 text-sm font-semibold text-white bg-primary-500 border border-transparent rounded-xl hover:bg-primary-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+                className="px-5 py-2 text-sm font-semibold text-white bg-primary-500 dark:bg-primary-600 border border-transparent rounded-xl hover:bg-primary-600 dark:hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
               >
                 {addKnowledgeBase.isPending ? "Adding..." : "Add Content"}
               </button>

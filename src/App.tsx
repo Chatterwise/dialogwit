@@ -44,6 +44,7 @@ import DocumentationPage from "./pages/DocumentationPage";
 import EnterprisePage from "./pages/EnterprisePage";
 import FeaturesPage from "./pages/FeaturesPage";
 import LegalPage from "./pages/LegalPage";
+import { WebhookManager } from "./components/WebhookManager";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -120,6 +121,7 @@ function AppContent() {
                     element={<ChatbotSettings />}
                   />
                   <Route path="/bot-knowledge" element={<KnowledgeBase />} />
+                  <Route path="/webhook" element={<WebhookManager />} />
                   <Route path="/usage" element={<TokenUsageDashboard />} />
                   <Route path="/analytics" element={<AdvancedAnalytics />} />
                   <Route path="/integrations" element={<Integrations />} />

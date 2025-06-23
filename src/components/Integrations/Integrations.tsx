@@ -686,10 +686,17 @@ export const ${
                   Retry mechanism for failed deliveries
                 </li>
               </ul>
-              <button className="inline-flex items-center text-green-600 dark:text-green-400 hover:text-green-500 dark:hover:text-green-300 text-sm font-medium">
+              {/* <button className="inline-flex items-center text-green-600 dark:text-green-400 hover:text-green-500 dark:hover:text-green-300 text-sm font-medium">
                 <Settings className="h-4 w-4 mr-1" />
                 Configure Webhooks
-              </button>
+              </button> */}
+              <Link
+                to="/webhook"
+                className="inline-flex items-center text-green-600 dark:text-green-400 hover:text-green-500 dark:hover:text-green-300 text-sm font-medium"
+              >
+                <Settings className="h-4 w-4 mr-1" />
+                Configure Webhooks
+              </Link>
             </motion.div>
           </div>
         </motion.div>
