@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file. See [standa
 
 ## [Unreleased]
 
+### Fixed
+
+- Fix auth path from social login
+- subscription link to stripe
+
 ### 0.0.7 (2025-06-23)
 
 ### Added

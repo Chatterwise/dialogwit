@@ -94,6 +94,10 @@ const SubscriptionStatus: React.FC = () => {
   const handleManageBilling = async () => {
     // await createPortalSession();
     console.log("Redirecting to Stripe portal...");
+    window.open(
+      "https://billing.stripe.com/p/login/test_28E5kFgpg9pg3ZD8uQ7kc00",
+      "_blank"
+    );
     // This will redirect to the Stripe customer portal
   };
 

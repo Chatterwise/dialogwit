@@ -80,6 +80,20 @@ function AppContent() {
         path="/auth"
         element={!user ? <Auth /> : <Navigate to="/dashboard" />}
       />
+      <Route
+        path="/auth/callback"
+        element={
+          user ? (
+            emailConfirmed ? (
+              <Navigate to="/dashboard" />
+            ) : (
+              <EmailConfirmationRequired />
+            )
+          ) : (
+            <Navigate to="/auth" />
+          )
+        }
+      />
       <Route path="/auth/confirm" element={<ConfirmEmail />} />
       <Route path="/chat/:chatbotId" element={<PublicChat />} />
       <Route path="/pricing" element={<PricingPlans />} />

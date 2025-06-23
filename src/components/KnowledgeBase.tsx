@@ -136,7 +136,7 @@ export const KnowledgeBase = () => {
   };
 
   return (
-    <div className="space-y-8 dark:bg-gray-900 min-h-screen p-4">
+    <div className="space-y-8  min-h-screen p-4">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>

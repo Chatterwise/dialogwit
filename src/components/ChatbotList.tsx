@@ -222,7 +222,7 @@ export const ChatbotList = () => {
                   </Link>
                   <Link
                     to={`/chatbots/${chatbot.id}/settings`}
-                    className="flex items-center justify-center px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition"
+                    className="flex items-center justify-center px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-xl text-blue-500 hover:bg-gray-50 dark:hover:bg-gray-800 transition"
                   >
                     <Settings className="h-4 w-4" />
                   </Link>
