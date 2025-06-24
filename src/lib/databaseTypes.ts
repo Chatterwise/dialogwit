@@ -419,6 +419,7 @@ export type Database = {
           content_type: Database["public"]["Enums"]["content_type"] | null
           created_at: string | null
           filename: string | null
+          force_reprocess: boolean | null
           id: string
           processed: boolean | null
         }
@@ -428,6 +429,7 @@ export type Database = {
           content_type?: Database["public"]["Enums"]["content_type"] | null
           created_at?: string | null
           filename?: string | null
+          force_reprocess?: boolean | null
           id?: string
           processed?: boolean | null
         }
@@ -437,6 +439,7 @@ export type Database = {
           content_type?: Database["public"]["Enums"]["content_type"] | null
           created_at?: string | null
           filename?: string | null
+          force_reprocess?: boolean | null
           id?: string
           processed?: boolean | null
         }
@@ -491,6 +494,62 @@ export type Database = {
           user_id?: string | null
         }
         Relationships: []
+      }
+      rag_settings: {
+        Row: {
+          chatbot_id: string
+          chunk_char_limit: number | null
+          created_at: string | null
+          enable_citations: boolean | null
+          enable_streaming: boolean | null
+          max_retrieved_chunks: number | null
+          max_tokens: number | null
+          min_word_count: number | null
+          model: string | null
+          similarity_threshold: number | null
+          stopwords: string[] | null
+          temperature: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          chatbot_id: string
+          chunk_char_limit?: number | null
+          created_at?: string | null
+          enable_citations?: boolean | null
+          enable_streaming?: boolean | null
+          max_retrieved_chunks?: number | null
+          max_tokens?: number | null
+          min_word_count?: number | null
+          model?: string | null
+          similarity_threshold?: number | null
+          stopwords?: string[] | null
+          temperature?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          chatbot_id?: string
+          chunk_char_limit?: number | null
+          created_at?: string | null
+          enable_citations?: boolean | null
+          enable_streaming?: boolean | null
+          max_retrieved_chunks?: number | null
+          max_tokens?: number | null
+          min_word_count?: number | null
+          model?: string | null
+          similarity_threshold?: number | null
+          stopwords?: string[] | null
+          temperature?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rag_settings_chatbot_id_fkey"
+            columns: ["chatbot_id"]
+            isOneToOne: true
+            referencedRelation: "chatbots"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       rate_limit_configs: {
         Row: {

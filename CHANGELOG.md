@@ -6,6 +6,11 @@ All notable changes to this project will be documented in this file. See [standa
 
 ### 0.0.8 (2025-06-24)
 
+### Added
+
+- advance bot settings
+- streming option for chat
+
 ### Fixed
 
 - Fix auth path from social login

@@ -1,17 +1,29 @@
 import { generateEmbedding, generateChatCompletion, streamChatCompletion, OpenAIError } from '../utils/openai.ts';
 import { searchSimilarChunks, fallbackTextSearch } from '../utils/database.ts';
 
-const STOPWORDS = ['hi', 'hello', 'hey', 'yo', 'hola', 'ok', 'okay', 'hmm', 'yes', 'no'];
+export const DEFAULT_OPTIONS = {
+  enableCitations: false,
+  maxRetrievedChunks: 3,
+  similarityThreshold: 0.7,
+  enableStreaming: false,
+  model: 'gpt-3.5-turbo',
+  temperature: 0.7,
+  maxTokens: 500,
+  chunkCharLimit: 200,
+  minWordCount: 5,
+  stopwords: ['hi', 'hello', 'hey', 'yo', 'hola', 'ok', 'okay', 'hmm', 'yes', 'no']
+};
 
 export async function generateRAGResponse(message, botId, supabaseClient, options = {}, userId) {
-  const { enableCitations = false, maxRetrievedChunks = 3, similarityThreshold = 0.7, enableStreaming = false, model = 'gpt-3.5-turbo', temperature = 0.7, maxTokens = 500, chunkCharLimit = 200 } = options;
+  const finalOptions = { ...DEFAULT_OPTIONS, ...options };
+  const { enableCitations, maxRetrievedChunks, similarityThreshold, enableStreaming, model, temperature, maxTokens, chunkCharLimit, stopwords, minWordCount } = finalOptions;
 
-  const { data: chatbot, error: botError } = await supabaseClient.from('chatbots').select('*, bot_role_templates(*)').eq('id', botId).single();
+  const { data: chatbot, error: botError } = await supabaseClient.from('chatbots').select('*, bot_role_templates(*), rag_settings(*)').eq('id', botId).single();
   if (botError || !chatbot) throw new Error('Chatbot not found');
 
   const wordCount = message.trim().split(/\s+/).length;
   const normalizedMessage = message.trim().toLowerCase();
-  if (wordCount <= 5 || STOPWORDS.includes(normalizedMessage)) {
+  if (wordCount <= minWordCount || stopwords.includes(normalizedMessage)) {
     return { response: "Could you please provide a bit more detail so I can assist better?", citations_enabled: false };
   }
 
@@ -81,27 +93,16 @@ export async function generateRAGResponse(message, botId, supabaseClient, option
   return ragResponse;
 }
 
-export async function generateFallbackResponse(message, botId, botName, supabaseClient) {
-  try {
-    const fallbackChunks = await fallbackTextSearch(supabaseClient, message, botId);
-    if (fallbackChunks.length > 0) {
-      const context = fallbackChunks.map(chunk => chunk.content).join('\n\n').substring(0, 300);
-      return `Based on available data: ${context}... Anything else you'd like to know?`;
-    }
-  } catch (error) {
-    console.error('Fallback search error:', error);
-  }
+export async function generateStreamingRAGResponse({ message, chatbotId, userId, userIp = 'unknown' }, supabaseClient, options = {}) {
+  const finalOptions = { ...DEFAULT_OPTIONS, ...options };
+  const { similarityThreshold, maxRetrievedChunks, chunkCharLimit, model, temperature, maxTokens, stopwords, minWordCount } = finalOptions;
 
-  return "I'm sorry, I couldn't find any information related to your question.";
-}
-
-export async function generateStreamingRAGResponse({ message, chatbotId, userId, userIp = 'unknown' }, supabaseClient) {
-  const { data: chatbot, error: botError } = await supabaseClient.from('chatbots').select('*, bot_role_templates(*)').eq('id', chatbotId).single();
+  const { data: chatbot, error: botError } = await supabaseClient.from('chatbots').select('*, bot_role_templates(*), rag_settings(*)').eq('id', chatbotId).single();
   if (botError || !chatbot) throw new Error('Chatbot not found');
 
   const wordCount = message.trim().split(/\s+/).length;
   const normalizedMessage = message.trim().toLowerCase();
-  if (wordCount <= 5 || STOPWORDS.includes(normalizedMessage)) {
+  if (wordCount <= minWordCount || stopwords.includes(normalizedMessage)) {
     const fullResponse = "Could you please provide a bit more detail so I can assist better?";
     const stream = new ReadableStream({
       start(controller) {
@@ -110,7 +111,10 @@ export async function generateStreamingRAGResponse({ message, chatbotId, userId,
       }
     });
     queueMicrotask(() => saveStreamedMessage(supabaseClient, chatbotId, message, fullResponse, userIp));
-    return { stream, fullResponse };
+    return {
+      stream,
+      fullResponse
+    };
   }
 
   let retrievedChunks = [];
@@ -118,9 +122,9 @@ export async function generateStreamingRAGResponse({ message, chatbotId, userId,
   try {
     const embeddingResponse = await generateEmbedding(message);
     const queryEmbedding = embeddingResponse.data[0].embedding;
-    retrievedChunks = await searchSimilarChunks(supabaseClient, queryEmbedding, chatbotId, { matchThreshold: 0.7, matchCount: 5 });
+    retrievedChunks = await searchSimilarChunks(supabaseClient, queryEmbedding, chatbotId, { matchThreshold: similarityThreshold, matchCount: maxRetrievedChunks });
     if (retrievedChunks.length > 0) {
-      context = retrievedChunks.map((chunk, i) => `[${i + 1}] ${chunk.content}`).join('\n\n');
+context = retrievedChunks.map((chunk, i) => `[${i + 1}] ${chunk.content.slice(0, chunkCharLimit)}`).join('\n\n');
     }
   } catch (error) {
     if (error instanceof OpenAIError) throw error;
@@ -136,11 +140,10 @@ export async function generateStreamingRAGResponse({ message, chatbotId, userId,
 
   const encoder = new TextEncoder();
   let fullResponse = '';
-
   const stream = new ReadableStream({
     async start(controller) {
       try {
-        for await (const chunk of streamChatCompletion(messages, { model: 'gpt-3.5-turbo', temperature: 0.7, max_tokens: 500 })) {
+        for await (const chunk of streamChatCompletion(messages, { model, temperature, max_tokens: maxTokens })) {
           fullResponse += chunk;
           controller.enqueue(encoder.encode(chunk));
         }
@@ -149,7 +152,6 @@ export async function generateStreamingRAGResponse({ message, chatbotId, userId,
         const estimatedPromptTokens = estimatePromptTokens(messages);
         const estimatedResponseTokens = Math.ceil(fullResponse.length / 4);
         const totalTokens = estimatedPromptTokens + estimatedResponseTokens;
-
         if (userId) {
           await supabaseClient.rpc('track_token_usage', {
             p_user_id: userId,
@@ -161,12 +163,11 @@ export async function generateStreamingRAGResponse({ message, chatbotId, userId,
               message_length: message.length,
               response_length: fullResponse.length,
               context_chunks: retrievedChunks.length,
-              model: 'gpt-3.5-turbo',
+              model,
               estimated_tokens: totalTokens
             }
           });
         }
-
         await saveStreamedMessage(supabaseClient, chatbotId, message, fullResponse, userIp);
       } catch (err) {
         controller.error(err);
@@ -178,7 +179,10 @@ export async function generateStreamingRAGResponse({ message, chatbotId, userId,
     }
   });
 
-  return { stream, fullResponse };
+  return {
+    stream,
+    fullResponse
+  };
 }
 
 async function saveStreamedMessage(supabaseClient, chatbotId, message, response, userIp) {
@@ -202,6 +206,6 @@ function buildSystemPrompt(botName, context, enableCitations, customInstructions
 }
 
 function estimatePromptTokens(messages) {
-  const total = messages.map(m => m.content).join(' ');
+  const total = messages.map((m) => m.content).join(' ');
   return Math.ceil(total.length / 4) + messages.length * 10;
 }
