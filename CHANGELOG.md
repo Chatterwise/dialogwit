@@ -4,10 +4,13 @@ All notable changes to this project will be documented in this file. See [standa
 
 ## [Unreleased]
 
+### 0.0.8 (2025-06-24)
+
 ### Fixed
 
 - Fix auth path from social login
 - subscription link to stripe
+- multiple KB items per chatbot
 
 ### 0.0.7 (2025-06-23)
 

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { FileText, Plus, Trash2, Search, Upload, File } from "lucide-react";
+import { FileText, Plus, Trash2, Search, Upload } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
 import { useChatbots } from "../hooks/useChatbots";
 import {
@@ -9,6 +9,8 @@ import {
 } from "../hooks/useKnowledgeBase";
 import { FileUpload } from "./FileUpload";
 import { ChatbotSelector } from "./ChatbotSelector";
+import { useTrainChatbot } from "../hooks/useTraining";
+import { motion } from "framer-motion";
 
 interface ProcessedFile {
   file: File;
@@ -32,11 +34,18 @@ export const KnowledgeBase = () => {
     "all"
   );
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
+  const [processing, setProcessing] = useState(false);
+  const [progress, setProgress] = useState<number>(0);
+  const [progressLabel, setProgressLabel] = useState<string>("");
 
-  const { data: knowledgeBase = [], isLoading } =
-    useKnowledgeBase(selectedChatbot);
+  const {
+    data: knowledgeBase = [],
+    isLoading,
+    refetch: refetchKnowledgeBase,
+  } = useKnowledgeBase(selectedChatbot);
   const addKnowledgeBase = useAddKnowledgeBase();
   const deleteKnowledgeBase = useDeleteKnowledgeBase();
+  const trainChatbot = useTrainChatbot();
 
   const [newContent, setNewContent] = useState({
     content: "",
@@ -56,8 +65,13 @@ export const KnowledgeBase = () => {
 
   const handleAddKnowledge = async () => {
     if (!selectedChatbot || !newContent.content.trim()) return;
-
+    setShowAddModal(false);
     try {
+      setProcessing(true);
+      setProgress(0);
+      setProgressLabel("Adding knowledge...");
+
+      // 1. Add knowledge to the bot
       await addKnowledgeBase.mutateAsync({
         chatbot_id: selectedChatbot,
         content: newContent.content,
@@ -65,20 +79,46 @@ export const KnowledgeBase = () => {
         filename: newContent.filename || null,
         processed: false,
       });
+      setProgress(33);
 
+      // 2. Trigger training with the default model (gpt-3.5-turbo)
+      setProgressLabel("Training chatbot...");
+      await trainChatbot.mutateAsync({
+        chatbotId: selectedChatbot,
+        model: "gpt-3.5-turbo",
+      });
+      setProgress(66);
+
+      // 3. Refetch knowledge base to auto-update UI
+      setProgressLabel("Updating UI...");
+      await refetchKnowledgeBase();
+      setProgress(100);
+
+      // 4. Reset the form and close the modal
       setNewContent({ content: "", contentType: "text", filename: "" });
       setShowAddModal(false);
     } catch (error) {
       console.error("Error adding Bot Knowledge:", error);
+    } finally {
+      setTimeout(() => {
+        setProcessing(false);
+        setProgress(0);
+        setProgressLabel("");
+      }, 500); // Let user see completion for a moment
     }
   };
 
   const handleFilesSelected = async (files: ProcessedFile[]) => {
     if (!selectedChatbot) return;
 
-    for (const file of files) {
-      if (file.status === "completed" && file.content) {
-        try {
+    setProcessing(true);
+    setProgress(0);
+    setProgressLabel("Uploading files...");
+
+    try {
+      for (const file of files) {
+        if (file.status === "completed" && file.content) {
+          // 1. Add file content to the bot
           await addKnowledgeBase.mutateAsync({
             chatbot_id: selectedChatbot,
             content: file.content,
@@ -86,18 +126,40 @@ export const KnowledgeBase = () => {
             filename: file.name,
             processed: false,
           });
-        } catch (error) {
-          console.error("Error adding file to Bot Knowledge:", error);
+          setProgress((prev) => prev + 33 / files.length);
         }
       }
+
+      // 2. Trigger training with the default model (gpt-3.5-turbo)
+      setProgressLabel("Training chatbot...");
+      await trainChatbot.mutateAsync({
+        chatbotId: selectedChatbot,
+        model: "gpt-3.5-turbo",
+      });
+      setProgress(66);
+
+      // 3. Refetch knowledge base to auto-update UI
+      setProgressLabel("Updating UI...");
+      await refetchKnowledgeBase();
+      setProgress(100);
+
+      setShowFileUpload(false);
+    } catch (error) {
+      console.error("Error adding file to Bot Knowledge:", error);
+    } finally {
+      setTimeout(() => {
+        setProcessing(false);
+        setProgress(0);
+        setProgressLabel("");
+      }, 500); // Let user see completion for a moment
     }
-    setShowFileUpload(false);
   };
 
   const handleDelete = async (id: string) => {
     if (confirm("Are you sure you want to delete this Bot Knowledge item?")) {
       try {
         await deleteKnowledgeBase.mutateAsync(id);
+        await refetchKnowledgeBase(); // Auto-update UI
       } catch (error) {
         console.error("Error deleting Bot Knowledge:", error);
       }
@@ -115,6 +177,7 @@ export const KnowledgeBase = () => {
           selectedItems.map((id) => deleteKnowledgeBase.mutateAsync(id))
         );
         setSelectedItems([]);
+        await refetchKnowledgeBase(); // Auto-update UI
       } catch (error) {
         console.error("Error bulk deleting Bot Knowledge items:", error);
       }
@@ -136,7 +199,7 @@ export const KnowledgeBase = () => {
   };
 
   return (
-    <div className="space-y-8  min-h-screen p-4">
+    <div className="space-y-8 min-h-screen p-4">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -150,7 +213,7 @@ export const KnowledgeBase = () => {
         <div className="flex space-x-3">
           <button
             onClick={() => setShowFileUpload(true)}
-            disabled={!selectedChatbot}
+            disabled={!selectedChatbot || processing}
             className="inline-flex items-center px-4 py-2.5 border border-gray-300 dark:border-gray-700 text-sm font-medium rounded-xl text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
           >
             <Upload className="h-4 w-4 mr-2" />
@@ -158,7 +221,7 @@ export const KnowledgeBase = () => {
           </button>
           <button
             onClick={() => setShowAddModal(true)}
-            disabled={!selectedChatbot}
+            disabled={!selectedChatbot || processing}
             className="inline-flex items-center px-5 py-2.5 border border-transparent text-sm font-semibold rounded-xl shadow-card text-white bg-primary-500 hover:bg-primary-600 dark:bg-primary-600 dark:hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
           >
             <Plus className="h-4 w-4 mr-2" />
@@ -166,6 +229,24 @@ export const KnowledgeBase = () => {
           </button>
         </div>
       </div>
+
+      {/* Progress Bar */}
+      {(processing || isLoading) && (
+        <div className="space-y-2">
+          <div className="flex items-center justify-between text-sm text-gray-600 dark:text-gray-400">
+            <span>
+              {progressLabel || (isLoading ? "Loading..." : "Processing...")}
+            </span>
+            <span>{Math.round(progress)}%</span>
+          </div>
+          <motion.div
+            initial={{ width: 0 }}
+            animate={{ width: `${progress}%` }}
+            transition={{ duration: 0.5, ease: "easeOut" }}
+            className="h-2 bg-primary-500 dark:bg-primary-400 rounded-full"
+          />
+        </div>
+      )}
 
       {/* Bot Knowledge Content */}
       {selectedChatbot && (
@@ -190,7 +271,7 @@ export const KnowledgeBase = () => {
                 <select
                   value={filterType}
                   onChange={(e) => setFilterType(e.target.value as any)}
-                  className="px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-400 dark:focus:ring-primary-600 focus:border-primary-400 dark:focus:border-primary-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition"
+                  className="px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-400 dark:focus:ring-primary-600 focus:border-primary-400 dark:focus:border-primary-600 bg-white dark:bg-gray-7 text-gray-900 dark:text-white transition"
                 >
                   <option value="all">All Types</option>
                   <option value="text">Text</option>
@@ -239,14 +320,7 @@ export const KnowledgeBase = () => {
 
           {/* Content List */}
           <div className="p-8">
-            {isLoading ? (
-              <div className="text-center py-8">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-500 mx-auto"></div>
-                <p className="mt-2 text-sm text-gray-400 dark:text-gray-500">
-                  Loading Bot Knowledge...
-                </p>
-              </div>
-            ) : filteredKnowledge.length === 0 ? (
+            {filteredKnowledge.length === 0 ? (
               <div className="text-center py-8">
                 <FileText className="h-12 w-12 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
                 <h3 className="text-lg font-bold text-gray-900 dark:text-white">
@@ -425,12 +499,10 @@ export const KnowledgeBase = () => {
               </button>
               <button
                 onClick={handleAddKnowledge}
-                disabled={
-                  !newContent.content.trim() || addKnowledgeBase.isPending
-                }
+                disabled={!newContent.content.trim() || processing}
                 className="px-5 py-2 text-sm font-semibold text-white bg-primary-500 dark:bg-primary-600 border border-transparent rounded-xl hover:bg-primary-600 dark:hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
               >
-                {addKnowledgeBase.isPending ? "Adding..." : "Add Content"}
+                {processing ? "Processing..." : "Add Content"}
               </button>
             </div>
           </div>
