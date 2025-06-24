@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Outlet, Link, useLocation, useNavigate } from "react-router-dom";
+import { Outlet, Link, useLocation } from "react-router-dom";
 import {
   LayoutDashboard,
   Bot,

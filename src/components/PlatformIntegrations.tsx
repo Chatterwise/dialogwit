@@ -281,7 +281,7 @@ export const PlatformIntegrations = () => {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
-      className="space-y-8"
+      className="space-y-8 mt-8"
     >
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">

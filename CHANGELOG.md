@@ -6,6 +6,10 @@ All notable changes to this project will be documented in this file. See [standa
 
 ### Added
 
+- basic mobil support
+- kb management on the bot
+- ui improvments
+
 ### Fixed
 
 ### 0.0.9 (2025-06-24)

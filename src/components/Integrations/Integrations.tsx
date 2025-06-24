@@ -369,7 +369,7 @@ export const ${
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
-      className="min-h-screen bg-gray-50 dark:bg-gray-900 p-6 font-sans"
+      className="min-h-screen p-6 font-sans"
     >
       {/* Header */}
       <div className="space-y-2 mb-8">
@@ -614,18 +614,19 @@ export const ${
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="space-y-8"
+          className="space-y-8 mt-8"
         >
-          <div className="text-center">
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
-              API & Webhook Integration
-            </h2>
-            <p className="text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-              Programmatic access to your chatbots with comprehensive API
-              endpoints and webhook support.
-            </p>
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+              <h1 className="text-3xl font-extrabold text-gray-900 dark:text-white font-display tracking-tight mb-1">
+                API & Webhook Integration
+              </h1>
+              <p className="text-gray-600 dark:text-gray-400">
+                Programmatic access to your chatbots with comprehensive API
+                endpoints and webhook support.{" "}
+              </p>
+            </div>
           </div>
-
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <motion.div
               whileHover={{ scale: 1.01 }}
@@ -707,12 +708,12 @@ export const ${
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="space-y-10"
+          className="space-y-10 mt-8"
         >
           {/* Configuration */}
           <motion.div
             whileHover={{ scale: 1.01 }}
-            className="bg-white/90 dark:bg-gray-900/90 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-800 p-8"
+            className="bg-white/90 dark:bg-gray-900/90 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-800 p-8 "
           >
             <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-5">
               Configuration

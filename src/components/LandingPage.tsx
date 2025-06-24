@@ -13,10 +13,16 @@ import {
   CheckCircle,
   Star,
   Cpu,
+  Moon,
+  Sun,
+  Menu,
+  X,
 } from "lucide-react";
 import ParticlesBg from "particles-bg";
 import { Logo } from "./ui/Logo";
 import BoltLogo from "../resources/bolt-logo-white.png";
+import { useTheme } from "../hooks/useTheme";
+
 // Demo chatbot component
 const DemoChatbot = () => {
   const [messages, setMessages] = useState([
@@ -75,7 +81,7 @@ const DemoChatbot = () => {
               className={`max-w-xs p-3 rounded-lg ${
                 msg.sender === "user"
                   ? "bg-primary-500 text-white rounded-tr-none"
-                  : "bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-tl-none"
+                  : "bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-900 dark:text-gray-100 rounded-tl-none"
               }`}
             >
               {msg.text}
@@ -85,7 +91,7 @@ const DemoChatbot = () => {
 
         {isTyping && (
           <div className="flex mb-3">
-            <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 p-3 rounded-lg rounded-tl-none">
+            <div className="bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 p-3 rounded-lg rounded-tl-none">
               <div className="flex space-x-1">
                 <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
                 <div
@@ -110,7 +116,7 @@ const DemoChatbot = () => {
           onChange={(e) => setInput(e.target.value)}
           onKeyPress={(e) => e.key === "Enter" && handleSend()}
           placeholder="Type your message..."
-          className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-800 dark:text-white"
+          className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
         />
         <button
           onClick={handleSend}
@@ -143,38 +149,38 @@ const FeatureCard = ({ icon: Icon, title, description, delay = 0 }) => (
   </motion.div>
 );
 
-// Testimonial card
-const TestimonialCard = ({ name, role, company, quote, avatar, delay = 0 }) => (
-  <motion.div
-    initial={{ opacity: 0, scale: 0.9 }}
-    whileInView={{ opacity: 1, scale: 1 }}
-    transition={{ duration: 0.5, delay }}
-    viewport={{ once: true, margin: "-100px" }}
-    className="bg-white dark:bg-gray-800 p-8 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-xl"
-  >
-    <div className="flex items-center mb-4">
-      <div
-        className={`h-12 w-12 rounded-full flex items-center justify-center text-white font-bold ${avatar}`}
-      >
-        {name.charAt(0)}
-      </div>
-      <div className="ml-4">
-        <h4 className="text-lg font-semibold text-gray-900 dark:text-white">
-          {name}
-        </h4>
-        <p className="text-gray-500 dark:text-gray-400 text-sm">
-          {role}, {company}
-        </p>
-      </div>
-    </div>
-    <p className="text-gray-600 dark:text-gray-300 italic">"{quote}"</p>
-    <div className="mt-4 flex text-yellow-400">
-      {[...Array(5)].map((_, i) => (
-        <Star key={i} className="h-4 w-4 fill-current" />
-      ))}
-    </div>
-  </motion.div>
-);
+// // Testimonial card
+// const TestimonialCard = ({ name, role, company, quote, avatar, delay = 0 }) => (
+//   <motion.div
+//     initial={{ opacity: 0, scale: 0.9 }}
+//     whileInView={{ opacity: 1, scale: 1 }}
+//     transition={{ duration: 0.5, delay }}
+//     viewport={{ once: true, margin: "-100px" }}
+//     className="bg-white dark:bg-gray-800 p-8 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-xl"
+//   >
+//     <div className="flex items-center mb-4">
+//       <div
+//         className={`h-12 w-12 rounded-full flex items-center justify-center text-white font-bold ${avatar}`}
+//       >
+//         {name.charAt(0)}
+//       </div>
+//       <div className="ml-4">
+//         <h4 className="text-lg font-semibold text-gray-900 dark:text-white">
+//           {name}
+//         </h4>
+//         <p className="text-gray-500 dark:text-gray-400 text-sm">
+//           {role}, {company}
+//         </p>
+//       </div>
+//     </div>
+//     <p className="text-gray-600 dark:text-gray-300 italic">"{quote}"</p>
+//     <div className="mt-4 flex text-yellow-400">
+//       {[...Array(5)].map((_, i) => (
+//         <Star key={i} className="h-4 w-4 fill-current" />
+//       ))}
+//     </div>
+//   </motion.div>
+// );
 
 // Pricing card
 const PricingCard = ({
@@ -240,6 +246,8 @@ const LandingPage: React.FC = () => {
   const { scrollYProgress } = useScroll();
   const heroOpacity = useTransform(scrollYProgress, [0, 0.1], [1, 0]);
   const heroY = useTransform(scrollYProgress, [0, 0.1], [0, -50]);
+  const { theme, toggleTheme } = useTheme();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const [isVisible, setIsVisible] = useState(false);
   const chatbotRef = useRef(null);
@@ -269,7 +277,6 @@ const LandingPage: React.FC = () => {
       <div className="fixed inset-0 z-0 opacity-30 dark:opacity-20">
         <ParticlesBg type="cobweb" bg={true} color="#3B82F6" num={100} />
       </div>
-
       {/* Navigation */}
       <nav className="bg-white/90 dark:bg-gray-900/90 backdrop-blur-md border-b border-gray-200 dark:border-gray-800 fixed w-full z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -281,19 +288,28 @@ const LandingPage: React.FC = () => {
                 transition={{ duration: 0.5 }}
                 className="flex items-center"
               >
-                {/* <Bot className="h-8 w-8 text-primary-600 dark:text-primary-400" />
-                <span className="ml-2 text-xl font-bold text-gray-900 dark:text-white">
-                  ChatterWise
-                </span> */}
-                <Logo className="h-12 w-52" />
+                <Logo className="h-10 w-40 sm:h-12 sm:w-52" />
               </motion.div>
             </div>
+
+            {/* Desktop Navigation */}
             <motion.div
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.5, delay: 0.2 }}
-              className="flex items-center space-x-4"
+              className="hidden md:flex items-center space-x-4"
             >
+              <button
+                onClick={toggleTheme}
+                className="p-2 rounded-full bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 transition-colors"
+                title="Toggle theme"
+              >
+                {theme === "dark" ? (
+                  <Sun className="h-5 w-5" />
+                ) : (
+                  <Moon className="h-5 w-5" />
+                )}
+              </button>
               <Link
                 to="/pricing"
                 className="text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 px-3 py-2 text-sm font-medium"
@@ -325,8 +341,82 @@ const LandingPage: React.FC = () => {
                 Sign Up Free
               </Link>
             </motion.div>
+
+            {/* Mobile Menu Button */}
+            <div className="flex items-center md:hidden">
+              <button
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                className="p-2 rounded-full bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 transition-colors"
+              >
+                {mobileMenuOpen ? (
+                  <X className="h-5 w-5" />
+                ) : (
+                  <Menu className="h-5 w-5" />
+                )}
+              </button>
+            </div>
           </div>
         </div>
+
+        {/* Mobile Menu */}
+        <motion.div
+          initial={{ opacity: 0, height: 0 }}
+          animate={{
+            opacity: mobileMenuOpen ? 1 : 0,
+            height: mobileMenuOpen ? "auto" : 0,
+          }}
+          transition={{ duration: 0.2 }}
+          className="md:hidden overflow-hidden"
+        >
+          <div className="px-2 pt-2 pb-3 space-y-1 bg-white/90 dark:bg-gray-900/90 backdrop-blur-md">
+            <button
+              onClick={toggleTheme}
+              className="w-full flex items-center px-3 py-2 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+            >
+              {theme === "dark" ? (
+                <Sun className="h-5 w-5 mr-2" />
+              ) : (
+                <Moon className="h-5 w-5 mr-2" />
+              )}
+              Toggle Theme
+            </button>
+            <Link
+              to="/pricing"
+              onClick={() => setMobileMenuOpen(false)}
+              className="block px-3 py-2 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+            >
+              Pricing
+            </Link>
+            <Link
+              to="/documentation"
+              onClick={() => setMobileMenuOpen(false)}
+              className="block px-3 py-2 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+            >
+              Documentation
+            </Link>
+            <Link
+              to="/blog"
+              onClick={() => setMobileMenuOpen(false)}
+              className="block px-3 py-2 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+            >
+              Blog
+            </Link>
+            <Link
+              to="/auth"
+              onClick={() => setMobileMenuOpen(false)}
+              className="block px-3 py-2 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+            >
+              Login
+            </Link>
+            <Link
+              to="/auth"
+              onClick={() => setMobileMenuOpen(false)}
+              className="block px-3 py-2 rounded-md text-sm font-medium bg-primary-600 text-white hover:bg-primary-700 dark:hover:bg-primary-500"
+            >
+              Sign Up Free
+            </Link>
+          </div>
+        </motion.div>
       </nav>
 
       {/* Hero Section */}
@@ -430,7 +520,7 @@ const LandingPage: React.FC = () => {
         </div>
       </motion.section>
       {/* Hackathon Badge */}
-      <div className="flex justify-center items-center relative z-10 min-h-[120px]">
+      <div className="flex justify-center mb-8 items-center relative z-10 min-h-[120px]">
         <motion.a
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -448,9 +538,8 @@ const LandingPage: React.FC = () => {
           />
         </motion.a>
       </div>
-
       {/* Trusted By Section */}
-      <motion.section
+      {/* <motion.section
         initial={{ opacity: 0 }}
         whileInView={{ opacity: 1 }}
         transition={{ duration: 1 }}
@@ -480,8 +569,7 @@ const LandingPage: React.FC = () => {
             )}
           </div>
         </div>
-      </motion.section>
-
+      </motion.section> */}
       {/* Features Section */}
       <section className="py-20 bg-white dark:bg-gray-800 relative z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -540,7 +628,6 @@ const LandingPage: React.FC = () => {
           </div>
         </div>
       </section>
-
       {/* How It Works Section with Parallax */}
       <section className="py-20 bg-gradient-to-br from-gray-50 to-white dark:from-gray-900 dark:to-gray-800 relative overflow-hidden">
         {/* Parallax background elements */}
@@ -625,9 +712,8 @@ const LandingPage: React.FC = () => {
           </div>
         </div>
       </section>
-
       {/* Testimonials Section */}
-      <section className="py-20 bg-white dark:bg-gray-800 relative z-10">
+      {/* <section className="py-20 bg-white dark:bg-gray-800 relative z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -671,8 +757,7 @@ const LandingPage: React.FC = () => {
             />
           </div>
         </div>
-      </section>
-
+      </section> */}
       {/* Pricing Section */}
       <section className="py-20 bg-gradient-to-br from-gray-50 to-blue-50 dark:from-gray-900 dark:to-gray-800 relative z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -740,7 +825,6 @@ const LandingPage: React.FC = () => {
           </div>
         </div>
       </section>
-
       {/* CTA Section with animated gradient */}
       <section className="py-20 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-r from-primary-600 to-accent-500 dark:from-primary-800 dark:to-accent-700">
@@ -804,7 +888,6 @@ const LandingPage: React.FC = () => {
           </motion.div>
         </div>
       </section>
-
       {/* Footer */}
       <footer className="bg-gray-900 text-white py-12  relative z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 z-50">
