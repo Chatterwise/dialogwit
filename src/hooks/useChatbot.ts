@@ -17,7 +17,6 @@ export const useChatbot = ({ botId, apiUrl = '/api' }: UseChatbotOptions) => {
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-
   const sendMessage = useCallback(async (message: string) => {
     if (!message.trim() || isLoading) return
 

@@ -22,20 +22,65 @@ export const useChatMessages = (chatbotId: string) => {
   });
 };
 
-export const useSendMessage = () => {
-  const queryClient = useQueryClient();
+// export const useSendMessage = () => {
+//   const queryClient = useQueryClient();
 
+//   return useMutation({
+//     mutationFn: async ({
+//       chatbotId,
+//       message,
+//       userId,
+//     }: {
+//       chatbotId: string;
+//       message: string;
+//       userId: string;
+//     }) => {
+//       // Call the chat edge function
+//       const response = await fetch(
+//         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat`,
+//         {
+//           method: "POST",
+//           headers: {
+//             "Content-Type": "application/json",
+//             Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+//           },
+//           body: JSON.stringify({
+//             chatbot_id: chatbotId,
+//             message,
+//             user_ip: userId,
+//           }),
+//         }
+//       );
+
+//       if (!response.ok) {
+//         throw new Error("Failed to send message");
+//       }
+
+//       const data = await response.json();
+//       return data;
+//     },
+//     onSuccess: (_, variables) => {
+//       // Invalidate chat messages to refetch
+//       queryClient.invalidateQueries({
+//         queryKey: ["chat_messages", variables.chatbotId],
+//       });
+//     },
+//   });
+// };
+
+export const useSendMessage = () => {
   return useMutation({
     mutationFn: async ({
       chatbotId,
       message,
       userId,
+      onChunk,
     }: {
       chatbotId: string;
       message: string;
       userId: string;
+      onChunk: (chunk: string) => void; // callback to process each streamed piece
     }) => {
-      // Call the chat edge function
       const response = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat`,
         {
@@ -48,22 +93,29 @@ export const useSendMessage = () => {
             chatbot_id: chatbotId,
             message,
             user_ip: userId,
+             stream: true, // enable streaming
           }),
         }
       );
 
-      if (!response.ok) {
-        throw new Error("Failed to send message");
+      if (!response.ok || !response.body) {
+        throw new Error("Failed to send message or stream not available");
       }
 
-      const data = await response.json();
-      return data;
-    },
-    onSuccess: (_, variables) => {
-      // Invalidate chat messages to refetch
-      queryClient.invalidateQueries({
-        queryKey: ["chat_messages", variables.chatbotId],
-      });
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder("utf-8");
+      let fullMessage = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        const chunk = decoder.decode(value, { stream: true });
+        fullMessage += chunk;
+        onChunk(chunk); // update UI as chunks come in
+      }
+
+      return fullMessage; // return the complete message
     },
   });
 };

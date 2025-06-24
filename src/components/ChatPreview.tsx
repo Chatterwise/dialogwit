@@ -57,17 +57,32 @@ export const ChatPreview = ({ botId }: { botId?: string }) => {
     setMessages((prev) => [...prev, loadingMessage]);
 
     try {
-      const response = await sendMessage.mutateAsync({
+      let finalText = "";
+
+      await sendMessage.mutateAsync({
         chatbotId: botId,
         message: inputValue,
         userId: user?.id || "NO_USER",
+        onChunk: (chunk) => {
+          finalText += chunk;
+          setMessages((prev) =>
+            prev.map((msg) =>
+              msg.id === loadingMessage.id
+                ? {
+                    ...msg,
+                    text: finalText,
+                    isLoading: true,
+                  }
+                : msg
+            )
+          );
+        },
       });
 
+      // Once stream ends, mark message as done
       setMessages((prev) =>
         prev.map((msg) =>
-          msg.id === loadingMessage.id
-            ? { ...msg, text: response.response, isLoading: false }
-            : msg
+          msg.id === loadingMessage.id ? { ...msg, isLoading: false } : msg
         )
       );
     } catch {
@@ -131,16 +146,12 @@ export const ChatPreview = ({ botId }: { botId?: string }) => {
                   <Bot className="h-4 w-4 mr-2 mt-0.5 text-primary-600 dark:text-primary-400 flex-shrink-0" />
                 )}
                 <div className="flex-1">
-                  {message.isLoading ? (
-                    <div className="flex items-center space-x-1">
-                      <Loader className="h-4 w-4 animate-spin" />
-                      <span className="text-sm">Thinking...</span>
-                    </div>
-                  ) : (
-                    <p className="text-sm whitespace-pre-wrap">
-                      {message.text}
-                    </p>
-                  )}
+                  <p className="text-sm whitespace-pre-wrap">
+                    {message.text}
+                    {message.isLoading && (
+                      <span className="animate-pulse">▌</span>
+                    )}
+                  </p>
                   <span
                     className={`text-xs opacity-75 mt-1 block ${
                       message.sender === "user"

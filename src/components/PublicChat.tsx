@@ -76,16 +76,57 @@ export const PublicChat = () => {
     };
     setMessages((prev) => [...prev, loadingMessage]);
 
+    // try {
+    //   const response = await sendMessage.mutateAsync({
+    //     chatbotId: chatbotId,
+    //     message: inputValue,
+    //     userId: user?.id || "NO_USER",
+    //   });
+    //   setMessages((prev) =>
+    //     prev.map((msg) =>
+    //       msg.id === loadingMessage.id
+    //         ? { ...msg, text: response.response, isLoading: false }
+    //         : msg
+    //     )
+    //   );
+    // } catch {
+    //   setMessages((prev) =>
+    //     prev.map((msg) =>
+    //       msg.id === loadingMessage.id
+    //         ? {
+    //             ...msg,
+    //             text: "Sorry, I encountered an error. Please try again.",
+    //             isLoading: false,
+    //           }
+    //         : msg
+    //     )
+    //   );
+    // }
     try {
-      const response = await sendMessage.mutateAsync({
+      let finalText = "";
+
+      await sendMessage.mutateAsync({
         chatbotId: chatbotId,
         message: inputValue,
         userId: user?.id || "NO_USER",
+        onChunk: (chunk) => {
+          finalText += chunk;
+
+          setMessages((prev) =>
+            prev.map((msg) =>
+              msg.id === loadingMessage.id
+                ? { ...msg, text: finalText, isLoading: true }
+                : msg
+            )
+          );
+        },
       });
+
+      // Once stream ends, mark message as done
       setMessages((prev) =>
         prev.map((msg) =>
           msg.id === loadingMessage.id
-            ? { ...msg, text: response.response, isLoading: false }
+            ? { ...msg, text: finalText, isLoading: false }
             : msg
         )
       );

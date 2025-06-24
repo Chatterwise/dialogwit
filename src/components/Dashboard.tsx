@@ -504,7 +504,7 @@ export function Dashboard() {
           />
         </div>
         <ProfessionalChat
-          botId="e2a90e41-dad1-4164-80ac-c1b1dd3d840b"
+          botId="79ca1229-da99-4349-ad0f-0c56a4767533"
           apiUrl="https://bpzfivbuhgjpkngcjpzc.supabase.co/functions/v1"
           apiKey="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJwemZpdmJ1aGdqcGtuZ2NqcHpjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAwOTI3MzIsImV4cCI6MjA2NTY2ODczMn0.fBkQQJiLLfSwW3yH3rJ1HOLj-fs27tEfBJtOBpWtdx4"
           isOpen={isChatOpen}

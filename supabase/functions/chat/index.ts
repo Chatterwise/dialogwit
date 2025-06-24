@@ -1,45 +1,67 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-import { generateRAGResponse, generateStreamingRAGResponse } from '../_shared/handlers/rag.ts';
-import { createErrorResponse, createSuccessResponse, createCorsResponse } from '../_shared/utils/response.ts';
-serve(async (req)=>{
+import {
+  generateRAGResponse,
+  generateStreamingRAGResponse
+} from '../_shared/handlers/rag.ts';
+import {
+  createErrorResponse,
+  createSuccessResponse,
+  createCorsResponse
+} from '../_shared/utils/response.ts';
+
+serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return createCorsResponse();
   }
+
   try {
     const body = await req.json();
-    const { message, chatbot_id, user_ip, stream = false, system_prompt_template } = body;
+    const { message, chatbot_id, user_ip, stream = false } = body;
+
     if (!message || !chatbot_id) {
       return createErrorResponse('Message and chatbot_id are required', 400);
     }
-    const supabaseClient = createClient(Deno.env.get('SUPABASE_URL') ?? '', Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '');
-    const { data: chatbot, error: chatbotError } = await supabaseClient.from('chatbots').select('id, name, user_id, status').eq('id', chatbot_id).single();
+
+    const supabaseClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    );
+
+    const { data: chatbot, error: chatbotError } = await supabaseClient
+      .from('chatbots')
+      .select('id, name, user_id, status')
+      .eq('id', chatbot_id)
+      .single();
+
     if (chatbotError || !chatbot) {
       return createErrorResponse('Chatbot not found', 404);
     }
+
     if (chatbot.status !== 'ready') {
       return createErrorResponse('Chatbot is not ready', 400, {
         status: chatbot.status
       });
     }
+
     const userId = chatbot.user_id;
     if (!userId) {
       return createErrorResponse('User ID not found for the chatbot', 400);
     }
-    // Continue with chat processing
+
     try {
       if (stream) {
-        const responseStream = await generateStreamingRAGResponse({
-          message,
-          chatbotId: chatbot_id,
-          userId
-        }, supabaseClient);
-        await supabaseClient.from('chat_messages').insert({
-          chatbot_id,
-          message,
-          response: '',
-          user_ip: user_ip || 'unknown'
-        });
+        const { stream: responseStream } = await generateStreamingRAGResponse(
+          {
+            message,
+            chatbotId: chatbot_id,
+            userId,
+            userIp: user_ip || 'unknown' // pass this to log IP later
+          },
+          supabaseClient
+        );
+
+        // ✅ Just return the stream — do not try to consume it again
         return new Response(responseStream, {
           headers: {
             'Content-Type': 'text/plain',
@@ -51,16 +73,29 @@ serve(async (req)=>{
           }
         });
       } else {
-        const result = await generateRAGResponse(message, chatbot_id, supabaseClient, { system_prompt_template }, userId);
-        const { data: chatMessage, error: insertError } = await supabaseClient.from('chat_messages').insert({
-          chatbot_id,
+        const result = await generateRAGResponse(
           message,
-          response: result.response,
-          user_ip: user_ip || 'unknown'
-        }).select().single();
+          chatbot_id,
+          supabaseClient,
+          {},
+          userId
+        );
+
+        const { data: chatMessage, error: insertError } = await supabaseClient
+          .from('chat_messages')
+          .insert({
+            chatbot_id,
+            message,
+            response: result.response,
+            user_ip: user_ip || 'unknown'
+          })
+          .select()
+          .single();
+
         if (insertError) {
           console.error('Failed to store chat message:', insertError);
         }
+
         return createSuccessResponse({
           response: result.response,
           context: result.context,
@@ -85,6 +120,7 @@ serve(async (req)=>{
           message: 'Too many requests. Please try again later.'
         });
       }
+
       return createErrorResponse('AI service error', 503, {
         message: error.message
       });
