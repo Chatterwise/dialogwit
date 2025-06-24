@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Code,
   Download,
@@ -43,6 +43,8 @@ export const InstallationWizard = () => {
     apiKey: import.meta.env.VITE_SUPABASE_ANON_KEY || "your-api-key",
   });
   const [copiedCode, setCopiedCode] = useState(false);
+  const [copiedTemplateCode, setCopiedTemplateCode] = useState(false);
+  const [copiedBaseTemplateCode, setCopiedBaseTemplateCode] = useState(false);
 
   const steps: WizardStep[] = [
     {
@@ -229,10 +231,12 @@ export default App`;
 
   const generateScriptCode = () => {
     const selectedBot = chatbots.find((bot) => bot.id === selections.botId);
+    // Use the current origin for the script source
+    const scriptSrc = `${window.location.origin}/chatbot-widget.js`;
 
     return `<!-- Add this script tag to your HTML -->
 <script 
-  src="https://your-domain.com/chatbot-widget.js" 
+  src="${scriptSrc}" 
   data-bot-id="${selections.botId}"
   data-api-url="${selections.apiUrl}"
   data-api-key="${selections.apiKey}"
@@ -250,10 +254,415 @@ export default App`;
 </script>`;
   };
 
+  const getChatTemplateBaseContent = () => {
+    return `import React, { useState, useEffect, useRef } from 'react'
+import { Send, Bot, User, Loader, X, Minimize2, Maximize2, Settings, MoreVertical } from 'lucide-react'
+
+interface Message {
+  id: string
+  text: string
+  sender: 'user' | 'bot'
+  timestamp: Date
+  isLoading?: boolean
+}
+
+interface ChatTemplateProps {
+  botId: string
+  apiUrl?: string
+  apiKey?: string
+  template?: 'modern' | 'minimal' | 'bubble' | 'professional' | 'gaming' | 'elegant' | 'corporate' | 'healthcare' | 'education' | 'retail'
+  theme?: 'light' | 'dark' | 'auto'
+  primaryColor?: string
+  botName?: string
+  botAvatar?: string
+  welcomeMessage?: string
+  placeholder?: string
+  position?: 'bottom-right' | 'bottom-left' | 'center' | 'fullscreen'
+  isOpen?: boolean
+  onToggle?: (isOpen: boolean) => void
+  className?: string
+}
+
+export const ChatTemplate = ({
+  botId,
+  apiUrl = '/api',
+  apiKey,
+  template = 'modern',
+  theme = 'light',
+  primaryColor = '#3B82F6',
+  botName = 'AI Assistant',
+  botAvatar,
+  welcomeMessage = 'Hello! How can I help you today?',
+  placeholder = 'Type your message...',
+  position = 'bottom-right',
+  isOpen = false,
+  onToggle,
+  className = ''
+}: ChatTemplateProps) => {
+  const [messages, setMessages] = useState<Message[]>([])
+  const [inputValue, setInputValue] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
+  const [isMinimized, setIsMinimized] = useState(false)
+  const messagesEndRef = useRef<HTMLDivElement>(null)
+
+  const baseStyles = {
+    light: 'bg-white text-gray-900',
+    dark: 'bg-gray-900 text-white'
+  }
+
+  useEffect(() => {
+    if (welcomeMessage && messages.length === 0) {
+      setMessages([{
+        id: '1',
+        text: welcomeMessage,
+        sender: 'bot',
+        timestamp: new Date()
+      }])
+    }
+  }, [welcomeMessage])
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [messages])
+
+  const sendMessage = async () => {
+    if (!inputValue.trim() || isLoading) return
+
+    const userMessage: Message = {
+      id: Date.now().toString(),
+      text: inputValue,
+      sender: 'user',
+      timestamp: new Date()
+    }
+
+    setMessages(prev => [...prev, userMessage])
+    setInputValue('')
+    setIsLoading(true)
+
+    // Add loading message
+    const loadingMessage: Message = {
+      id: (Date.now() + 1).toString(),
+      text: '',
+      sender: 'bot',
+      timestamp: new Date(),
+      isLoading: true
+    }
+    setMessages(prev => [...prev, loadingMessage])
+
+    try {
+      const response = await fetch(\`\${apiUrl}/chat\`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(apiKey && { 'Authorization': \`Bearer \${apiKey}\` })
+        },
+        body: JSON.stringify({
+          botId,
+          message: inputValue
+        })
+      })
+
+      if (!response.ok) throw new Error('Failed to send message')
+
+      const data = await response.json()
+
+      setMessages(prev =>
+        prev.map(msg =>
+          msg.id === loadingMessage.id
+            ? { ...msg, text: data.response, isLoading: false }
+            : msg
+        )
+      )
+    } catch (error) {
+      setMessages(prev =>
+        prev.map(msg =>
+          msg.id === loadingMessage.id
+            ? { ...msg, text: 'Sorry, I encountered an error. Please try again.', isLoading: false }
+            : msg
+        )
+      )
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault()
+      sendMessage()
+    }
+  }
+
+  const getTemplateStyles = () => {
+    const templates = {
+      modern: {
+        container: \`rounded-2xl shadow-2xl border \${theme === 'dark' ? 'border-gray-700' : 'border-gray-200'}\`,
+        header: \`bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-t-2xl\`,
+        message: {
+          user: \`bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-2xl rounded-br-md\`,
+          bot: \`\${theme === 'dark' ? 'bg-gray-800' : 'bg-gray-100'} rounded-2xl rounded-bl-md\`
+        }
+      },
+      minimal: {
+        container: \`rounded-lg shadow-lg border \${theme === 'dark' ? 'border-gray-700' : 'border-gray-200'}\`,
+        header: \`\${theme === 'dark' ? 'bg-gray-800' : 'bg-gray-50'} border-b \${theme === 'dark' ? 'border-gray-700' : 'border-gray-200'} rounded-t-lg\`,
+        message: {
+          user: \`bg-blue-500 text-white rounded-lg\`,
+          bot: \`\${theme === 'dark' ? 'bg-gray-700' : 'bg-gray-100'} rounded-lg\`
+        }
+      },
+      bubble: {
+        container: \`rounded-3xl shadow-xl border-2 \${theme === 'dark' ? 'border-gray-600' : 'border-gray-300'}\`,
+        header: \`bg-gradient-to-r from-pink-500 to-rose-500 text-white rounded-t-3xl\`,
+        message: {
+          user: \`bg-gradient-to-r from-pink-500 to-rose-500 text-white rounded-full px-6 py-3\`,
+          bot: \`\${theme === 'dark' ? 'bg-gray-700' : 'bg-gray-200'} rounded-full px-6 py-3\`
+        }
+      },
+      professional: {
+        container: \`rounded-lg shadow-lg border \${theme === 'dark' ? 'border-gray-600' : 'border-gray-300'}\`,
+        header: \`\${theme === 'dark' ? 'bg-gray-800' : 'bg-slate-800'} text-white rounded-t-lg\`,
+        message: {
+          user: \`bg-slate-700 text-white rounded-lg\`,
+          bot: \`\${theme === 'dark' ? 'bg-gray-700' : 'bg-slate-100'} rounded-lg\`
+        }
+      },
+      gaming: {
+        container: \`rounded-xl shadow-2xl border-2 border-green-500 bg-gradient-to-b \${theme === 'dark' ? 'from-gray-900 to-black' : 'from-gray-100 to-white'}\`,
+        header: \`bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-t-xl\`,
+        message: {
+          user: \`bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-lg border border-green-400\`,
+          bot: \`\${theme === 'dark' ? 'bg-gray-800 border-gray-600' : 'bg-gray-100 border-gray-300'} rounded-lg border\`
+        }
+      },
+      elegant: {
+        container: \`rounded-2xl shadow-2xl border \${theme === 'dark' ? 'border-purple-500' : 'border-purple-200'} bg-gradient-to-b \${theme === 'dark' ? 'from-purple-900 to-gray-900' : 'from-purple-50 to-white'}\`,
+        header: \`bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-t-2xl\`,
+        message: {
+          user: \`bg-gradient-to-r from-purple-500 to-indigo-500 text-white rounded-2xl\`,
+          bot: \`\${theme === 'dark' ? 'bg-purple-800/30 border-purple-500' : 'bg-purple-100 border-purple-200'} rounded-2xl border\`
+        }
+      },
+      corporate: {
+        container: \`rounded-lg shadow-lg border \${theme === 'dark' ? 'border-gray-600' : 'border-gray-300'} bg-white\`,
+        header: \`bg-gradient-to-r from-gray-700 to-gray-800 text-white rounded-t-lg\`,
+        message: {
+          user: \`bg-gray-700 text-white rounded-lg\`,
+          bot: \`\${theme === 'dark' ? 'bg-gray-700' : 'bg-gray-50 border-gray-200'} rounded-lg border\`
+        }
+      },
+      healthcare: {
+        container: \`rounded-2xl shadow-xl border-2 \${theme === 'dark' ? 'border-teal-600' : 'border-teal-200'} bg-gradient-to-b \${theme === 'dark' ? 'from-teal-900 to-gray-900' : 'from-teal-50 to-white'}\`,
+        header: \`bg-gradient-to-r from-teal-600 to-cyan-600 text-white rounded-t-2xl\`,
+        message: {
+          user: \`bg-gradient-to-r from-teal-500 to-cyan-500 text-white rounded-2xl\`,
+          bot: \`\${theme === 'dark' ? 'bg-teal-800/30 border-teal-500' : 'bg-teal-50 border-teal-200'} rounded-2xl border\`
+        }
+      },
+      education: {
+        container: \`rounded-2xl shadow-xl border-2 \${theme === 'dark' ? 'border-amber-600' : 'border-amber-200'} bg-gradient-to-b \${theme === 'dark' ? 'from-amber-900 to-gray-900' : 'from-amber-50 to-white'}\`,
+        header: \`bg-gradient-to-r from-amber-600 to-orange-600 text-white rounded-t-2xl\`,
+        message: {
+          user: \`bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-2xl\`,
+          bot: \`\${theme === 'dark' ? 'bg-amber-800/30 border-amber-500' : 'bg-amber-50 border-amber-200'} rounded-2xl border\`
+        }
+      },
+      retail: {
+        container: \`rounded-2xl shadow-xl border-2 \${theme === 'dark' ? 'border-rose-600' : 'border-rose-200'} bg-gradient-to-b \${theme === 'dark' ? 'from-rose-900 to-gray-900' : 'from-rose-50 to-white'}\`,
+        header: \`bg-gradient-to-r from-rose-600 to-pink-600 text-white rounded-t-2xl\`,
+        message: {
+          user: \`bg-gradient-to-r from-rose-500 to-pink-500 text-white rounded-2xl\`,
+          bot: \`\${theme === 'dark' ? 'bg-rose-800/30 border-rose-500' : 'bg-rose-50 border-rose-200'} rounded-2xl border\`
+        }
+      }
+    }
+
+    return templates[template]
+  }
+
+  const styles = getTemplateStyles()
+
+  if (!isOpen) return null
+
+  const getPositionStyles = () => {
+    switch (position) {
+      case 'bottom-left':
+        return 'fixed bottom-4 left-4 z-50'
+      case 'center':
+        return 'fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50'
+      case 'fullscreen':
+        return 'fixed inset-4 z-50'
+      default:
+        return 'fixed bottom-4 right-4 z-50'
+    }
+  }
+
+  const getContainerSize = () => {
+    if (position === 'fullscreen') return 'w-full h-full'
+    if (position === 'center') return 'w-96 h-[600px]'
+    return isMinimized ? 'w-80 h-16' : 'w-80 h-[500px]'
+  }
+
+  return (
+    <div className={\`\${getPositionStyles()} \${getContainerSize()} \${className}\`}>
+      <div className={\`\${baseStyles[theme]} \${styles.container} h-full flex flex-col overflow-hidden transition-all duration-300\`}>
+        {/* Header */}
+        <div className={\`\${styles.header} px-4 py-3 flex items-center justify-between\`}>
+          <div className="flex items-center space-x-3">
+            {botAvatar ? (
+              <img src={botAvatar} alt={botName} className="w-8 h-8 rounded-full" />
+            ) : (
+              <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
+                <Bot className="w-5 h-5" />
+              </div>
+            )}
+            <div>
+              <h3 className="font-semibold text-sm">{botName}</h3>
+              <p className="text-xs opacity-90">Online</p>
+            </div>
+          </div>
+          <div className="flex items-center space-x-2">
+            <button
+              onClick={() => setIsMinimized(!isMinimized)}
+              className="p-1 hover:bg-white/20 rounded transition-colors"
+            >
+              {isMinimized ? <Maximize2 className="w-4 h-4" /> : <Minimize2 className="w-4 h-4" />}
+            </button>
+            <button
+              onClick={() => onToggle?.(false)}
+              className="p-1 hover:bg-white/20 rounded transition-colors"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+
+        {!isMinimized && (
+          <>
+            {/* Messages */}
+            <div className="flex-1 overflow-y-auto p-4 space-y-4">
+              {messages.map((message) => (
+                <div
+                  key={message.id}
+                  className={\`flex \${message.sender === 'user' ? 'justify-end' : 'justify-start'}\`}
+                >
+                  <div className={\`max-w-xs lg:max-w-sm px-4 py-2 \${styles.message[message.sender]}\`}>
+                    {message.isLoading ? (
+                      <div className="flex items-center space-x-2">
+                        <Loader className="w-4 h-4 animate-spin" />
+                        <span className="text-sm">Thinking...</span>
+                      </div>
+                    ) : (
+                      <>
+                        <p className="text-sm whitespace-pre-wrap">{message.text}</p>
+                        <span className="text-xs opacity-75 mt-1 block">
+                          {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </span>
+                      </>
+                    )}
+                  </div>
+                </div>
+              ))}
+              <div ref={messagesEndRef} />
+            </div>
+
+            {/* Input */}
+            <div className={\`p-4 border-t \${theme === 'dark' ? 'border-gray-700' : 'border-gray-200'}\`}>
+              <div className="flex space-x-2">
+                <input
+                  type="text"
+                  value={inputValue}
+                  onChange={(e) => setInputValue(e.target.value)}
+                  onKeyPress={handleKeyPress}
+                  placeholder={placeholder}
+                  className={\`flex-1 px-3 py-2 rounded-lg border \${
+                    theme === 'dark' 
+                      ? 'bg-gray-800 border-gray-600 text-white placeholder-gray-400' 
+                      : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
+                  } focus:outline-none focus:ring-2 focus:ring-blue-500\`}
+                  disabled={isLoading}
+                />
+                <button
+                  onClick={sendMessage}
+                  disabled={!inputValue.trim() || isLoading}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  {isLoading ? <Loader className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                </button>
+              </div>
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  )
+}`;
+  };
+
+  const getSpecificTemplateContent = (templateId: string) => {
+    const templateName =
+      templateId.charAt(0).toUpperCase() + templateId.slice(1);
+
+    return `import React from 'react'
+import { ChatTemplate } from './ChatTemplate'
+
+interface ${templateName}ChatProps {
+  botId: string
+  apiUrl?: string
+  apiKey?: string
+  isOpen?: boolean
+  onToggle?: (isOpen: boolean) => void
+  theme?: 'light' | 'dark'
+  position?: 'bottom-right' | 'bottom-left' | 'center' | 'fullscreen'
+  botName?: string
+  welcomeMessage?: string
+  placeholder?: string
+}
+
+export const ${templateName}Chat = (props: ${templateName}ChatProps) => {
+  return (
+    <ChatTemplate
+      {...props}
+      template="${templateId}"
+      botName={props.botName || "${templateName} Assistant"}
+      welcomeMessage={props.welcomeMessage || "Hello! I'm your ${templateId} AI assistant. How can I help you today?"}
+      placeholder={props.placeholder || "Type your message..."}
+      className="animate-in fade-in-50 duration-300"
+    />
+  )
+}`;
+  };
+
   const copyCode = () => {
     navigator.clipboard.writeText(generateCode());
     setCopiedCode(true);
     setTimeout(() => setCopiedCode(false), 2000);
+  };
+
+  const copyTemplateCode = () => {
+    navigator.clipboard.writeText(
+      getSpecificTemplateContent(selections.template)
+    );
+    setCopiedTemplateCode(true);
+    setTimeout(() => setCopiedTemplateCode(false), 2000);
+  };
+
+  const copyBaseTemplateCode = () => {
+    navigator.clipboard.writeText(getChatTemplateBaseContent());
+    setCopiedBaseTemplateCode(true);
+    setTimeout(() => setCopiedBaseTemplateCode(false), 2000);
+  };
+
+  const downloadFile = (content: string, filename: string) => {
+    const blob = new Blob([content], { type: "text/plain" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   };
 
   const nextStep = () => {
@@ -693,6 +1102,123 @@ export default App`;
                 <pre>{generateCode()}</pre>
               </div>
             </div>
+
+            {/* Template Files Section - Only show for React */}
+            {selections.framework === "react" && (
+              <div className="mt-8 space-y-4">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                  Template Files
+                </h3>
+                <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4 mb-4">
+                  <div className="flex items-start">
+                    <AlertCircle className="h-5 w-5 text-yellow-600 dark:text-yellow-400 mt-0.5 mr-3" />
+                    <div>
+                      <h4 className="text-sm font-medium text-yellow-800 dark:text-yellow-300">
+                        Important: Download Template Files
+                      </h4>
+                      <p className="text-sm text-yellow-700 dark:text-yellow-400 mt-1">
+                        The React integration requires template files. Download
+                        both files below and place them in your project's{" "}
+                        <code className="bg-yellow-100 dark:bg-yellow-900/40 px-1 rounded">
+                          src/components/ChatTemplates/
+                        </code>{" "}
+                        directory.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Base Template File */}
+                <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="text-sm font-medium text-gray-900 dark:text-white">
+                      1. ChatTemplate.tsx
+                    </h4>
+                    <div className="flex space-x-2">
+                      <motion.button
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={copyBaseTemplateCode}
+                        className="flex items-center px-2 py-1 text-xs font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                      >
+                        {copiedBaseTemplateCode ? (
+                          <Check className="h-3 w-3 mr-1" />
+                        ) : (
+                          <Copy className="h-3 w-3 mr-1" />
+                        )}
+                        {copiedBaseTemplateCode ? "Copied!" : "Copy"}
+                      </motion.button>
+                      <motion.button
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={() =>
+                          downloadFile(
+                            getChatTemplateBaseContent(),
+                            "ChatTemplate.tsx"
+                          )
+                        }
+                        className="flex items-center px-2 py-1 text-xs font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                      >
+                        <Download className="h-3 w-3 mr-1" />
+                        Download
+                      </motion.button>
+                    </div>
+                  </div>
+                  <p className="text-xs text-gray-600 dark:text-gray-400">
+                    Base template component that handles chat functionality
+                  </p>
+                </div>
+
+                {/* Specific Template File */}
+                <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="text-sm font-medium text-gray-900 dark:text-white">
+                      2.{" "}
+                      {selections.template.charAt(0).toUpperCase() +
+                        selections.template.slice(1)}
+                      Chat.tsx
+                    </h4>
+                    <div className="flex space-x-2">
+                      <motion.button
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={copyTemplateCode}
+                        className="flex items-center px-2 py-1 text-xs font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                      >
+                        {copiedTemplateCode ? (
+                          <Check className="h-3 w-3 mr-1" />
+                        ) : (
+                          <Copy className="h-3 w-3 mr-1" />
+                        )}
+                        {copiedTemplateCode ? "Copied!" : "Copy"}
+                      </motion.button>
+                      <motion.button
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={() =>
+                          downloadFile(
+                            getSpecificTemplateContent(selections.template),
+                            `${
+                              selections.template.charAt(0).toUpperCase() +
+                              selections.template.slice(1)
+                            }Chat.tsx`
+                          )
+                        }
+                        className="flex items-center px-2 py-1 text-xs font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                      >
+                        <Download className="h-3 w-3 mr-1" />
+                        Download
+                      </motion.button>
+                    </div>
+                  </div>
+                  <p className="text-xs text-gray-600 dark:text-gray-400">
+                    Specific template implementation for {selections.template}{" "}
+                    style
+                  </p>
+                </div>
+              </div>
+            )}
+
             {/* Selected Chatbot Info */}
             {selections.botId && (
               <div className="bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800 rounded-xl p-4">
@@ -738,13 +1264,26 @@ export default App`;
                         1
                       </span>
                       <div>
-                        <strong>Download template files:</strong> Get the
-                        template components from the gallery
+                        <strong>Create directory structure:</strong> Create a{" "}
+                        <code className="bg-green-100 dark:bg-green-900/50 px-1 rounded">
+                          src/components/ChatTemplates
+                        </code>{" "}
+                        folder in your project
                       </div>
                     </li>
                     <li className="flex items-start">
                       <span className="flex-shrink-0 w-6 h-6 bg-green-100 dark:bg-green-900/50 text-green-600 dark:text-green-400 rounded-full flex items-center justify-center text-xs font-medium mr-3 mt-0.5">
                         2
+                      </span>
+                      <div>
+                        <strong>Save template files:</strong> Download both
+                        template files and place them in the ChatTemplates
+                        folder
+                      </div>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="flex-shrink-0 w-6 h-6 bg-green-100 dark:bg-green-900/50 text-green-600 dark:text-green-400 rounded-full flex items-center justify-center text-xs font-medium mr-3 mt-0.5">
+                        3
                       </span>
                       <div>
                         <strong>Install dependencies:</strong>{" "}
@@ -755,7 +1294,7 @@ export default App`;
                     </li>
                     <li className="flex items-start">
                       <span className="flex-shrink-0 w-6 h-6 bg-green-100 dark:bg-green-900/50 text-green-600 dark:text-green-400 rounded-full flex items-center justify-center text-xs font-medium mr-3 mt-0.5">
-                        3
+                        4
                       </span>
                       <div>
                         <strong>Add the code:</strong> Copy the generated code
@@ -764,7 +1303,7 @@ export default App`;
                     </li>
                     <li className="flex items-start">
                       <span className="flex-shrink-0 w-6 h-6 bg-green-100 dark:bg-green-900/50 text-green-600 dark:text-green-400 rounded-full flex items-center justify-center text-xs font-medium mr-3 mt-0.5">
-                        4
+                        5
                       </span>
                       <div>
                         <strong>Test integration:</strong> Your chatbot is ready
@@ -779,8 +1318,11 @@ export default App`;
                         1
                       </span>
                       <div>
-                        <strong>Host the widget:</strong> Upload
-                        chatbot-widget.js to your server
+                        <strong>Host the widget:</strong> The widget script is
+                        already hosted at{" "}
+                        <code className="bg-green-100 dark:bg-green-900/50 px-1 rounded">
+                          {window.location.origin}/chatbot-widget.js
+                        </code>
                       </div>
                     </li>
                     <li className="flex items-start">

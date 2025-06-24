@@ -10,6 +10,8 @@ All notable changes to this project will be documented in this file. See [standa
 
 - advance bot settings
 - streming option for chat
+- fix integration files on the setup wizzard
+- updated settings page UI
 
 ### Fixed
 
