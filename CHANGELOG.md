@@ -4,7 +4,11 @@ All notable changes to this project will be documented in this file. See [standa
 
 ## [Unreleased]
 
-### 0.0.8 (2025-06-24)
+### Added
+
+### Fixed
+
+### 0.0.9 (2025-06-24)
 
 ### Added
 
@@ -12,6 +16,7 @@ All notable changes to this project will be documented in this file. See [standa
 - streming option for chat
 - fix integration files on the setup wizzard
 - updated settings page UI
+- allow for kb actions
 
 ### Fixed
 

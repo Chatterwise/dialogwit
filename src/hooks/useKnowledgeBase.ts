@@ -1,103 +1,114 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "../lib/supabase";
-import { Database } from "../lib/databaseTypes";
-import { useToast } from "../lib/toastStore";
 
-type KnowledgeBase = Database["public"]["Tables"]["knowledge_base"]["Row"];
-type KnowledgeBaseInsert =
-  Database["public"]["Tables"]["knowledge_base"]["Insert"];
-
+// Get knowledge base items for a chatbot
 export const useKnowledgeBase = (chatbotId: string) => {
   return useQuery({
-    queryKey: ["knowledge_base", chatbotId],
+    queryKey: ["knowledgeBase", chatbotId],
     queryFn: async () => {
+      if (!chatbotId) return [];
+      
       const { data, error } = await supabase
         .from("knowledge_base")
         .select("*")
         .eq("chatbot_id", chatbotId)
         .order("created_at", { ascending: false });
-
+      
       if (error) throw error;
-      return data as KnowledgeBase[];
+      return data || [];
     },
     enabled: !!chatbotId,
   });
 };
 
+// Add a new knowledge base item
 export const useAddKnowledgeBase = () => {
   const queryClient = useQueryClient();
-const toast = useToast()
-
+  
   return useMutation({
-    mutationFn: async (knowledgeBase: KnowledgeBaseInsert) => {
+    mutationFn: async (newItem: {
+      chatbot_id: string;
+      content: string;
+      content_type: "text" | "document";
+      filename?: string | null;
+      processed: boolean;
+    }) => {
       const { data, error } = await supabase
         .from("knowledge_base")
-        .insert(knowledgeBase)
+        .insert(newItem)
         .select()
         .single();
-      console.log("Adding knowledge base:", knowledgeBase);
+      
       if (error) throw error;
-      return data as KnowledgeBase;
+      return data;
     },
-onSuccess: async (data) => {
-  // 1. Invalidate the cache
-  queryClient.invalidateQueries({
-    queryKey: ["knowledge_base", data.chatbot_id],
-  });
-
-  // 2. Call the training function
-  try {
-    console.log("🚀 Triggering training for chatbot:", data.chatbot_id);
-
-    const response = await fetch(
-      `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/process-knowledge-base`,
-      {
-        method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-          },
-        body: JSON.stringify({
-          chatbotId: data.chatbot_id,
-        }),
-      }
-    );
-
-    if (!response.ok) {
-      const errText = await response.text();
-      console.error("Training function failed:", errText);
-    } else {
-      console.log("✅ Training triggered successfully");
-      toast.success("Knowledge base added and training started");
-    }
-  } catch (e) {
-    console.error("❌ Error calling training function:", e)
-    toast.error("Failed to start training");
-  }
-}
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["knowledgeBase", data.chatbot_id] });
+    },
   });
 };
 
+// Update an existing knowledge base item
+export const useUpdateKnowledgeBase = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async ({
+      id,
+      updates
+    }: {
+      id: string;
+      updates: {
+        content?: string;
+        content_type?: "text" | "document";
+        filename?: string | null;
+        processed?: boolean;
+      };
+    }) => {
+      const { data, error } = await supabase
+        .from("knowledge_base")
+        .update(updates)
+        .eq("id", id)
+        .select()
+        .single();
+      
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["knowledgeBase", data.chatbot_id] });
+    },
+  });
+};
+
+// Delete a knowledge base item
 export const useDeleteKnowledgeBase = () => {
   const queryClient = useQueryClient();
-const toast = useToast()
-
+  
   return useMutation({
     mutationFn: async (id: string) => {
+      // First get the item to know which chatbot it belongs to
+      const { data: item } = await supabase
+        .from("knowledge_base")
+        .select("chatbot_id")
+        .eq("id", id)
+        .single();
+      
+      const chatbotId = item?.chatbot_id;
+      
+      // Then delete the item
       const { error } = await supabase
         .from("knowledge_base")
         .delete()
         .eq("id", id);
-
+      
       if (error) throw error;
-      return { id };
+      return { id, chatbotId };
     },
-    onSuccess: (_, id) => {
-      // queryClient.invalidateQueries({ queryKey: ["knowledge_base"] });
-      queryClient.invalidateQueries({ queryKey: ["knowledge_base", id] });
-      toast.success("Knowledge base deleted successfully");
-    },onError: () => {
-      toast.error("Failed to delete knowledge base");
-    }
+    onSuccess: (data) => {
+      if (data.chatbotId) {
+        queryClient.invalidateQueries({ queryKey: ["knowledgeBase", data.chatbotId] });
+      }
+    },
   });
 };

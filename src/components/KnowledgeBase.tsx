@@ -1,16 +1,29 @@
 import { useState } from "react";
-import { FileText, Plus, Trash2, Search, Upload } from "lucide-react";
+import {
+  FileText,
+  Plus,
+  Trash2,
+  Search,
+  Edit,
+  Download,
+  Eye,
+  CheckCircle,
+  XCircle,
+  Loader,
+  X,
+} from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
 import { useChatbots } from "../hooks/useChatbots";
 import {
   useKnowledgeBase,
   useAddKnowledgeBase,
   useDeleteKnowledgeBase,
+  useUpdateKnowledgeBase,
 } from "../hooks/useKnowledgeBase";
-import { FileUpload } from "./FileUpload";
-import { ChatbotSelector } from "./ChatbotSelector";
 import { useTrainChatbot } from "../hooks/useTraining";
-import { motion } from "framer-motion";
+import { ChatbotSelector } from "./ChatbotSelector";
+import { KnowledgeEditorModal } from "./KnowledgeEditorModal";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface ProcessedFile {
   file: File;
@@ -27,8 +40,6 @@ export const KnowledgeBase = () => {
   const { user } = useAuth();
   const { data: chatbots = [] } = useChatbots(user?.id || "");
   const [selectedChatbot, setSelectedChatbot] = useState<string>("");
-  const [showAddModal, setShowAddModal] = useState(false);
-  const [showFileUpload, setShowFileUpload] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterType, setFilterType] = useState<"all" | "text" | "document">(
     "all"
@@ -37,6 +48,9 @@ export const KnowledgeBase = () => {
   const [processing, setProcessing] = useState(false);
   const [progress, setProgress] = useState<number>(0);
   const [progressLabel, setProgressLabel] = useState<string>("");
+  const [showKnowledgeEditor, setShowKnowledgeEditor] = useState(false);
+  const [editingItem, setEditingItem] = useState<any>(null);
+  const [viewingItem, setViewingItem] = useState<any>(null);
 
   const {
     data: knowledgeBase = [],
@@ -44,14 +58,9 @@ export const KnowledgeBase = () => {
     refetch: refetchKnowledgeBase,
   } = useKnowledgeBase(selectedChatbot);
   const addKnowledgeBase = useAddKnowledgeBase();
+  const updateKnowledgeBase = useUpdateKnowledgeBase();
   const deleteKnowledgeBase = useDeleteKnowledgeBase();
   const trainChatbot = useTrainChatbot();
-
-  const [newContent, setNewContent] = useState({
-    content: "",
-    contentType: "text" as "text" | "document",
-    filename: "",
-  });
 
   const filteredKnowledge = knowledgeBase.filter((item) => {
     const matchesSearch =
@@ -63,124 +72,168 @@ export const KnowledgeBase = () => {
     return matchesSearch && matchesFilter;
   });
 
-  const handleAddKnowledge = async () => {
-    if (!selectedChatbot || !newContent.content.trim()) return;
-    setShowAddModal(false);
-    try {
-      setProcessing(true);
-      setProgress(0);
-      setProgressLabel("Adding knowledge...");
-
-      // 1. Add knowledge to the bot
-      await addKnowledgeBase.mutateAsync({
-        chatbot_id: selectedChatbot,
-        content: newContent.content,
-        content_type: newContent.contentType,
-        filename: newContent.filename || null,
-        processed: false,
-      });
-      setProgress(33);
-
-      // 2. Trigger training with the default model (gpt-3.5-turbo)
-      setProgressLabel("Training chatbot...");
-      await trainChatbot.mutateAsync({
-        chatbotId: selectedChatbot,
-        model: "gpt-3.5-turbo",
-      });
-      setProgress(66);
-
-      // 3. Refetch knowledge base to auto-update UI
-      setProgressLabel("Updating UI...");
-      await refetchKnowledgeBase();
-      setProgress(100);
-
-      // 4. Reset the form and close the modal
-      setNewContent({ content: "", contentType: "text", filename: "" });
-      setShowAddModal(false);
-    } catch (error) {
-      console.error("Error adding Bot Knowledge:", error);
-    } finally {
-      setTimeout(() => {
-        setProcessing(false);
-        setProgress(0);
-        setProgressLabel("");
-      }, 500); // Let user see completion for a moment
-    }
-  };
-
-  const handleFilesSelected = async (files: ProcessedFile[]) => {
-    if (!selectedChatbot) return;
+  const handleSaveKnowledge = async (data: {
+    content: string;
+    contentType: "text" | "document";
+    filename: string;
+  }) => {
+    if (!selectedChatbot || !data.content.trim()) return;
 
     setProcessing(true);
     setProgress(0);
-    setProgressLabel("Uploading files...");
 
     try {
-      for (const file of files) {
-        if (file.status === "completed" && file.content) {
-          // 1. Add file content to the bot
-          await addKnowledgeBase.mutateAsync({
-            chatbot_id: selectedChatbot,
-            content: file.content,
-            content_type: "document",
-            filename: file.name,
-            processed: false,
-          });
-          setProgress((prev) => prev + 33 / files.length);
-        }
+      if (editingItem) {
+        // Update existing item
+        setProgressLabel("Updating knowledge...");
+        await updateKnowledgeBase.mutateAsync({
+          id: editingItem.id,
+          updates: {
+            content: data.content,
+            content_type: data.contentType,
+            filename: data.filename || null,
+            processed: false, // Mark for reprocessing
+          },
+        });
+      } else {
+        // Add new item
+        setProgressLabel("Adding knowledge...");
+        await addKnowledgeBase.mutateAsync({
+          chatbot_id: selectedChatbot,
+          content: data.content,
+          content_type: data.contentType,
+          filename: data.filename || null,
+          processed: false,
+        });
       }
+      setProgress(40);
 
-      // 2. Trigger training with the default model (gpt-3.5-turbo)
+      // Trigger training to reprocess the knowledge base
       setProgressLabel("Training chatbot...");
       await trainChatbot.mutateAsync({
         chatbotId: selectedChatbot,
         model: "gpt-3.5-turbo",
       });
-      setProgress(66);
+      setProgress(80);
 
-      // 3. Refetch knowledge base to auto-update UI
+      // Refetch knowledge base to update UI
       setProgressLabel("Updating UI...");
       await refetchKnowledgeBase();
       setProgress(100);
 
-      setShowFileUpload(false);
+      // Reset state
+      setEditingItem(null);
+
+      // Show success message
+      window.dispatchEvent(
+        new CustomEvent("toast", {
+          detail: {
+            type: "success",
+            message: editingItem
+              ? "Knowledge item updated successfully"
+              : "Knowledge item added successfully",
+          },
+        })
+      );
     } catch (error) {
-      console.error("Error adding file to Bot Knowledge:", error);
+      console.error("Error saving knowledge:", error);
+      window.dispatchEvent(
+        new CustomEvent("toast", {
+          detail: {
+            type: "error",
+            message: "Failed to save knowledge item",
+          },
+        })
+      );
     } finally {
       setTimeout(() => {
         setProcessing(false);
         setProgress(0);
         setProgressLabel("");
-      }, 500); // Let user see completion for a moment
+      }, 500);
     }
   };
 
   const handleDelete = async (id: string) => {
-    if (confirm("Are you sure you want to delete this Bot Knowledge item?")) {
-      try {
-        await deleteKnowledgeBase.mutateAsync(id);
-        await refetchKnowledgeBase(); // Auto-update UI
-      } catch (error) {
-        console.error("Error deleting Bot Knowledge:", error);
-      }
+    try {
+      setProcessing(true);
+      setProgressLabel("Deleting item...");
+      setProgress(30);
+
+      await deleteKnowledgeBase.mutateAsync(id);
+      setProgress(70);
+
+      await refetchKnowledgeBase();
+      setProgress(100);
+
+      window.dispatchEvent(
+        new CustomEvent("toast", {
+          detail: {
+            type: "success",
+            message: "Knowledge item deleted successfully",
+          },
+        })
+      );
+    } catch (error) {
+      console.error("Error deleting knowledge item:", error);
+      window.dispatchEvent(
+        new CustomEvent("toast", {
+          detail: {
+            type: "error",
+            message: "Failed to delete knowledge item",
+          },
+        })
+      );
+    } finally {
+      setTimeout(() => {
+        setProcessing(false);
+        setProgress(0);
+        setProgressLabel("");
+      }, 500);
     }
   };
 
   const handleBulkDelete = async () => {
     if (selectedItems.length === 0) return;
 
-    if (
-      confirm(`Are you sure you want to delete ${selectedItems.length} items?`)
-    ) {
-      try {
-        await Promise.all(
-          selectedItems.map((id) => deleteKnowledgeBase.mutateAsync(id))
-        );
-        setSelectedItems([]);
-        await refetchKnowledgeBase(); // Auto-update UI
-      } catch (error) {
-        console.error("Error bulk deleting Bot Knowledge items:", error);
-      }
+    try {
+      setProcessing(true);
+      setProgressLabel(`Deleting ${selectedItems.length} items...`);
+      setProgress(20);
+
+      await Promise.all(
+        selectedItems.map((id) => deleteKnowledgeBase.mutateAsync(id))
+      );
+      setProgress(70);
+
+      setSelectedItems([]);
+      await refetchKnowledgeBase();
+      setProgress(100);
+
+      window.dispatchEvent(
+        new CustomEvent("toast", {
+          detail: {
+            type: "success",
+            message: `${selectedItems.length} items deleted successfully`,
+          },
+        })
+      );
+    } catch (error) {
+      console.error("Error bulk deleting knowledge items:", error);
+      window.dispatchEvent(
+        new CustomEvent("toast", {
+          detail: {
+            type: "error",
+            message: "Failed to delete selected items",
+          },
+        })
+      );
+    } finally {
+      setTimeout(() => {
+        setProcessing(false);
+        setProgress(0);
+        setProgressLabel("");
+      }, 500);
     }
   };
 
@@ -198,6 +251,25 @@ export const KnowledgeBase = () => {
     }
   };
 
+  const handleEdit = (item: any) => {
+    setEditingItem(item);
+    setShowKnowledgeEditor(true);
+  };
+
+  const handleView = (item: any) => {
+    setViewingItem(item);
+  };
+
+  const handleDownload = (item: any) => {
+    const element = document.createElement("a");
+    const file = new Blob([item.content], { type: "text/plain" });
+    element.href = URL.createObjectURL(file);
+    element.download = item.filename || `knowledge_${item.id}.txt`;
+    document.body.appendChild(element);
+    element.click();
+    document.body.removeChild(element);
+  };
+
   return (
     <div className="space-y-8 min-h-screen p-4">
       {/* Header */}
@@ -212,41 +284,52 @@ export const KnowledgeBase = () => {
         </div>
         <div className="flex space-x-3">
           <button
-            onClick={() => setShowFileUpload(true)}
-            disabled={!selectedChatbot || processing}
-            className="inline-flex items-center px-4 py-2.5 border border-gray-300 dark:border-gray-700 text-sm font-medium rounded-xl text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
-          >
-            <Upload className="h-4 w-4 mr-2" />
-            Upload Files
-          </button>
-          <button
-            onClick={() => setShowAddModal(true)}
+            onClick={() => {
+              setEditingItem(null);
+              setShowKnowledgeEditor(true);
+            }}
             disabled={!selectedChatbot || processing}
             className="inline-flex items-center px-5 py-2.5 border border-transparent text-sm font-semibold rounded-xl shadow-card text-white bg-primary-500 hover:bg-primary-600 dark:bg-primary-600 dark:hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
           >
             <Plus className="h-4 w-4 mr-2" />
-            Add Content
+            Add Knowledge
           </button>
         </div>
       </div>
 
       {/* Progress Bar */}
-      {(processing || isLoading) && (
-        <div className="space-y-2">
-          <div className="flex items-center justify-between text-sm text-gray-600 dark:text-gray-400">
-            <span>
-              {progressLabel || (isLoading ? "Loading..." : "Processing...")}
-            </span>
-            <span>{Math.round(progress)}%</span>
-          </div>
+      <AnimatePresence>
+        {(processing || isLoading) && (
           <motion.div
-            initial={{ width: 0 }}
-            animate={{ width: `${progress}%` }}
-            transition={{ duration: 0.5, ease: "easeOut" }}
-            className="h-2 bg-primary-500 dark:bg-primary-400 rounded-full"
-          />
-        </div>
-      )}
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="space-y-2"
+          >
+            <div className="flex items-center justify-between text-sm text-gray-600 dark:text-gray-400">
+              <span>
+                {progressLabel || (isLoading ? "Loading..." : "Processing...")}
+              </span>
+              <span>{Math.round(progress)}%</span>
+            </div>
+            <div className="h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+              <motion.div
+                initial={{ width: 0 }}
+                animate={{ width: `${progress}%` }}
+                transition={{ duration: 0.5, ease: "easeOut" }}
+                className="h-full bg-primary-500 dark:bg-primary-400 rounded-full"
+              />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Chatbot Selection */}
+      <ChatbotSelector
+        chatbots={chatbots}
+        selectedChatbot={selectedChatbot}
+        setSelectedChatbot={setSelectedChatbot}
+      />
 
       {/* Bot Knowledge Content */}
       {selectedChatbot && (
@@ -271,7 +354,7 @@ export const KnowledgeBase = () => {
                 <select
                   value={filterType}
                   onChange={(e) => setFilterType(e.target.value as any)}
-                  className="px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-400 dark:focus:ring-primary-600 focus:border-primary-400 dark:focus:border-primary-600 bg-white dark:bg-gray-7 text-gray-900 dark:text-white transition"
+                  className="px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-400 dark:focus:ring-primary-600 focus:border-primary-400 dark:focus:border-primary-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition"
                 >
                   <option value="all">All Types</option>
                   <option value="text">Text</option>
@@ -308,7 +391,8 @@ export const KnowledgeBase = () => {
                 {selectedItems.length > 0 && (
                   <button
                     onClick={handleBulkDelete}
-                    className="inline-flex items-center px-3 py-1.5 border border-red-300 dark:border-red-700 text-sm font-medium rounded-lg text-red-600 dark:text-red-400 bg-white dark:bg-gray-800 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                    disabled={processing}
+                    className="inline-flex items-center px-3 py-1.5 border border-red-300 dark:border-red-700 text-sm font-medium rounded-lg text-red-600 dark:text-red-400 bg-white dark:bg-gray-800 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors disabled:opacity-50"
                   >
                     <Trash2 className="h-4 w-4 mr-1" />
                     Delete Selected
@@ -333,12 +417,28 @@ export const KnowledgeBase = () => {
                     ? "Try adjusting your search or filter criteria."
                     : "Add content to help your chatbot answer questions."}
                 </p>
+                {!searchTerm && filterType === "all" && (
+                  <button
+                    onClick={() => {
+                      setEditingItem(null);
+                      setShowKnowledgeEditor(true);
+                    }}
+                    disabled={!selectedChatbot || processing}
+                    className="mt-4 inline-flex items-center px-4 py-2 border border-transparent rounded-lg text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add First Item
+                  </button>
+                )}
               </div>
             ) : (
               <div className="space-y-5">
                 {filteredKnowledge.map((item) => (
-                  <div
+                  <motion.div
                     key={item.id}
+                    layout
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
                     className="p-5 border border-gray-100 dark:border-gray-700 rounded-xl shadow-subtle bg-white/90 dark:bg-gray-700/90"
                   >
                     <div className="flex items-center justify-between mb-2">
@@ -371,11 +471,39 @@ export const KnowledgeBase = () => {
                               : "bg-yellow-100 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-400"
                           }`}
                         >
+                          {item.processed ? (
+                            <CheckCircle className="h-3 w-3 mr-1" />
+                          ) : (
+                            <Loader className="h-3 w-3 mr-1 animate-spin" />
+                          )}
                           {item.processed ? "Processed" : "Processing"}
                         </span>
                         <button
+                          onClick={() => handleView(item)}
+                          className="p-1 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-600 rounded transition-colors duration-200"
+                          title="View"
+                        >
+                          <Eye className="h-4 w-4" />
+                        </button>
+                        <button
+                          onClick={() => handleEdit(item)}
+                          className="p-1 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded transition-colors duration-200"
+                          title="Edit"
+                        >
+                          <Edit className="h-4 w-4" />
+                        </button>
+                        <button
+                          onClick={() => handleDownload(item)}
+                          className="p-1 text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20 rounded transition-colors duration-200"
+                          title="Download"
+                        >
+                          <Download className="h-4 w-4" />
+                        </button>
+                        <button
                           onClick={() => handleDelete(item.id)}
-                          className="p-1 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors duration-200"
+                          disabled={processing}
+                          className="p-1 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors duration-200 disabled:opacity-50"
+                          title="Delete"
                         >
                           <Trash2 className="h-4 w-4" />
                         </button>
@@ -390,7 +518,7 @@ export const KnowledgeBase = () => {
                       </span>
                       <span>{item.content.length} characters</span>
                     </div>
-                  </div>
+                  </motion.div>
                 ))}
               </div>
             )}
@@ -398,116 +526,109 @@ export const KnowledgeBase = () => {
         </div>
       )}
 
-      {/* Chatbot Selection */}
-      <ChatbotSelector
-        chatbots={chatbots}
-        selectedChatbot={selectedChatbot}
-        setSelectedChatbot={setSelectedChatbot}
+      {/* Knowledge Editor Modal */}
+      <KnowledgeEditorModal
+        isOpen={showKnowledgeEditor}
+        onClose={() => {
+          setShowKnowledgeEditor(false);
+          setEditingItem(null);
+        }}
+        onSave={handleSaveKnowledge}
+        editingItem={editingItem}
+        isProcessing={processing}
       />
 
-      {/* File Upload Modal */}
-      {showFileUpload && (
-        <div className="fixed inset-0 bg-gray-800 bg-opacity-40 dark:bg-gray-900/80 flex items-center justify-center z-50 backdrop-blur-sm">
-          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-4xl w-full mx-4 border border-gray-100 dark:border-gray-700 max-h-[90vh] overflow-y-auto">
-            <div className="px-8 py-5 border-b border-gray-100 dark:border-gray-700">
-              <h3 className="text-lg font-bold text-gray-900 dark:text-white">
-                Upload Files to Bot Knowledge
-              </h3>
-            </div>
-            <div className="p-8">
-              <FileUpload onFilesSelected={handleFilesSelected} />
-            </div>
-            <div className="px-8 py-5 border-t border-gray-100 dark:border-gray-700 flex justify-end space-x-3 bg-gradient-to-r from-white via-primary-50 to-accent-50 dark:from-gray-900/40 dark:via-primary-900/20 dark:to-accent-900/20 rounded-b-2xl">
-              <button
-                onClick={() => setShowFileUpload(false)}
-                className="px-5 py-2 text-sm font-semibold text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors duration-200"
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Add Content Modal */}
-      {showAddModal && (
-        <div className="fixed inset-0 bg-gray-800 bg-opacity-40 dark:bg-gray-900/80 flex items-center justify-center z-50 backdrop-blur-sm">
-          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-2xl w-full mx-4 border border-gray-100 dark:border-gray-700">
-            <div className="px-8 py-5 border-b border-gray-100 dark:border-gray-700">
-              <h3 className="text-lg font-bold text-gray-900 dark:text-white">
-                Add Bot Knowledge Content
-              </h3>
-            </div>
-            <div className="p-8 space-y-5">
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                  Content Type
-                </label>
-                <select
-                  value={newContent.contentType}
-                  onChange={(e) =>
-                    setNewContent({
-                      ...newContent,
-                      contentType: e.target.value as any,
-                    })
-                  }
-                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-400 dark:focus:ring-primary-600 focus:border-primary-400 dark:focus:border-primary-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition"
-                >
-                  <option value="text">Text Content</option>
-                  <option value="document">Document</option>
-                </select>
-              </div>
-
-              {newContent.contentType === "document" && (
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                    Filename (optional)
-                  </label>
-                  <input
-                    type="text"
-                    value={newContent.filename}
-                    onChange={(e) =>
-                      setNewContent({ ...newContent, filename: e.target.value })
-                    }
-                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-400 dark:focus:ring-primary-600 focus:border-primary-400 dark:focus:border-primary-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition"
-                    placeholder="document.pdf"
-                  />
+      {/* View Item Modal */}
+      <AnimatePresence>
+        {viewingItem && (
+          <div className="fixed inset-0 bg-gray-800/40 dark:bg-black/60 flex items-center justify-center z-50 backdrop-blur-sm">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              transition={{ duration: 0.3 }}
+              className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-3xl w-full mx-4 border border-gray-100 dark:border-gray-700 max-h-[90vh] overflow-hidden flex flex-col"
+            >
+              <div className="px-8 py-5 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
+                <div className="flex items-center">
+                  <Eye className="h-5 w-5 text-primary-600 dark:text-primary-400 mr-3" />
+                  <h3 className="text-lg font-bold text-gray-900 dark:text-white">
+                    {viewingItem.filename || "Knowledge Content"}
+                  </h3>
                 </div>
-              )}
-
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                  Content
-                </label>
-                <textarea
-                  value={newContent.content}
-                  onChange={(e) =>
-                    setNewContent({ ...newContent, content: e.target.value })
-                  }
-                  rows={8}
-                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-400 dark:focus:ring-primary-600 focus:border-primary-400 dark:focus:border-primary-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition"
-                  placeholder="Paste your content here..."
-                />
+                <button
+                  onClick={() => setViewingItem(null)}
+                  className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                >
+                  <X className="h-5 w-5" />
+                </button>
               </div>
-            </div>
-            <div className="px-8 py-5 border-t border-gray-100 dark:border-gray-700 flex justify-end space-x-3 bg-gradient-to-r from-white via-primary-50 to-accent-50 dark:from-gray-900/40 dark:via-primary-900/20 dark:to-accent-900/20 rounded-b-2xl">
-              <button
-                onClick={() => setShowAddModal(false)}
-                className="px-5 py-2 text-sm font-semibold text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors duration-200"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleAddKnowledge}
-                disabled={!newContent.content.trim() || processing}
-                className="px-5 py-2 text-sm font-semibold text-white bg-primary-500 dark:bg-primary-600 border border-transparent rounded-xl hover:bg-primary-600 dark:hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
-              >
-                {processing ? "Processing..." : "Add Content"}
-              </button>
-            </div>
+              <div className="flex-1 overflow-y-auto p-8">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center space-x-2">
+                    <span
+                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                        viewingItem.content_type === "text"
+                          ? "bg-primary-100 dark:bg-primary-900/20 text-primary-700 dark:text-primary-400"
+                          : "bg-accent-100 dark:bg-accent-900/20 text-accent-700 dark:text-accent-400"
+                      }`}
+                    >
+                      {viewingItem.content_type}
+                    </span>
+                    <span
+                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                        viewingItem.processed
+                          ? "bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-400"
+                          : "bg-yellow-100 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-400"
+                      }`}
+                    >
+                      {viewingItem.processed ? (
+                        <CheckCircle className="h-3 w-3 mr-1" />
+                      ) : (
+                        <XCircle className="h-3 w-3 mr-1" />
+                      )}
+                      {viewingItem.processed ? "Processed" : "Not Processed"}
+                    </span>
+                  </div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400">
+                    Added: {new Date(viewingItem.created_at).toLocaleString()}
+                  </div>
+                </div>
+                <div className="bg-gray-50 dark:bg-gray-900/50 rounded-xl p-4 border border-gray-200 dark:border-gray-700 whitespace-pre-wrap text-sm text-gray-800 dark:text-gray-200 max-h-[60vh] overflow-y-auto">
+                  {viewingItem.content}
+                </div>
+              </div>
+              <div className="px-8 py-5 border-t border-gray-100 dark:border-gray-700 flex justify-between">
+                <button
+                  onClick={() => setViewingItem(null)}
+                  className="px-5 py-2 text-sm font-semibold text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors duration-200"
+                >
+                  Close
+                </button>
+                <div className="flex space-x-3">
+                  <button
+                    onClick={() => {
+                      handleEdit(viewingItem);
+                      setViewingItem(null);
+                    }}
+                    className="px-5 py-2 text-sm font-semibold text-white bg-blue-600 dark:bg-blue-700 border border-transparent rounded-xl hover:bg-blue-700 dark:hover:bg-blue-800 transition-colors duration-200"
+                  >
+                    <Edit className="h-4 w-4 mr-2 inline" />
+                    Edit
+                  </button>
+                  <button
+                    onClick={() => handleDownload(viewingItem)}
+                    className="px-5 py-2 text-sm font-semibold text-white bg-green-600 dark:bg-green-700 border border-transparent rounded-xl hover:bg-green-700 dark:hover:bg-green-800 transition-colors duration-200"
+                  >
+                    <Download className="h-4 w-4 mr-2 inline" />
+                    Download
+                  </button>
+                </div>
+              </div>
+            </motion.div>
           </div>
-        </div>
-      )}
+        )}
+      </AnimatePresence>
     </div>
   );
 };
