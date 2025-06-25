@@ -4,11 +4,14 @@ All notable changes to this project will be documented in this file. See [standa
 
 ## [Unreleased]
 
+### 0.0.11 (2025-06-25)
+
 ### Added
 
 - basic mobil support
 - kb management on the bot
 - ui improvments
+- SEO optimization
 
 ### Fixed
 

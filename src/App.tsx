@@ -5,6 +5,7 @@ import {
   Navigate,
 } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { HelmetProvider } from "react-helmet-async";
 import { Layout } from "./components/Layout";
 import { Auth } from "./components/Auth";
 import { Dashboard } from "./components/Dashboard";
@@ -163,11 +164,13 @@ function AppContent() {
 
 export default function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <Router>
-        <AppContent />
-        <ToastRenderer />
-      </Router>
-    </QueryClientProvider>
+    <HelmetProvider>
+      <QueryClientProvider client={queryClient}>
+        <Router>
+          <AppContent />
+          <ToastRenderer />
+        </Router>
+      </QueryClientProvider>
+    </HelmetProvider>
   );
 }
