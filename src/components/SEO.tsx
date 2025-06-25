@@ -23,7 +23,7 @@ export const SEO: React.FC<SEOProps> = ({
   title,
   description,
   canonicalUrl,
-  ogImage = "https://images.pexels.com/photos/7567557/pexels-photo-7567557.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
+  ogImage = "https://bpzfivbuhgjpkngcjpzc.supabase.co/storage/v1/object/public/public-assets//chatterwise_page.jpg",
   ogType = "website",
   twitterCard = "summary_large_image",
   schemaType = "WebPage",

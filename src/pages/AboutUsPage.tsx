@@ -1,125 +1,101 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { motion } from "framer-motion";
+import { useLocation, useNavigate } from "react-router-dom";
 import {
-  Users,
   Target,
-  Award,
-  Zap,
   Heart,
   Globe,
-  MessageSquare,
   Bot,
   Sparkles,
   Rocket,
   Briefcase,
-  GraduationCap,
+  Users,
 } from "lucide-react";
+
+// ScrollToTop component (for auto-scroll to top on navigation)
+const ScrollToTop = () => {
+  const { pathname } = useLocation();
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+
+  return null;
+};
+
+// GoBackButton component
+const GoBackButton = () => {
+  const navigate = useNavigate();
+
+  return (
+    <button
+      onClick={() => navigate(-1)}
+      className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors mb-8"
+    >
+      Go Back
+    </button>
+  );
+};
 
 const AboutUsPage: React.FC = () => {
   const team = [
     {
-      name: "Alex Johnson",
-      role: "CEO & Co-Founder",
-      bio: "Former AI research scientist with a passion for making advanced AI accessible to businesses of all sizes.",
-      avatar: "AJ",
+      name: "Miguel Rubio",
+      role: "Co-Founder",
+      bio: "Passionate about building accessible technology that solves real-world problems.",
+      avatar: "MR",
       color: "bg-blue-500",
     },
     {
-      name: "Sophia Chen",
-      role: "CTO & Co-Founder",
-      bio: "Machine learning expert with 10+ years of experience building conversational AI systems.",
-      avatar: "SC",
+      name: "Gabriel Martinez",
+      role: "Co-Founder",
+      bio: "Dedicated to making AI simple and powerful for everyone.",
+      avatar: "GM",
       color: "bg-purple-500",
-    },
-    {
-      name: "Marcus Williams",
-      role: "Head of Product",
-      bio: "Product leader focused on creating intuitive, powerful tools that solve real business problems.",
-      avatar: "MW",
-      color: "bg-green-500",
-    },
-    {
-      name: "Priya Patel",
-      role: "VP of Engineering",
-      bio: "Engineering leader with expertise in building scalable, secure cloud platforms.",
-      avatar: "PP",
-      color: "bg-red-500",
-    },
-    {
-      name: "David Kim",
-      role: "Head of AI Research",
-      bio: "PhD in Natural Language Processing with a focus on context-aware conversational systems.",
-      avatar: "DK",
-      color: "bg-yellow-500",
-    },
-    {
-      name: "Emily Rodriguez",
-      role: "VP of Customer Success",
-      bio: "Customer experience expert dedicated to helping businesses get the most out of ChatterWise.",
-      avatar: "ER",
-      color: "bg-pink-500",
     },
   ];
 
   const values = [
     {
       title: "Customer First",
-      description: "We're obsessed with solving real problems for our customers and helping them succeed.",
+      description:
+        "We're obsessed with solving real problems for our customers and helping them succeed.",
       icon: Heart,
     },
     {
       title: "Innovation",
-      description: "We push the boundaries of what's possible with AI to create better experiences.",
+      description:
+        "We push the boundaries of what's possible with AI to create better experiences.",
       icon: Sparkles,
     },
     {
       title: "Accessibility",
-      description: "We believe advanced AI should be accessible to businesses of all sizes.",
+      description:
+        "We believe advanced AI should be accessible to businesses of all sizes.",
       icon: Users,
     },
     {
       title: "Transparency",
-      description: "We're open about how our technology works and the limitations of AI.",
+      description:
+        "We're open about how our technology works and the limitations of AI.",
       icon: Globe,
     },
   ];
 
   const timeline = [
     {
-      year: "2023",
+      year: "2025",
       title: "ChatterWise Founded",
-      description: "Alex and Sophia founded ChatterWise with a mission to make advanced AI chatbots accessible to all businesses.",
-    },
-    {
-      year: "2023",
-      title: "Seed Funding",
-      description: "Raised $5M in seed funding to build the first version of the ChatterWise platform.",
-    },
-    {
-      year: "2024",
-      title: "Beta Launch",
-      description: "Launched the beta version of ChatterWise with 100 early customers.",
-    },
-    {
-      year: "2024",
-      title: "Series A Funding",
-      description: "Raised $20M in Series A funding to scale the platform and expand the team.",
-    },
-    {
-      year: "2025",
-      title: "Enterprise Launch",
-      description: "Launched ChatterWise Enterprise with advanced security and compliance features.",
-    },
-    {
-      year: "2025",
-      title: "Global Expansion",
-      description: "Expanded to Europe and Asia with new offices in London and Singapore.",
+      description:
+        "Miguel and Gabriel built the first prototype of ChatterWise at the Bolt.new hackathon.",
     },
   ];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white dark:from-gray-900 dark:to-gray-800">
+      <ScrollToTop />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <GoBackButton />
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
@@ -127,9 +103,12 @@ const AboutUsPage: React.FC = () => {
           transition={{ duration: 0.5 }}
           className="text-center mb-16"
         >
-          <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">About ChatterWise</h1>
+          <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
+            About ChatterWise
+          </h1>
           <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
-            We're on a mission to transform how businesses communicate with their customers through the power of AI
+            We are on a mission to make AI-powered conversations accessible to
+            everyone—starting with a simple idea at a hackathon.
           </p>
         </motion.div>
 
@@ -144,21 +123,24 @@ const AboutUsPage: React.FC = () => {
             <div className="p-3 bg-primary-100 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 rounded-xl inline-block mb-4">
               <Target className="h-6 w-6" />
             </div>
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Our Mission</h2>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+              Our Mission
+            </h2>
             <p className="text-gray-600 dark:text-gray-300">
-              To democratize access to advanced AI technology by providing businesses of all sizes with powerful,
-              easy-to-use chatbot solutions that transform how they communicate with their customers.
+              To empower businesses and individuals with easy-to-use AI
+              chatbots, making advanced technology simple and accessible.
             </p>
           </div>
-
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 p-8">
             <div className="p-3 bg-primary-100 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 rounded-xl inline-block mb-4">
               <Rocket className="h-6 w-6" />
             </div>
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Our Vision</h2>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+              Our Vision
+            </h2>
             <p className="text-gray-600 dark:text-gray-300">
-              A world where every business can provide exceptional, personalized customer experiences through intelligent
-              conversational AI that understands context, learns continuously, and delivers real value.
+              A world where anyone can create intelligent chatbots—no coding
+              required—to transform how we communicate online.
             </p>
           </div>
         </motion.div>
@@ -171,26 +153,28 @@ const AboutUsPage: React.FC = () => {
           className="mb-16"
         >
           <div className="text-center mb-8">
-            <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">Our Story</h2>
+            <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
+              Our Story
+            </h2>
           </div>
-
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 p-8">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
               <div>
                 <p className="text-gray-600 dark:text-gray-300 mb-4">
-                  ChatterWise was founded in 2023 by Alex Johnson and Sophia Chen, who met while working on conversational
-                  AI research at a leading tech company. They shared a vision of making advanced AI chatbot technology
-                  accessible to businesses of all sizes, not just tech giants with massive resources.
+                  ChatterWise began as a passion project at the Bolt.new
+                  hackathon. What started as a weekend experiment quickly turned
+                  into something bigger.
                 </p>
                 <p className="text-gray-600 dark:text-gray-300 mb-4">
-                  Frustrated by the complexity and cost of existing solutions, they set out to build a platform that
-                  combined state-of-the-art AI capabilities with an intuitive interface that anyone could use, regardless
-                  of technical expertise.
+                  We—Miguel Rubio and Gabriel Martinez—are the founders behind
+                  ChatterWise. United by a shared vision to make AI chatbot
+                  technology simple and accessible, we built the first version
+                  of ChatterWise in just a few days.
                 </p>
                 <p className="text-gray-600 dark:text-gray-300">
-                  Today, ChatterWise powers thousands of chatbots across industries, from small businesses to Fortune 500
-                  companies, helping them provide exceptional customer experiences, automate routine tasks, and gain
-                  valuable insights from customer conversations.
+                  Today, we continue to develop and improve ChatterWise, driven
+                  by our belief that everyone should be able to harness the
+                  power of AI—no technical expertise required.
                 </p>
               </div>
               <div className="flex justify-center">
@@ -208,9 +192,10 @@ const AboutUsPage: React.FC = () => {
           className="mb-16"
         >
           <div className="text-center mb-8">
-            <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">Our Values</h2>
+            <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
+              Our Values
+            </h2>
           </div>
-
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {values.map((value, index) => (
               <motion.div
@@ -223,8 +208,12 @@ const AboutUsPage: React.FC = () => {
                 <div className="p-3 bg-primary-100 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 rounded-xl inline-block mb-4">
                   <value.icon className="h-6 w-6" />
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3">{value.title}</h3>
-                <p className="text-gray-600 dark:text-gray-300">{value.description}</p>
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3">
+                  {value.title}
+                </h3>
+                <p className="text-gray-600 dark:text-gray-300">
+                  {value.description}
+                </p>
               </motion.div>
             ))}
           </div>
@@ -238,13 +227,14 @@ const AboutUsPage: React.FC = () => {
           className="mb-16"
         >
           <div className="text-center mb-8">
-            <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">Our Team</h2>
+            <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
+              Our Team
+            </h2>
             <p className="text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
-              Meet the talented team behind ChatterWise
+              Meet the founders behind ChatterWise
             </p>
           </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {team.map((member, index) => (
               <motion.div
                 key={member.name}
@@ -260,8 +250,12 @@ const AboutUsPage: React.FC = () => {
                     {member.avatar}
                   </div>
                   <div>
-                    <h3 className="text-xl font-bold text-gray-900 dark:text-white">{member.name}</h3>
-                    <p className="text-primary-600 dark:text-primary-400">{member.role}</p>
+                    <h3 className="text-xl font-bold text-gray-900 dark:text-white">
+                      {member.name}
+                    </h3>
+                    <p className="text-primary-600 dark:text-primary-400">
+                      {member.role}
+                    </p>
                   </div>
                 </div>
                 <p className="text-gray-600 dark:text-gray-300">{member.bio}</p>
@@ -278,9 +272,10 @@ const AboutUsPage: React.FC = () => {
           className="mb-16"
         >
           <div className="text-center mb-8">
-            <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">Our Journey</h2>
+            <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
+              Our Journey
+            </h2>
           </div>
-
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 p-8">
             <div className="relative">
               <div className="absolute left-8 top-0 bottom-0 w-0.5 bg-primary-200 dark:bg-primary-800"></div>
@@ -295,9 +290,13 @@ const AboutUsPage: React.FC = () => {
                         <div className="bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 px-3 py-1 rounded-full text-sm font-medium">
                           {event.year}
                         </div>
-                        <h3 className="text-lg font-bold text-gray-900 dark:text-white ml-3">{event.title}</h3>
+                        <h3 className="text-lg font-bold text-gray-900 dark:text-white ml-3">
+                          {event.title}
+                        </h3>
                       </div>
-                      <p className="mt-2 text-gray-600 dark:text-gray-300">{event.description}</p>
+                      <p className="mt-2 text-gray-600 dark:text-gray-300">
+                        {event.description}
+                      </p>
                     </div>
                   </div>
                 ))}
@@ -314,9 +313,10 @@ const AboutUsPage: React.FC = () => {
           className="bg-gradient-to-r from-primary-600 to-primary-500 dark:from-primary-700 dark:to-primary-600 rounded-2xl p-8 text-white shadow-xl"
         >
           <div className="text-center">
-            <h2 className="text-3xl font-bold mb-4">Join Our Team</h2>
+            <h2 className="text-3xl font-bold mb-4">Join Us</h2>
             <p className="text-primary-100 mb-8 max-w-3xl mx-auto">
-              We're always looking for talented individuals who are passionate about AI and want to make a difference.
+              We’re always looking for passionate people who want to help shape
+              the future of AI-powered conversations.
             </p>
             <div className="flex flex-col sm:flex-row justify-center gap-4">
               <a
@@ -325,13 +325,6 @@ const AboutUsPage: React.FC = () => {
               >
                 <Briefcase className="h-5 w-5 mr-2 inline-block" />
                 View Open Positions
-              </a>
-              <a
-                href="#"
-                className="px-8 py-3 bg-transparent border-2 border-white text-white rounded-xl font-semibold hover:bg-white/10 transition-colors"
-              >
-                <GraduationCap className="h-5 w-5 mr-2 inline-block" />
-                Internship Program
               </a>
             </div>
           </div>

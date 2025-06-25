@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { motion } from "framer-motion";
 import {
   Zap,
@@ -14,6 +14,32 @@ import {
   Sparkles,
   Cpu,
 } from "lucide-react";
+import { useLocation, useNavigate } from "react-router-dom";
+
+// ScrollToTop component (for auto-scroll to top on navigation)
+const ScrollToTop = () => {
+  const { pathname } = useLocation();
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+
+  return null;
+};
+
+// GoBackButton component
+const GoBackButton = () => {
+  const navigate = useNavigate();
+
+  return (
+    <button
+      onClick={() => navigate(-1)}
+      className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors mb-8"
+    >
+      Go Back
+    </button>
+  );
+};
 
 const FeaturesPage: React.FC = () => {
   const features = [
@@ -29,14 +55,16 @@ const FeaturesPage: React.FC = () => {
       description:
         "Train your chatbots with your own content. Upload documents, add text, or connect to your existing knowledge base to create chatbots that know your business inside and out.",
       icon: Database,
-      color: "bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400",
+      color:
+        "bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400",
     },
     {
       title: "Multi-Channel Deployment",
       description:
         "Deploy your chatbots anywhere your customers are. Integrate with your website, Slack, Discord, Microsoft Teams, and more with just a few clicks.",
       icon: Globe,
-      color: "bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400",
+      color:
+        "bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400",
     },
     {
       title: "Customizable Templates",
@@ -50,7 +78,8 @@ const FeaturesPage: React.FC = () => {
       description:
         "Gain insights into how your chatbots are performing with comprehensive analytics. Track conversations, user satisfaction, response times, and more.",
       icon: BarChart3,
-      color: "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400",
+      color:
+        "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400",
     },
     {
       title: "Enterprise Security",
@@ -64,14 +93,16 @@ const FeaturesPage: React.FC = () => {
       description:
         "Access all ChatterWise features programmatically with our comprehensive API. Build custom integrations, automate workflows, and extend functionality.",
       icon: Code,
-      color: "bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400",
+      color:
+        "bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400",
     },
     {
       title: "Webhooks & Integrations",
       description:
         "Connect your chatbots to your existing tools and workflows with webhooks and integrations. Get notified of important events and automate actions.",
       icon: Zap,
-      color: "bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400",
+      color:
+        "bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400",
     },
     {
       title: "Team Collaboration",
@@ -99,13 +130,16 @@ const FeaturesPage: React.FC = () => {
       description:
         "Our platform learns from interactions and feedback, constantly improving response quality and accuracy over time.",
       icon: Sparkles,
-      color: "bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400",
+      color:
+        "bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400",
     },
   ];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white dark:from-gray-900 dark:to-gray-800">
+      <ScrollToTop />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <GoBackButton />
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
@@ -113,9 +147,12 @@ const FeaturesPage: React.FC = () => {
           transition={{ duration: 0.5 }}
           className="text-center mb-16"
         >
-          <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">Features</h1>
+          <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
+            Features
+          </h1>
           <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
-            Discover all the powerful features that make ChatterWise the leading platform for building AI-powered chatbots
+            Discover all the powerful features that make ChatterWise the leading
+            platform for building AI-powered chatbots
           </p>
         </motion.div>
 
@@ -129,11 +166,17 @@ const FeaturesPage: React.FC = () => {
               transition={{ duration: 0.5, delay: index * 0.1 }}
               className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 p-6 hover:shadow-xl transition-shadow"
             >
-              <div className={`p-3 ${feature.color} rounded-xl inline-block mb-4`}>
+              <div
+                className={`p-3 ${feature.color} rounded-xl inline-block mb-4`}
+              >
                 <feature.icon className="h-6 w-6" />
               </div>
-              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3">{feature.title}</h3>
-              <p className="text-gray-600 dark:text-gray-300">{feature.description}</p>
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3">
+                {feature.title}
+              </h3>
+              <p className="text-gray-600 dark:text-gray-300">
+                {feature.description}
+              </p>
             </motion.div>
           ))}
         </div>
@@ -146,9 +189,12 @@ const FeaturesPage: React.FC = () => {
           className="mt-16 bg-gradient-to-r from-primary-600 to-primary-500 dark:from-primary-700 dark:to-primary-600 rounded-2xl p-8 text-white shadow-xl"
         >
           <div className="text-center">
-            <h2 className="text-3xl font-bold mb-4">Ready to experience these features?</h2>
+            <h2 className="text-3xl font-bold mb-4">
+              Ready to experience these features?
+            </h2>
             <p className="text-lg text-primary-100 mb-8 max-w-3xl mx-auto">
-              Start building your AI-powered chatbots today and transform how you interact with your customers.
+              Start building your AI-powered chatbots today and transform how
+              you interact with your customers.
             </p>
             <div className="flex flex-col sm:flex-row justify-center gap-4">
               <a

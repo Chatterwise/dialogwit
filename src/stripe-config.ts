@@ -111,21 +111,21 @@ export const stripeConfig = {
     },
   ],
   addOns: [
-    {
-      priceId: "price_1RbdtlPTUKauYAQ6hj8uESNA",
-      productId: "prod_SWhIsEW9dvxHbJ",
-      name: "GPT-4 Upgrade",
-      description: "Upgrade your existing plan to use GPT-4 model",
-      mode: "subscription" as const,
-      price: 10,
-      interval: "month" as const,
-      features: [
-        "Access to GPT-4 model",
-        "Better response quality",
-        "Enhanced reasoning",
-        "Improved accuracy",
-      ],
-    },
+    // {
+    //   priceId: "price_1RbdtlPTUKauYAQ6hj8uESNA",
+    //   productId: "prod_SWhIsEW9dvxHbJ",
+    //   name: "GPT-4 Upgrade",
+    //   description: "Upgrade your existing plan to use GPT-4 model",
+    //   mode: "subscription" as const,
+    //   price: 10,
+    //   interval: "month" as const,
+    //   features: [
+    //     "Access to GPT-4 model",
+    //     "Better response quality",
+    //     "Enhanced reasoning",
+    //     "Improved accuracy",
+    //   ],
+    // },
     {
       priceId: "price_1Rbdt0PTUKauYAQ6weQjNWUa",
       productId: "prod_SWhHdl6eVtRdNy",

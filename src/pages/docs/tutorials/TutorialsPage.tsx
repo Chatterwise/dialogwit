@@ -81,7 +81,7 @@ const TutorialsPage: React.FC = () => {
         keywords="ChatterWise tutorials, chatbot tutorials, customer support bot, lead generation bot, FAQ chatbot, multi-language chatbot"
       />
 
-      <div className="max-w-4xl mx-auto px-4 py-12">
+      <div className="mx-auto px-10 py-12 bg-gradient-to-br from-gray-50 to-white dark:from-gray-900 dark:to-gray-800">
         <DocBreadcrumbs
           items={[{ name: "Tutorials", href: "/docs/tutorials" }]}
         />

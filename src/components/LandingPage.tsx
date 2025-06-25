@@ -284,7 +284,7 @@ const LandingPage: React.FC = () => {
         title="ChatterWise: No-Code AI Chatbot Builder for Teams & Customers"
         description="Build, train, and launch AI chatbots with your own data—no coding required. Start free, no credit card needed. Boost sales, customer service, and empower internal teams with ChatterWise."
         canonicalUrl="/"
-        ogImage="https://images.pexels.com/photos/7567557/pexels-photo-7567557.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2"
+        ogImage="https://bpzfivbuhgjpkngcjpzc.supabase.co/storage/v1/object/public/public-assets//chatterwise_page.jpg"
         schemaType="WebPage"
         schemaData={schemaData}
       />
@@ -1121,20 +1121,20 @@ const LandingPage: React.FC = () => {
                 </li>
                 <li>
                   <Link
-                    to="/integrations"
+                    to="/docs/integrations"
                     className="text-gray-400 hover:text-white transition-colors"
                   >
                     Integrations
                   </Link>
                 </li>
-                <li>
+                {/* <li>
                   <Link
                     to="/enterprise"
                     className="text-gray-400 hover:text-white transition-colors"
                   >
                     Enterprise
                   </Link>
-                </li>
+                </li> */}
               </ul>
             </div>
             <div>
@@ -1156,22 +1156,22 @@ const LandingPage: React.FC = () => {
                     API Reference
                   </Link>
                 </li>
-                <li>
+                {/* <li>
                   <Link
                     to="/blog"
                     className="text-gray-400 hover:text-white transition-colors"
                   >
                     Blog
                   </Link>
-                </li>
-                <li>
+                </li> */}
+                {/* <li>
                   <Link
                     to="/community"
                     className="text-gray-400 hover:text-white transition-colors"
                   >
                     Community
                   </Link>
-                </li>
+                </li> */}
               </ul>
             </div>
             <div>
@@ -1191,14 +1191,6 @@ const LandingPage: React.FC = () => {
                     className="text-gray-400 hover:text-white transition-colors"
                   >
                     Contact
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    to="/legal"
-                    className="text-gray-400 hover:text-white transition-colors"
-                  >
-                    Legal
                   </Link>
                 </li>
               </ul>
@@ -1227,24 +1219,30 @@ const LandingPage: React.FC = () => {
               © 2025 ChatterWise. All rights reserved.
             </p>
             <div className="flex space-x-6 mt-4 md:mt-0">
-              <Link
-                to="/legal"
+              <a
+                href="https://www.iubenda.com/privacy-policy/16849142"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="text-gray-400 hover:text-white transition-colors"
               >
                 Privacy Policy
-              </Link>
-              <Link
-                to="/legal"
+              </a>
+              <a
+                href="https://www.iubenda.com/terms-and-conditions/16849142"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="text-gray-400 hover:text-white transition-colors"
               >
-                Terms of Service
-              </Link>
-              <Link
-                to="/legal"
+                Terms and Conditions
+              </a>
+              <a
+                href="https://www.iubenda.com/privacy-policy/16849142/cookie-policy"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="text-gray-400 hover:text-white transition-colors"
               >
                 Cookie Policy
-              </Link>
+              </a>
             </div>
           </div>
         </div>

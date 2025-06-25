@@ -106,7 +106,7 @@ export const CustomChat = (props: CustomChatProps) => {
         keywords="custom chatbot templates, chat UI customization, chatbot design, CSS customization, React chat components, chatbot themes"
       />
 
-      <div className="max-w-4xl mx-auto px-4 py-12">
+      <div className="mx-auto px-10 py-12 bg-gradient-to-br from-gray-50 to-white dark:from-gray-900 dark:to-gray-800">
         <DocBreadcrumbs
           items={[
             { name: "Advanced Features", href: "/docs/advanced-features" },

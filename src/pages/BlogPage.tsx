@@ -11,7 +11,8 @@ const BlogPage: React.FC = () => {
     date: "May 15, 2025",
     readTime: "8 min read",
     category: "Technology",
-    image: "https://images.pexels.com/photos/7567557/pexels-photo-7567557.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
+    image:
+      "https://bpzfivbuhgjpkngcjpzc.supabase.co/storage/v1/object/public/public-assets//chatterwise_page.jpg",
   };
 
   const posts = [
@@ -23,7 +24,8 @@ const BlogPage: React.FC = () => {
       date: "May 10, 2025",
       readTime: "6 min read",
       category: "Best Practices",
-      image: "https://images.pexels.com/photos/7567443/pexels-photo-7567443.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
+      image:
+        "https://bpzfivbuhgjpkngcjpzc.supabase.co/storage/v1/object/public/public-assets//chatterwise_page.jpg",
     },
     {
       title: "The Future of Customer Support: AI Chatbots in 2025",
@@ -33,7 +35,8 @@ const BlogPage: React.FC = () => {
       date: "May 5, 2025",
       readTime: "5 min read",
       category: "Industry Trends",
-      image: "https://images.pexels.com/photos/8386440/pexels-photo-8386440.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
+      image:
+        "https://bpzfivbuhgjpkngcjpzc.supabase.co/storage/v1/object/public/public-assets//chatterwise_page.jpg",
     },
     {
       title: "Case Study: How FinTech Corp Reduced Support Costs by 60%",
@@ -43,7 +46,8 @@ const BlogPage: React.FC = () => {
       date: "April 28, 2025",
       readTime: "7 min read",
       category: "Case Study",
-      image: "https://images.pexels.com/photos/7567535/pexels-photo-7567535.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
+      image:
+        "https://bpzfivbuhgjpkngcjpzc.supabase.co/storage/v1/object/public/public-assets//chatterwise_page.jpg",
     },
     {
       title: "Securing Your AI Chatbot: Best Practices for Enterprise",
@@ -53,7 +57,8 @@ const BlogPage: React.FC = () => {
       date: "April 22, 2025",
       readTime: "9 min read",
       category: "Security",
-      image: "https://images.pexels.com/photos/5380642/pexels-photo-5380642.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
+      image:
+        "https://bpzfivbuhgjpkngcjpzc.supabase.co/storage/v1/object/public/public-assets//chatterwise_page.jpg",
     },
     {
       title: "Integrating ChatterWise with Your CRM: A Complete Guide",
@@ -63,7 +68,8 @@ const BlogPage: React.FC = () => {
       date: "April 15, 2025",
       readTime: "10 min read",
       category: "Tutorials",
-      image: "https://images.pexels.com/photos/8386422/pexels-photo-8386422.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
+      image:
+        "https://bpzfivbuhgjpkngcjpzc.supabase.co/storage/v1/object/public/public-assets//chatterwise_page.jpg",
     },
     {
       title: "Measuring Chatbot ROI: Key Metrics for Success",
@@ -73,7 +79,8 @@ const BlogPage: React.FC = () => {
       date: "April 8, 2025",
       readTime: "7 min read",
       category: "Analytics",
-      image: "https://images.pexels.com/photos/7567616/pexels-photo-7567616.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
+      image:
+        "https://bpzfivbuhgjpkngcjpzc.supabase.co/storage/v1/object/public/public-assets//chatterwise_page.jpg",
     },
   ];
 
@@ -98,9 +105,12 @@ const BlogPage: React.FC = () => {
           transition={{ duration: 0.5 }}
           className="text-center mb-16"
         >
-          <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">ChatterWise Blog</h1>
+          <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
+            ChatterWise Blog
+          </h1>
           <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
-            Insights, tutorials, and news about AI chatbots and conversational intelligence
+            Insights, tutorials, and news about AI chatbots and conversational
+            intelligence
           </p>
         </motion.div>
 
@@ -155,21 +165,32 @@ const BlogPage: React.FC = () => {
                   <span className="bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 px-3 py-1 rounded-full text-sm font-medium">
                     Featured
                   </span>
-                  <span className="mx-2 text-gray-300 dark:text-gray-600">•</span>
+                  <span className="mx-2 text-gray-300 dark:text-gray-600">
+                    •
+                  </span>
                   <span className="text-gray-600 dark:text-gray-400 text-sm flex items-center">
                     <Tag className="h-4 w-4 mr-1" />
                     {featuredPost.category}
                   </span>
                 </div>
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">{featuredPost.title}</h2>
-                <p className="text-gray-600 dark:text-gray-300 mb-6">{featuredPost.excerpt}</p>
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+                  {featuredPost.title}
+                </h2>
+                <p className="text-gray-600 dark:text-gray-300 mb-6">
+                  {featuredPost.excerpt}
+                </p>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center">
                     <div className="h-10 w-10 bg-primary-500 rounded-full flex items-center justify-center text-white font-bold mr-3">
-                      {featuredPost.author.split(" ").map((n) => n[0]).join("")}
+                      {featuredPost.author
+                        .split(" ")
+                        .map((n) => n[0])
+                        .join("")}
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-gray-900 dark:text-white">{featuredPost.author}</p>
+                      <p className="text-sm font-medium text-gray-900 dark:text-white">
+                        {featuredPost.author}
+                      </p>
                       <div className="flex items-center text-xs text-gray-500 dark:text-gray-400">
                         <Calendar className="h-3 w-3 mr-1" />
                         {featuredPost.date}
@@ -199,7 +220,9 @@ const BlogPage: React.FC = () => {
           transition={{ duration: 0.5, delay: 0.3 }}
           className="mb-16"
         >
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-8">Recent Articles</h2>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-8">
+            Recent Articles
+          </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {posts.map((post, index) => (
               <motion.div
@@ -223,16 +246,27 @@ const BlogPage: React.FC = () => {
                       {post.readTime}
                     </div>
                   </div>
-                  <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3">{post.title}</h3>
-                  <p className="text-gray-600 dark:text-gray-300 mb-4 line-clamp-2">{post.excerpt}</p>
+                  <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3">
+                    {post.title}
+                  </h3>
+                  <p className="text-gray-600 dark:text-gray-300 mb-4 line-clamp-2">
+                    {post.excerpt}
+                  </p>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center">
                       <div className="h-8 w-8 bg-primary-500 rounded-full flex items-center justify-center text-white font-bold mr-2 text-xs">
-                        {post.author.split(" ").map((n) => n[0]).join("")}
+                        {post.author
+                          .split(" ")
+                          .map((n) => n[0])
+                          .join("")}
                       </div>
                       <div className="text-xs">
-                        <p className="font-medium text-gray-900 dark:text-white">{post.author}</p>
-                        <p className="text-gray-500 dark:text-gray-400">{post.date}</p>
+                        <p className="font-medium text-gray-900 dark:text-white">
+                          {post.author}
+                        </p>
+                        <p className="text-gray-500 dark:text-gray-400">
+                          {post.date}
+                        </p>
                       </div>
                     </div>
                     <a
@@ -264,10 +298,12 @@ const BlogPage: React.FC = () => {
           className="bg-gradient-to-r from-primary-600 to-primary-500 dark:from-primary-700 dark:to-primary-600 rounded-2xl p-8 text-white shadow-xl"
         >
           <div className="text-center">
-            <h2 className="text-2xl font-bold mb-4">Subscribe to Our Newsletter</h2>
+            <h2 className="text-2xl font-bold mb-4">
+              Subscribe to Our Newsletter
+            </h2>
             <p className="text-primary-100 mb-6 max-w-2xl mx-auto">
-              Get the latest articles, tutorials, and news about AI chatbots and conversational intelligence delivered
-              straight to your inbox.
+              Get the latest articles, tutorials, and news about AI chatbots and
+              conversational intelligence delivered straight to your inbox.
             </p>
             <div className="max-w-md mx-auto">
               <div className="flex flex-col sm:flex-row gap-3">

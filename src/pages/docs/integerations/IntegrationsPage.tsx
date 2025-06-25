@@ -73,7 +73,7 @@ const IntegrationsPage: React.FC = () => {
         keywords="ChatterWise integrations, chatbot integration, Slack integration, Discord integration, WordPress chatbot, website chatbot"
       />
 
-      <div className="max-w-4xl mx-auto px-4 py-12">
+      <div className="mx-auto px-10 py-12 bg-gradient-to-br from-gray-50 to-white dark:from-gray-900 dark:to-gray-800">
         <DocBreadcrumbs
           items={[{ name: "Integrations", href: "/docs/integrations" }]}
         />
