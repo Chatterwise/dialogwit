@@ -24,6 +24,24 @@ import { Logo } from "./ui/Logo";
 import BoltLogo from "../resources/bolt-logo-white.png";
 import { useTheme } from "../hooks/useTheme";
 
+// Pricing card
+type PricingCardProps = {
+  name: string;
+  price: string | number;
+  description: string;
+  features: string[];
+  popular: boolean;
+  delay?: number;
+};
+
+// Animated feature card
+type FeatureCardProps = {
+  icon: React.ComponentType<{ className?: string }>;
+  title: string;
+  description: string;
+  delay?: number;
+};
+
 // Demo chatbot component
 const DemoChatbot = () => {
   const [messages, setMessages] = useState([
@@ -130,8 +148,12 @@ const DemoChatbot = () => {
   );
 };
 
-// Animated feature card
-const FeatureCard = ({ icon: Icon, title, description, delay = 0 }) => (
+const FeatureCard: React.FC<FeatureCardProps> = ({
+  icon: Icon,
+  title,
+  description,
+  delay = 0,
+}) => (
   <motion.div
     initial={{ opacity: 0, y: 20 }}
     whileInView={{ opacity: 1, y: 0 }}
@@ -150,7 +172,6 @@ const FeatureCard = ({ icon: Icon, title, description, delay = 0 }) => (
   </motion.div>
 );
 
-// Pricing card
 const PricingCard = ({
   name,
   price,
@@ -158,7 +179,7 @@ const PricingCard = ({
   features,
   popular,
   delay = 0,
-}) => (
+}: PricingCardProps) => (
   <motion.div
     initial={{ opacity: 0, y: 20 }}
     whileInView={{ opacity: 1, y: 0 }}

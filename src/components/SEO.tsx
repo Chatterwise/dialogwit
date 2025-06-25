@@ -8,8 +8,15 @@ interface SEOProps {
   ogImage?: string;
   ogType?: "website" | "article" | "profile" | "book";
   twitterCard?: "summary" | "summary_large_image";
-  schemaType?: "WebPage" | "Organization" | "Product" | "Article" | "FAQPage";
+  schemaType?:
+    | "WebPage"
+    | "Organization"
+    | "Product"
+    | "Article"
+    | "FAQPage"
+    | "BreadcrumbList";
   schemaData?: Record<string, any>;
+  keywords?: string;
 }
 
 export const SEO: React.FC<SEOProps> = ({
@@ -21,6 +28,7 @@ export const SEO: React.FC<SEOProps> = ({
   twitterCard = "summary_large_image",
   schemaType = "WebPage",
   schemaData = {},
+  keywords,
 }) => {
   const siteUrl = "https://chatterwise.ai";
   const fullUrl = canonicalUrl ? `${siteUrl}${canonicalUrl}` : siteUrl;
@@ -79,6 +87,13 @@ export const SEO: React.FC<SEOProps> = ({
         mainEntity: schemaData.questions || [],
       };
       break;
+    case "BreadcrumbList":
+      pageSchema = {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        itemListElement: schemaData.itemListElement || [],
+      };
+      break;
     default:
       pageSchema = {
         "@context": "https://schema.org",
@@ -94,6 +109,7 @@ export const SEO: React.FC<SEOProps> = ({
       {/* Basic Meta Tags */}
       <title>{title}</title>
       <meta name="description" content={description} />
+      {keywords && <meta name="keywords" content={keywords} />}
 
       {/* Canonical URL */}
       {canonicalUrl && <link rel="canonical" href={fullUrl} />}

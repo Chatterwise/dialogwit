@@ -47,6 +47,26 @@ import FeaturesPage from "./pages/FeaturesPage";
 import LegalPage from "./pages/LegalPage";
 import { WebhookManager } from "./components/WebhookManager";
 
+// Documentation Pages
+import CustomTemplatesPage from "./pages/docs/advanced-features/CustomTemplatesPage";
+import WebhooksPage from "./pages/docs/advanced-features/WebhooksPage";
+import SecurityBestPracticesPage from "./pages/docs/advanced-features/SecurityBestPracticesPage";
+import CustomerSupportBotPage from "./pages/docs/tutorials/CustomerSupportBotPage";
+
+// Documentation Category Pages
+import GettingStartedPage from "./pages/docs/getting-started/GettingStartedPage";
+import AdvancedFeaturesPage from "./pages/docs/advanced-features/AdvancedFeaturesPage";
+import TutorialsPage from "./pages/docs/tutorials/TutorialsPage";
+import FirstChatbotPage from "./pages/docs/FirstChatbotPage";
+import DiscordIntegrationPage from "./pages/docs/integerations/DiscordIntegrationPage";
+import IntegrationsPage from "./pages/docs/integerations/IntegrationsPage";
+import SlackIntegrationPage from "./pages/docs/integerations/SlackIntegrationPage";
+import WebsiteIntegrationPage from "./pages/docs/integerations/WebsiteIntegrationPage";
+import WordPressIntegrationPage from "./pages/docs/integerations/WordPressIntegrationPage";
+import IntroductionPage from "./pages/docs/IntroductionPage";
+import KnowledgeBasePage from "./pages/docs/KnowledgeBasePage";
+import TrainingChatbotPage from "./pages/docs/TrainingChatbotPage";
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -112,6 +132,73 @@ function AppContent() {
       <Route path="/about" element={<AboutUsPage />} />
       <Route path="/contact" element={<ContactPage />} />
       <Route path="/legal" element={<LegalPage />} />
+
+      {/* Documentation sub-pages */}
+      {/* Category pages */}
+      <Route path="/docs/getting-started" element={<GettingStartedPage />} />
+      <Route path="/docs/integrations" element={<IntegrationsPage />} />
+      <Route
+        path="/docs/advanced-features"
+        element={<AdvancedFeaturesPage />}
+      />
+      <Route path="/docs/tutorials" element={<TutorialsPage />} />
+
+      {/* Getting Started section */}
+      <Route
+        path="/docs/getting-started/introduction"
+        element={<IntroductionPage />}
+      />
+      <Route
+        path="/docs/getting-started/first-chatbot"
+        element={<FirstChatbotPage />}
+      />
+      <Route
+        path="/docs/getting-started/knowledge-base"
+        element={<KnowledgeBasePage />}
+      />
+      <Route
+        path="/docs/getting-started/training-chatbot"
+        element={<TrainingChatbotPage />}
+      />
+
+      {/* Integrations section */}
+      <Route
+        path="/docs/integrations/website-integration"
+        element={<WebsiteIntegrationPage />}
+      />
+      <Route
+        path="/docs/integrations/slack-integration"
+        element={<SlackIntegrationPage />}
+      />
+      <Route
+        path="/docs/integrations/discord-integration"
+        element={<DiscordIntegrationPage />}
+      />
+      <Route
+        path="/docs/integrations/wordpress-integration"
+        element={<WordPressIntegrationPage />}
+      />
+
+      {/* Advanced Features section */}
+      <Route
+        path="/docs/advanced-features/custom-templates"
+        element={<CustomTemplatesPage />}
+      />
+      <Route
+        path="/docs/advanced-features/webhooks"
+        element={<WebhooksPage />}
+      />
+      <Route
+        path="/docs/advanced-features/security-best-practices"
+        element={<SecurityBestPracticesPage />}
+      />
+
+      {/* Tutorials section */}
+      <Route
+        path="/docs/tutorials/customer-support-bot"
+        element={<CustomerSupportBotPage />}
+      />
+
       {/* Protected routes */}
       <Route
         path="/*"

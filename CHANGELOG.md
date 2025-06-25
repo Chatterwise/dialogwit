@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file. See [standa
 
 ## [Unreleased]
 
+### 0.0.12 (2025-06-25)
+
+### Added
+
+- multiple documentation pages
+
 ### 0.0.11 (2025-06-25)
 
 ### Added
