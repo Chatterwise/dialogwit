@@ -22,19 +22,19 @@ const DiscordIntegrationPage: React.FC = () => {
         "@type": "ListItem",
         position: 1,
         name: "Documentation",
-        item: "https://chatterwise.ai/documentation",
+        item: "https://chatterwise.io/documentation",
       },
       {
         "@type": "ListItem",
         position: 2,
         name: "Integrations",
-        item: "https://chatterwise.ai/docs/integrations",
+        item: "https://chatterwise.io/docs/integrations",
       },
       {
         "@type": "ListItem",
         position: 3,
         name: "Discord Integration",
-        item: "https://chatterwise.ai/docs/integrations/discord-integration",
+        item: "https://chatterwise.io/docs/integrations/discord-integration",
       },
     ],
   };
@@ -43,7 +43,7 @@ const DiscordIntegrationPage: React.FC = () => {
 {
   "application_id": "your-application-id",
   "bot_token": "your-bot-token",
-  "webhook_url": "https://api.chatterwise.ai/v1/integrations/discord",
+  "webhook_url": "https://api.chatterwise.io/v1/integrations/discord",
   "chatbot_id": "your-chatbot-id",
   "guild_id": "your-server-id"
 }`;

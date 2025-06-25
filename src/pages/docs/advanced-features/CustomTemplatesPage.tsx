@@ -22,19 +22,19 @@ const CustomTemplatesPage: React.FC = () => {
         "@type": "ListItem",
         position: 1,
         name: "Documentation",
-        item: "https://chatterwise.ai/documentation",
+        item: "https://chatterwise.io/documentation",
       },
       {
         "@type": "ListItem",
         position: 2,
         name: "Advanced Features",
-        item: "https://chatterwise.ai/docs/advanced-features",
+        item: "https://chatterwise.io/docs/advanced-features",
       },
       {
         "@type": "ListItem",
         position: 3,
         name: "Custom Templates",
-        item: "https://chatterwise.ai/docs/advanced-features/custom-templates",
+        item: "https://chatterwise.io/docs/advanced-features/custom-templates",
       },
     ],
   };
@@ -182,7 +182,7 @@ export const CustomChat = (props: CustomChatProps) => {
             </p>
 
             <pre className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg text-sm">
-              {`<script src="https://cdn.chatterwise.ai/widget.js" 
+              {`<script src="https://cdn.chatterwise.io/widget.js" 
         data-bot-id="your-bot-id"
         data-template="modern"
         async></script>`}
@@ -229,7 +229,7 @@ export const CustomChat = (props: CustomChatProps) => {
                 <strong>Inline in the script tag:</strong> Use the{" "}
                 <code>data-custom-css</code> attribute
                 <pre className="bg-gray-100 dark:bg-gray-800 p-3 rounded-lg text-sm">
-                  {`<script src="https://cdn.chatterwise.ai/widget.js" 
+                  {`<script src="https://cdn.chatterwise.io/widget.js" 
         data-bot-id="your-bot-id"
         data-custom-css="https://your-website.com/path/to/custom-chatbot.css"
         async></script>`}

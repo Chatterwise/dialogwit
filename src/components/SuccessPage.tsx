@@ -93,7 +93,7 @@ const SuccessPage: React.FC = () => {
           <p className="text-sm text-gray-600">
             Need help getting started?{" "}
             <a
-              href="mailto:support@chatterwise.ai"
+              href="mailto:support@chatterwise.io"
               className="text-blue-500 hover:text-blue-600"
             >
               Contact our support team

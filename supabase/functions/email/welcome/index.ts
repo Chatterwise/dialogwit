@@ -221,10 +221,10 @@ function getWelcomeEmailTemplate(name: string): string {
       </div>
       
       <div style="text-align: center;">
-        <a href="https://app.chatterwise.ai/dashboard" class="button">Go to Dashboard</a>
+        <a href="https://app.chatterwise.io/dashboard" class="button">Go to Dashboard</a>
       </div>
       
-      <p>If you have any questions, check out our <a href="https://docs.chatterwise.ai">documentation</a> or contact our support team.</p>
+      <p>If you have any questions, check out our <a href="https://docs.chatterwise.io">documentation</a> or contact our support team.</p>
       
       <p>Best regards,<br>The ChatterWise Team</p>
       

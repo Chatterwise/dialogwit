@@ -3,4 +3,4 @@ User-agent: *
 Allow: /
 
 # Sitemap location
-Sitemap: https://chatterwise.ai/sitemap.xml
+Sitemap: https://chatterwise.io/sitemap.xml

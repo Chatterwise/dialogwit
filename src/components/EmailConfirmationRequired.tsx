@@ -1,37 +1,45 @@
-import React, { useState } from 'react';
-import { Mail, RefreshCw, CheckCircle, AlertCircle } from 'lucide-react';
-import { useAuth } from '../hooks/useAuth';
+import React, { useState } from "react";
+import { Mail, RefreshCw, CheckCircle, AlertCircle } from "lucide-react";
+import { useAuth } from "../hooks/useAuth";
 
 interface EmailConfirmationRequiredProps {
   email?: string;
 }
 
-export function EmailConfirmationRequired({ email }: EmailConfirmationRequiredProps) {
+export function EmailConfirmationRequired({
+  email,
+}: EmailConfirmationRequiredProps) {
   const { resendConfirmation } = useAuth();
   const [isResending, setIsResending] = useState(false);
-  const [resendStatus, setResendStatus] = useState<'idle' | 'success' | 'error'>('idle');
-  const [resendMessage, setResendMessage] = useState('');
+  const [resendStatus, setResendStatus] = useState<
+    "idle" | "success" | "error"
+  >("idle");
+  const [resendMessage, setResendMessage] = useState("");
 
   const handleResendConfirmation = async () => {
     if (!email || isResending) return;
 
     setIsResending(true);
-    setResendStatus('idle');
-    setResendMessage('');
+    setResendStatus("idle");
+    setResendMessage("");
 
     try {
       const { error } = await resendConfirmation(email);
-      
+
       if (error) {
-        setResendStatus('error');
-        setResendMessage(error.message || 'Failed to resend confirmation email');
+        setResendStatus("error");
+        setResendMessage(
+          error.message || "Failed to resend confirmation email"
+        );
       } else {
-        setResendStatus('success');
-        setResendMessage('Confirmation email sent successfully! Please check your inbox.');
+        setResendStatus("success");
+        setResendMessage(
+          "Confirmation email sent successfully! Please check your inbox."
+        );
       }
     } catch (error) {
-      setResendStatus('error');
-      setResendMessage('An unexpected error occurred. Please try again.');
+      setResendStatus("error");
+      setResendMessage("An unexpected error occurred. Please try again.");
     } finally {
       setIsResending(false);
     }
@@ -49,14 +57,17 @@ export function EmailConfirmationRequired({ email }: EmailConfirmationRequiredPr
             Check Your Email
           </h1>
           <p className="text-gray-600">
-            We've sent a confirmation link to your email address. Please click the link to verify your account and continue.
+            We've sent a confirmation link to your email address. Please click
+            the link to verify your account and continue.
           </p>
         </div>
 
         {/* Email Display */}
         {email && (
           <div className="bg-gray-50 rounded-lg p-4 mb-6">
-            <p className="text-sm text-gray-600 mb-1">Confirmation email sent to:</p>
+            <p className="text-sm text-gray-600 mb-1">
+              Confirmation email sent to:
+            </p>
             <p className="font-medium text-gray-900 break-all">{email}</p>
           </div>
         )}
@@ -108,7 +119,7 @@ export function EmailConfirmationRequired({ email }: EmailConfirmationRequiredPr
         </div>
 
         {/* Status Messages */}
-        {resendStatus === 'success' && (
+        {resendStatus === "success" && (
           <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
             <div className="flex items-center">
               <CheckCircle className="w-5 h-5 text-green-600 mr-2" />
@@ -117,7 +128,7 @@ export function EmailConfirmationRequired({ email }: EmailConfirmationRequiredPr
           </div>
         )}
 
-        {resendStatus === 'error' && (
+        {resendStatus === "error" && (
           <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
             <div className="flex items-center">
               <AlertCircle className="w-5 h-5 text-red-600 mr-2" />
@@ -132,9 +143,12 @@ export function EmailConfirmationRequired({ email }: EmailConfirmationRequiredPr
             Didn't receive the email? Check your spam folder or try resending.
           </p>
           <p>
-            Need help? Contact our support team at{' '}
-            <a href="mailto:support@chatterwise.ai" className="text-blue-600 hover:underline">
-              support@chatterwise.ai
+            Need help? Contact our support team at{" "}
+            <a
+              href="mailto:support@chatterwise.io"
+              className="text-blue-600 hover:underline"
+            >
+              support@chatterwise.io
             </a>
           </p>
         </div>

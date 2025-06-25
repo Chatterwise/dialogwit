@@ -1,9 +1,19 @@
 import React, { useState } from "react";
-import { Code, Copy, Check, Search, ChevronDown, ChevronRight, ExternalLink } from "lucide-react";
+import {
+  Code,
+  Copy,
+  Check,
+  Search,
+  ChevronDown,
+  ChevronRight,
+  ExternalLink,
+} from "lucide-react";
 import { motion } from "framer-motion";
 
 const ApiReferencePage: React.FC = () => {
-  const [activeEndpoint, setActiveEndpoint] = useState<string | null>("chatbots-list");
+  const [activeEndpoint, setActiveEndpoint] = useState<string | null>(
+    "chatbots-list"
+  );
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
   const [expandedCategory, setExpandedCategory] = useState<string>("chatbots");
 
@@ -31,7 +41,7 @@ const ApiReferencePage: React.FC = () => {
           method: "GET",
           path: "/api/chatbots",
           description: "List all chatbots",
-          request: `curl -X GET "https://api.chatterwise.ai/api/chatbots" \\
+          request: `curl -X GET "https://api.chatterwise.io/api/chatbots" \\
   -H "Authorization: Bearer YOUR_API_KEY"`,
           response: `{
   "success": true,
@@ -60,7 +70,7 @@ const ApiReferencePage: React.FC = () => {
           method: "GET",
           path: "/api/chatbots/:id",
           description: "Get a specific chatbot",
-          request: `curl -X GET "https://api.chatterwise.ai/api/chatbots/cb_123456789" \\
+          request: `curl -X GET "https://api.chatterwise.io/api/chatbots/cb_123456789" \\
   -H "Authorization: Bearer YOUR_API_KEY"`,
           response: `{
   "success": true,
@@ -80,7 +90,7 @@ const ApiReferencePage: React.FC = () => {
           method: "POST",
           path: "/api/chatbots",
           description: "Create a new chatbot",
-          request: `curl -X POST "https://api.chatterwise.ai/api/chatbots" \\
+          request: `curl -X POST "https://api.chatterwise.io/api/chatbots" \\
   -H "Authorization: Bearer YOUR_API_KEY" \\
   -H "Content-Type: application/json" \\
   -d '{
@@ -110,7 +120,7 @@ const ApiReferencePage: React.FC = () => {
           method: "POST",
           path: "/api/chat",
           description: "Send a message to a chatbot",
-          request: `curl -X POST "https://api.chatterwise.ai/api/chat" \\
+          request: `curl -X POST "https://api.chatterwise.io/api/chat" \\
   -H "Authorization: Bearer YOUR_API_KEY" \\
   -H "Content-Type: application/json" \\
   -d '{
@@ -134,7 +144,7 @@ const ApiReferencePage: React.FC = () => {
           method: "GET",
           path: "/api/chat/:chatbot_id/history",
           description: "Get chat history for a chatbot",
-          request: `curl -X GET "https://api.chatterwise.ai/api/chat/cb_123456789/history" \\
+          request: `curl -X GET "https://api.chatterwise.io/api/chat/cb_123456789/history" \\
   -H "Authorization: Bearer YOUR_API_KEY"`,
           response: `{
   "success": true,
@@ -167,7 +177,7 @@ const ApiReferencePage: React.FC = () => {
           method: "GET",
           path: "/api/knowledge/:chatbot_id",
           description: "List knowledge base items for a chatbot",
-          request: `curl -X GET "https://api.chatterwise.ai/api/knowledge/cb_123456789" \\
+          request: `curl -X GET "https://api.chatterwise.io/api/knowledge/cb_123456789" \\
   -H "Authorization: Bearer YOUR_API_KEY"`,
           response: `{
   "success": true,
@@ -196,7 +206,7 @@ const ApiReferencePage: React.FC = () => {
           method: "POST",
           path: "/api/knowledge",
           description: "Add content to knowledge base",
-          request: `curl -X POST "https://api.chatterwise.ai/api/knowledge" \\
+          request: `curl -X POST "https://api.chatterwise.io/api/knowledge" \\
   -H "Authorization: Bearer YOUR_API_KEY" \\
   -H "Content-Type: application/json" \\
   -d '{
@@ -228,7 +238,7 @@ const ApiReferencePage: React.FC = () => {
           method: "GET",
           path: "/api/analytics/:chatbot_id",
           description: "Get analytics for a chatbot",
-          request: `curl -X GET "https://api.chatterwise.ai/api/analytics/cb_123456789?period=30d" \\
+          request: `curl -X GET "https://api.chatterwise.io/api/analytics/cb_123456789?period=30d" \\
   -H "Authorization: Bearer YOUR_API_KEY"`,
           response: `{
   "success": true,
@@ -271,7 +281,9 @@ const ApiReferencePage: React.FC = () => {
           transition={{ duration: 0.5 }}
           className="text-center mb-16"
         >
-          <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">API Reference</h1>
+          <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
+            API Reference
+          </h1>
           <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
             Comprehensive documentation for the ChatterWise API
           </p>
@@ -303,7 +315,9 @@ const ApiReferencePage: React.FC = () => {
             className="lg:col-span-1"
           >
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 p-4 sticky top-24">
-              <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">Endpoints</h3>
+              <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">
+                Endpoints
+              </h3>
               <div className="space-y-2">
                 {categories.map((category) => (
                   <div key={category.id} className="mb-2">
@@ -383,7 +397,9 @@ const ApiReferencePage: React.FC = () => {
                         {selectedEndpoint.path}
                       </h2>
                     </div>
-                    <p className="text-gray-600 dark:text-gray-300 mt-2">{selectedEndpoint.description}</p>
+                    <p className="text-gray-600 dark:text-gray-300 mt-2">
+                      {selectedEndpoint.description}
+                    </p>
                   </div>
                   <a
                     href="#"
@@ -398,9 +414,16 @@ const ApiReferencePage: React.FC = () => {
                   {/* Request */}
                   <div>
                     <div className="flex items-center justify-between mb-2">
-                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Request</h3>
+                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                        Request
+                      </h3>
                       <button
-                        onClick={() => copyToClipboard(selectedEndpoint.request, `request-${selectedEndpoint.id}`)}
+                        onClick={() =>
+                          copyToClipboard(
+                            selectedEndpoint.request,
+                            `request-${selectedEndpoint.id}`
+                          )
+                        }
                         className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 flex items-center text-sm"
                       >
                         {copiedCode === `request-${selectedEndpoint.id}` ? (
@@ -408,20 +431,31 @@ const ApiReferencePage: React.FC = () => {
                         ) : (
                           <Copy className="h-4 w-4 mr-1" />
                         )}
-                        {copiedCode === `request-${selectedEndpoint.id}` ? "Copied!" : "Copy"}
+                        {copiedCode === `request-${selectedEndpoint.id}`
+                          ? "Copied!"
+                          : "Copy"}
                       </button>
                     </div>
                     <div className="bg-gray-900 rounded-lg p-4 overflow-x-auto">
-                      <pre className="text-gray-100 text-sm font-mono">{selectedEndpoint.request}</pre>
+                      <pre className="text-gray-100 text-sm font-mono">
+                        {selectedEndpoint.request}
+                      </pre>
                     </div>
                   </div>
 
                   {/* Response */}
                   <div>
                     <div className="flex items-center justify-between mb-2">
-                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Response</h3>
+                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                        Response
+                      </h3>
                       <button
-                        onClick={() => copyToClipboard(selectedEndpoint.response, `response-${selectedEndpoint.id}`)}
+                        onClick={() =>
+                          copyToClipboard(
+                            selectedEndpoint.response,
+                            `response-${selectedEndpoint.id}`
+                          )
+                        }
                         className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 flex items-center text-sm"
                       >
                         {copiedCode === `response-${selectedEndpoint.id}` ? (
@@ -429,11 +463,15 @@ const ApiReferencePage: React.FC = () => {
                         ) : (
                           <Copy className="h-4 w-4 mr-1" />
                         )}
-                        {copiedCode === `response-${selectedEndpoint.id}` ? "Copied!" : "Copy"}
+                        {copiedCode === `response-${selectedEndpoint.id}`
+                          ? "Copied!"
+                          : "Copy"}
                       </button>
                     </div>
                     <div className="bg-gray-900 rounded-lg p-4 overflow-x-auto">
-                      <pre className="text-gray-100 text-sm font-mono">{selectedEndpoint.response}</pre>
+                      <pre className="text-gray-100 text-sm font-mono">
+                        {selectedEndpoint.response}
+                      </pre>
                     </div>
                   </div>
                 </div>
@@ -441,7 +479,9 @@ const ApiReferencePage: React.FC = () => {
             ) : (
               <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 p-8 text-center">
                 <Code className="h-16 w-16 text-gray-400 dark:text-gray-500 mx-auto mb-4" />
-                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">Select an API Endpoint</h3>
+                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+                  Select an API Endpoint
+                </h3>
                 <p className="text-gray-600 dark:text-gray-400">
                   Choose an endpoint from the sidebar to view its documentation
                 </p>

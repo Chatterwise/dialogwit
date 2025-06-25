@@ -22,19 +22,19 @@ const WebhooksPage: React.FC = () => {
         "@type": "ListItem",
         position: 1,
         name: "Documentation",
-        item: "https://chatterwise.ai/documentation",
+        item: "https://chatterwise.io/documentation",
       },
       {
         "@type": "ListItem",
         position: 2,
         name: "Advanced Features",
-        item: "https://chatterwise.ai/docs/advanced-features",
+        item: "https://chatterwise.io/docs/advanced-features",
       },
       {
         "@type": "ListItem",
         position: 3,
         name: "Webhooks",
-        item: "https://chatterwise.ai/docs/advanced-features/webhooks",
+        item: "https://chatterwise.io/docs/advanced-features/webhooks",
       },
     ],
   };

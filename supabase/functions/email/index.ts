@@ -415,7 +415,7 @@ function getNewChatbotTemplate(name, chatbotName, chatbotId) {
         <div class="chatbot-name">${chatbotName}</div>
         <p>Your assistant is ready to answer questions based on your knowledge base and grow smarter over time.</p>
         <div style="text-align: center;">
-          <a href="https://app.chatterwise.ai/chatbots/${chatbotId}" class="button">View Chatbot</a>
+          <a href="https://app.chatterwise.io/chatbots/${chatbotId}" class="button">View Chatbot</a>
         </div>
         <div class="next-steps">
           <strong style="color: #ff5233;">Next Steps</strong>
@@ -433,10 +433,10 @@ function getNewChatbotTemplate(name, chatbotName, chatbotId) {
       </div>
       <div class="footer">
         © 2025 ChatterWise. All rights reserved.<br />
-        <a href="https://chatterwise.ai" style="color: #ff5233; text-decoration: none;">Visit our site</a>
+        <a href="https://chatterwise.io" style="color: #ff5233; text-decoration: none;">Visit our site</a>
       </div>
       <p style="font-size: 14px; color: #aaa; text-align: center;">
-        If this wasn't you, please contact support or visit <a href="https://chatterwise.ai">chatterwise.ai</a>.
+        If this wasn't you, please contact support or visit <a href="https://chatterwise.io">chatterwise.io</a>.
       </p>
     </div>
   </body>
@@ -498,14 +498,14 @@ function getDailyDigestTemplate(name, totalMessages, chatbotStats) {
       ` : ""}
       
       <div style="text-align: center;">
-        <a href="https://app.chatterwise.ai/dashboard" class="button">View Dashboard</a>
+        <a href="https://app.chatterwise.io/dashboard" class="button">View Dashboard</a>
       </div>
       
       <p>Best regards,<br>The ChatterWise Team</p>
       
       <div class="footer">
         <p>© 2025 ChatterWise. All rights reserved.</p>
-        <p>You're receiving this email because you enabled daily digests in your <a href="https://app.chatterwise.ai/settings">email settings</a>.</p>
+        <p>You're receiving this email because you enabled daily digests in your <a href="https://app.chatterwise.io/settings">email settings</a>.</p>
       </div>
     </body>
     </html>
@@ -583,14 +583,14 @@ function getWeeklyReportTemplate(name, totalMessages, totalUniqueUsers, chatbotS
       ` : ""}
       
       <div style="text-align: center;">
-        <a href="https://app.chatterwise.ai/analytics" class="button">View Detailed Analytics</a>
+        <a href="https://app.chatterwise.io/analytics" class="button">View Detailed Analytics</a>
       </div>
       
       <p>Best regards,<br>The ChatterWise Team</p>
       
       <div class="footer">
         <p>© 2025 ChatterWise. All rights reserved.</p>
-        <p>You're receiving this email because you enabled weekly reports in your <a href="https://app.chatterwise.ai/settings">email settings</a>.</p>
+        <p>You're receiving this email because you enabled weekly reports in your <a href="https://app.chatterwise.io/settings">email settings</a>.</p>
       </div>
     </body>
     </html>

@@ -30,7 +30,7 @@ export const SEO: React.FC<SEOProps> = ({
   schemaData = {},
   keywords,
 }) => {
-  const siteUrl = "https://chatterwise.ai";
+  const siteUrl = "https://chatterwise.io";
   const fullUrl = canonicalUrl ? `${siteUrl}${canonicalUrl}` : siteUrl;
 
   // Base schema for the organization

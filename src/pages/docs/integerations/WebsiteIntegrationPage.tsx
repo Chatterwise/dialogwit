@@ -22,26 +22,26 @@ const WebsiteIntegrationPage: React.FC = () => {
         "@type": "ListItem",
         position: 1,
         name: "Documentation",
-        item: "https://chatterwise.ai/documentation",
+        item: "https://chatterwise.io/documentation",
       },
       {
         "@type": "ListItem",
         position: 2,
         name: "Integrations",
-        item: "https://chatterwise.ai/docs/integrations",
+        item: "https://chatterwise.io/docs/integrations",
       },
       {
         "@type": "ListItem",
         position: 3,
         name: "Website Integration",
-        item: "https://chatterwise.ai/docs/integrations/website-integration",
+        item: "https://chatterwise.io/docs/integrations/website-integration",
       },
     ],
   };
 
   const scriptCode = `<!-- Add this script tag to your HTML -->
 <script 
-  src="https://cdn.chatterwise.ai/widget.js" 
+  src="https://cdn.chatterwise.io/widget.js" 
   data-bot-id="your-bot-id"
   data-api-key="your-api-key"
   data-theme="light"
@@ -56,7 +56,7 @@ const WebsiteIntegrationPage: React.FC = () => {
 function ChatComponent() {
   const { messages, sendMessage, isLoading } = useChatbot({
     botId: "your-bot-id",
-    apiUrl: "https://api.chatterwise.ai/v1",
+    apiUrl: "https://api.chatterwise.io/v1",
     apiKey: "your-api-key",
   });
 

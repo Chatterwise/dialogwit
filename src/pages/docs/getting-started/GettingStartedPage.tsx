@@ -13,13 +13,13 @@ const GettingStartedPage: React.FC = () => {
         "@type": "ListItem",
         position: 1,
         name: "Documentation",
-        item: "https://chatterwise.ai/documentation",
+        item: "https://chatterwise.io/documentation",
       },
       {
         "@type": "ListItem",
         position: 2,
         name: "Getting Started",
-        item: "https://chatterwise.ai/docs/getting-started",
+        item: "https://chatterwise.io/docs/getting-started",
       },
     ],
   };

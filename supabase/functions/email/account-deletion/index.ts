@@ -115,7 +115,7 @@ function getAccountDeletionEmailTemplate(email: string): string {
       <p>If you deleted your account by mistake or would like to use our services again in the future, you'll need to create a new account.</p>
       
       <div style="text-align: center;">
-        <a href="https://app.chatterwise.ai/auth" class="button">Create New Account</a>
+        <a href="https://app.chatterwise.io/auth" class="button">Create New Account</a>
       </div>
       
       <p>We'd love to hear your feedback on why you decided to leave. If you have a moment, please reply to this email with any suggestions or concerns.</p>

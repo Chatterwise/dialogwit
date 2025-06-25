@@ -22,19 +22,19 @@ const SlackIntegrationPage: React.FC = () => {
         "@type": "ListItem",
         position: 1,
         name: "Documentation",
-        item: "https://chatterwise.ai/documentation",
+        item: "https://chatterwise.io/documentation",
       },
       {
         "@type": "ListItem",
         position: 2,
         name: "Integrations",
-        item: "https://chatterwise.ai/docs/integrations",
+        item: "https://chatterwise.io/docs/integrations",
       },
       {
         "@type": "ListItem",
         position: 3,
         name: "Slack Integration",
-        item: "https://chatterwise.ai/docs/integrations/slack-integration",
+        item: "https://chatterwise.io/docs/integrations/slack-integration",
       },
     ],
   };
@@ -43,7 +43,7 @@ const SlackIntegrationPage: React.FC = () => {
 {
   "bot_token": "xoxb-your-bot-token",
   "signing_secret": "your-signing-secret",
-  "webhook_url": "https://api.chatterwise.ai/v1/integrations/slack",
+  "webhook_url": "https://api.chatterwise.io/v1/integrations/slack",
   "chatbot_id": "your-chatbot-id"
 }`;
 
@@ -154,7 +154,7 @@ const SlackIntegrationPage: React.FC = () => {
                 In the "Request URL" field, enter your ChatterWise Slack
                 integration webhook URL:
                 <pre className="bg-gray-100 dark:bg-gray-800 p-3 rounded-lg text-sm">
-                  https://api.chatterwise.ai/v1/integrations/slack
+                  https://api.chatterwise.io/v1/integrations/slack
                 </pre>
               </li>
               <li>

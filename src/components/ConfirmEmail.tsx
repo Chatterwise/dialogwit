@@ -96,7 +96,7 @@ export default function ConfirmEmail() {
   };
 
   const handleContactSupport = () => {
-    window.location.href = "mailto:support@chatterwise.ai";
+    window.location.href = "mailto:support@chatterwise.io";
   };
 
   return (

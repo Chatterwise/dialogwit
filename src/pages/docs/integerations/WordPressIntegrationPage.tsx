@@ -22,19 +22,19 @@ const WordPressIntegrationPage: React.FC = () => {
         "@type": "ListItem",
         position: 1,
         name: "Documentation",
-        item: "https://chatterwise.ai/documentation",
+        item: "https://chatterwise.io/documentation",
       },
       {
         "@type": "ListItem",
         position: 2,
         name: "Integrations",
-        item: "https://chatterwise.ai/docs/integrations",
+        item: "https://chatterwise.io/docs/integrations",
       },
       {
         "@type": "ListItem",
         position: 3,
         name: "WordPress Integration",
-        item: "https://chatterwise.ai/docs/integrations/wordpress-integration",
+        item: "https://chatterwise.io/docs/integrations/wordpress-integration",
       },
     ],
   };
@@ -51,7 +51,7 @@ const WordPressIntegrationPage: React.FC = () => {
  */
 function add_chatterwise_chatbot() {
     ?>
-    <script src="https://cdn.chatterwise.ai/widget.js" 
+    <script src="https://cdn.chatterwise.io/widget.js" 
             data-bot-id="your-bot-id"
             data-api-key="your-api-key"
             data-theme="light"
@@ -232,7 +232,7 @@ add_action('wp_footer', 'add_chatterwise_chatbot');
             </p>
 
             <pre className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg text-sm">
-              {`<script src="https://cdn.chatterwise.ai/widget.js" 
+              {`<script src="https://cdn.chatterwise.io/widget.js" 
         data-bot-id="your-bot-id"
         data-api-key="your-api-key"
         data-theme="light"
@@ -269,7 +269,7 @@ function add_conditional_chatterwise_chatbot() {
     // Only load on specific pages
     if (is_page('contact') || is_page('support')) {
         ?>
-        <script src="https://cdn.chatterwise.ai/widget.js" 
+        <script src="https://cdn.chatterwise.io/widget.js" 
                 data-bot-id="your-bot-id"
                 data-api-key="your-api-key"
                 async></script>
@@ -297,7 +297,7 @@ function add_woocommerce_chatterwise_chatbot() {
         $product_name = $product->get_name();
         $product_id = $product->get_id();
         ?>
-        <script src="https://cdn.chatterwise.ai/widget.js" 
+        <script src="https://cdn.chatterwise.io/widget.js" 
                 data-bot-id="your-bot-id"
                 data-api-key="your-api-key"
                 data-context='{"product_id": "<?php echo $product_id; ?>", "product_name": "<?php echo esc_js($product_name); ?>"}'
@@ -305,7 +305,7 @@ function add_woocommerce_chatterwise_chatbot() {
         <?php
     } else {
         ?>
-        <script src="https://cdn.chatterwise.ai/widget.js" 
+        <script src="https://cdn.chatterwise.io/widget.js" 
                 data-bot-id="your-bot-id"
                 data-api-key="your-api-key"
                 async></script>

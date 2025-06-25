@@ -273,7 +273,7 @@ const LandingPage: React.FC = () => {
         "@type": "ListItem",
         position: 1,
         name: "Home",
-        item: "https://chatterwise.ai",
+        item: "https://chatterwise.io",
       },
     ],
   };

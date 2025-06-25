@@ -1,9 +1,18 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
-import { Shield, FileText, Lock, AlertTriangle, ChevronDown, ChevronUp } from "lucide-react";
+import {
+  Shield,
+  FileText,
+  Lock,
+  AlertTriangle,
+  ChevronDown,
+  ChevronUp,
+} from "lucide-react";
 
 const LegalPage: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<"privacy" | "terms" | "cookies" | "security">("privacy");
+  const [activeTab, setActiveTab] = useState<
+    "privacy" | "terms" | "cookies" | "security"
+  >("privacy");
   const [expandedFaqs, setExpandedFaqs] = useState<number[]>([]);
 
   const toggleFaq = (index: number) => {
@@ -107,7 +116,7 @@ const LegalPage: React.FC = () => {
     {
       question: "Do you have a bug bounty program?",
       answer:
-        "Yes, we have a responsible disclosure program for security researchers. If you discover a security vulnerability, please report it to security@chatterwise.ai. We offer rewards for eligible reports based on the severity and impact of the vulnerability.",
+        "Yes, we have a responsible disclosure program for security researchers. If you discover a security vulnerability, please report it to security@chatterwise.io. We offer rewards for eligible reports based on the severity and impact of the vulnerability.",
     },
     {
       question: "How do you handle data breaches?",
@@ -122,7 +131,7 @@ const LegalPage: React.FC = () => {
     {
       question: "How can I report a security concern?",
       answer:
-        "If you have a security concern or want to report a potential security issue, please contact our security team at security@chatterwise.ai. We take all security reports seriously and will investigate promptly.",
+        "If you have a security concern or want to report a potential security issue, please contact our security team at security@chatterwise.io. We take all security reports seriously and will investigate promptly.",
     },
   ];
 
@@ -151,7 +160,9 @@ const LegalPage: React.FC = () => {
           transition={{ duration: 0.5 }}
           className="text-center mb-16"
         >
-          <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">Legal Information</h1>
+          <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
+            Legal Information
+          </h1>
           <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
             Our commitment to privacy, security, and legal compliance
           </p>
@@ -212,37 +223,47 @@ const LegalPage: React.FC = () => {
               <>
                 <h2>Privacy Policy</h2>
                 <p>
-                  At ChatterWise, we take your privacy seriously. This Privacy Policy explains how we collect, use, disclose, and
-                  safeguard your information when you use our platform.
+                  At ChatterWise, we take your privacy seriously. This Privacy
+                  Policy explains how we collect, use, disclose, and safeguard
+                  your information when you use our platform.
                 </p>
                 <h3>Information We Collect</h3>
                 <p>
-                  We collect information that you provide directly to us, such as your name, email address, and any other
-                  information you choose to provide. We also collect certain information automatically when you use our
-                  services, including IP address, device information, and usage data.
+                  We collect information that you provide directly to us, such
+                  as your name, email address, and any other information you
+                  choose to provide. We also collect certain information
+                  automatically when you use our services, including IP address,
+                  device information, and usage data.
                 </p>
                 <h3>How We Use Your Information</h3>
                 <p>
-                  We use your personal information to provide and improve our services, communicate with you, and comply
-                  with legal obligations. We may also use your information for research and analytics purposes to better
-                  understand how users interact with our platform.
+                  We use your personal information to provide and improve our
+                  services, communicate with you, and comply with legal
+                  obligations. We may also use your information for research and
+                  analytics purposes to better understand how users interact
+                  with our platform.
                 </p>
                 <h3>Information Sharing</h3>
                 <p>
-                  We may share your personal information with service providers who perform services on our behalf, with
-                  your consent, or as required by law. We do not sell your personal information to third parties.
+                  We may share your personal information with service providers
+                  who perform services on our behalf, with your consent, or as
+                  required by law. We do not sell your personal information to
+                  third parties.
                 </p>
                 <h3>Data Security</h3>
                 <p>
-                  We implement appropriate technical and organizational measures to protect your personal information
-                  against unauthorized access, disclosure, alteration, and destruction. These measures include
-                  encryption, access controls, and regular security assessments.
+                  We implement appropriate technical and organizational measures
+                  to protect your personal information against unauthorized
+                  access, disclosure, alteration, and destruction. These
+                  measures include encryption, access controls, and regular
+                  security assessments.
                 </p>
                 <h3>Your Rights</h3>
                 <p>
-                  Depending on your location, you may have the right to access, correct, delete, or restrict the
-                  processing of your personal information. You may also have the right to data portability and to
-                  withdraw your consent at any time.
+                  Depending on your location, you may have the right to access,
+                  correct, delete, or restrict the processing of your personal
+                  information. You may also have the right to data portability
+                  and to withdraw your consent at any time.
                 </p>
               </>
             )}
@@ -251,41 +272,64 @@ const LegalPage: React.FC = () => {
               <>
                 <h2>Terms of Service</h2>
                 <p>
-                  These Terms of Service govern your access to and use of ChatterWise's platform. By using our services,
-                  you agree to be bound by these terms.
+                  These Terms of Service govern your access to and use of
+                  ChatterWise's platform. By using our services, you agree to be
+                  bound by these terms.
                 </p>
                 <h3>Acceptable Use</h3>
                 <p>
-                  You may use ChatterWise only for lawful purposes and in accordance with these Terms of Service. You
-                  agree not to use ChatterWise:
+                  You may use ChatterWise only for lawful purposes and in
+                  accordance with these Terms of Service. You agree not to use
+                  ChatterWise:
                 </p>
                 <ul>
-                  <li>In any way that violates any applicable federal, state, local, or international law or regulation</li>
-                  <li>To transmit, or procure the sending of, any advertising or promotional material</li>
-                  <li>To impersonate or attempt to impersonate ChatterWise, a ChatterWise employee, another user, or any other person or entity</li>
-                  <li>To engage in any other conduct that restricts or inhibits anyone's use or enjoyment of the Service</li>
+                  <li>
+                    In any way that violates any applicable federal, state,
+                    local, or international law or regulation
+                  </li>
+                  <li>
+                    To transmit, or procure the sending of, any advertising or
+                    promotional material
+                  </li>
+                  <li>
+                    To impersonate or attempt to impersonate ChatterWise, a
+                    ChatterWise employee, another user, or any other person or
+                    entity
+                  </li>
+                  <li>
+                    To engage in any other conduct that restricts or inhibits
+                    anyone's use or enjoyment of the Service
+                  </li>
                 </ul>
                 <h3>Intellectual Property</h3>
                 <p>
-                  ChatterWise and its original content, features, and functionality are owned by us and are protected by
-                  international copyright, trademark, patent, trade secret, and other intellectual property laws. You
-                  retain ownership of any content you upload to our platform.
+                  ChatterWise and its original content, features, and
+                  functionality are owned by us and are protected by
+                  international copyright, trademark, patent, trade secret, and
+                  other intellectual property laws. You retain ownership of any
+                  content you upload to our platform.
                 </p>
                 <h3>Termination</h3>
                 <p>
-                  We may terminate or suspend your access to ChatterWise immediately, without prior notice or liability,
-                  for any reason whatsoever, including without limitation if you breach the Terms of Service.
+                  We may terminate or suspend your access to ChatterWise
+                  immediately, without prior notice or liability, for any reason
+                  whatsoever, including without limitation if you breach the
+                  Terms of Service.
                 </p>
                 <h3>Limitation of Liability</h3>
                 <p>
-                  In no event shall ChatterWise, nor its directors, employees, partners, agents, suppliers, or affiliates,
-                  be liable for any indirect, incidental, special, consequential, or punitive damages, including without
-                  limitation, loss of profits, data, use, goodwill, or other intangible losses.
+                  In no event shall ChatterWise, nor its directors, employees,
+                  partners, agents, suppliers, or affiliates, be liable for any
+                  indirect, incidental, special, consequential, or punitive
+                  damages, including without limitation, loss of profits, data,
+                  use, goodwill, or other intangible losses.
                 </p>
                 <h3>Changes to Terms</h3>
                 <p>
-                  We reserve the right, at our sole discretion, to modify or replace these Terms at any time. We will
-                  provide notice of any material changes by posting the new Terms on our website or sending you an email.
+                  We reserve the right, at our sole discretion, to modify or
+                  replace these Terms at any time. We will provide notice of any
+                  material changes by posting the new Terms on our website or
+                  sending you an email.
                 </p>
               </>
             )}
@@ -294,47 +338,57 @@ const LegalPage: React.FC = () => {
               <>
                 <h2>Cookie Policy</h2>
                 <p>
-                  This Cookie Policy explains how ChatterWise uses cookies and similar technologies to recognize you when
-                  you visit our website. It explains what these technologies are and why we use them, as well as your
-                  rights to control our use of them.
+                  This Cookie Policy explains how ChatterWise uses cookies and
+                  similar technologies to recognize you when you visit our
+                  website. It explains what these technologies are and why we
+                  use them, as well as your rights to control our use of them.
                 </p>
                 <h3>What Are Cookies?</h3>
                 <p>
-                  Cookies are small data files that are placed on your computer or mobile device when you visit a
-                  website. Cookies are widely used by website owners in order to make their websites work, or to work
-                  more efficiently, as well as to provide reporting information.
+                  Cookies are small data files that are placed on your computer
+                  or mobile device when you visit a website. Cookies are widely
+                  used by website owners in order to make their websites work,
+                  or to work more efficiently, as well as to provide reporting
+                  information.
                 </p>
                 <h3>Types of Cookies We Use</h3>
                 <p>We use the following types of cookies:</p>
                 <ul>
                   <li>
-                    <strong>Essential Cookies:</strong> These cookies are necessary for the website to function properly
-                    and cannot be switched off in our systems.
+                    <strong>Essential Cookies:</strong> These cookies are
+                    necessary for the website to function properly and cannot be
+                    switched off in our systems.
                   </li>
                   <li>
-                    <strong>Performance Cookies:</strong> These cookies allow us to count visits and traffic sources so
-                    we can measure and improve the performance of our site.
+                    <strong>Performance Cookies:</strong> These cookies allow us
+                    to count visits and traffic sources so we can measure and
+                    improve the performance of our site.
                   </li>
                   <li>
-                    <strong>Functional Cookies:</strong> These cookies enable the website to provide enhanced
-                    functionality and personalization.
+                    <strong>Functional Cookies:</strong> These cookies enable
+                    the website to provide enhanced functionality and
+                    personalization.
                   </li>
                   <li>
-                    <strong>Targeting Cookies:</strong> These cookies may be set through our site by our advertising
-                    partners to build a profile of your interests.
+                    <strong>Targeting Cookies:</strong> These cookies may be set
+                    through our site by our advertising partners to build a
+                    profile of your interests.
                   </li>
                 </ul>
                 <h3>Managing Cookies</h3>
                 <p>
-                  Most web browsers allow you to control cookies through their settings preferences. However, if you
-                  limit the ability of websites to set cookies, you may worsen your overall user experience, since it
-                  will no longer be personalized to you.
+                  Most web browsers allow you to control cookies through their
+                  settings preferences. However, if you limit the ability of
+                  websites to set cookies, you may worsen your overall user
+                  experience, since it will no longer be personalized to you.
                 </p>
                 <h3>Changes to This Cookie Policy</h3>
                 <p>
-                  We may update this Cookie Policy from time to time in order to reflect changes to the cookies we use or
-                  for other operational, legal, or regulatory reasons. Please therefore re-visit this Cookie Policy
-                  regularly to stay informed about our use of cookies and related technologies.
+                  We may update this Cookie Policy from time to time in order to
+                  reflect changes to the cookies we use or for other
+                  operational, legal, or regulatory reasons. Please therefore
+                  re-visit this Cookie Policy regularly to stay informed about
+                  our use of cookies and related technologies.
                 </p>
               </>
             )}
@@ -343,44 +397,54 @@ const LegalPage: React.FC = () => {
               <>
                 <h2>Security Policy</h2>
                 <p>
-                  At ChatterWise, security is a top priority. We are committed to protecting your data and ensuring the
-                  security of our platform. This Security Policy outlines the measures we take to safeguard your
-                  information.
+                  At ChatterWise, security is a top priority. We are committed
+                  to protecting your data and ensuring the security of our
+                  platform. This Security Policy outlines the measures we take
+                  to safeguard your information.
                 </p>
                 <h3>Data Protection</h3>
                 <p>
-                  We implement industry-standard security measures to protect your data, including encryption in transit
-                  and at rest, access controls, regular security assessments, and continuous monitoring for suspicious
-                  activities.
+                  We implement industry-standard security measures to protect
+                  your data, including encryption in transit and at rest, access
+                  controls, regular security assessments, and continuous
+                  monitoring for suspicious activities.
                 </p>
                 <h3>Infrastructure Security</h3>
                 <p>
-                  Our infrastructure is hosted on secure cloud providers that maintain compliance with various security
-                  standards. We implement network security measures, including firewalls, intrusion detection systems,
-                  and regular vulnerability scanning.
+                  Our infrastructure is hosted on secure cloud providers that
+                  maintain compliance with various security standards. We
+                  implement network security measures, including firewalls,
+                  intrusion detection systems, and regular vulnerability
+                  scanning.
                 </p>
                 <h3>Access Control</h3>
                 <p>
-                  We follow the principle of least privilege, ensuring that employees only have access to the data and
-                  systems necessary for their job functions. We implement multi-factor authentication, strong password
-                  policies, and regular access reviews.
+                  We follow the principle of least privilege, ensuring that
+                  employees only have access to the data and systems necessary
+                  for their job functions. We implement multi-factor
+                  authentication, strong password policies, and regular access
+                  reviews.
                 </p>
                 <h3>Security Compliance</h3>
                 <p>
-                  We comply with various security standards and regulations, including SOC 2, ISO 27001, and GDPR. We
-                  regularly undergo third-party audits to ensure our compliance with these standards.
+                  We comply with various security standards and regulations,
+                  including SOC 2, ISO 27001, and GDPR. We regularly undergo
+                  third-party audits to ensure our compliance with these
+                  standards.
                 </p>
                 <h3>Incident Response</h3>
                 <p>
-                  We have a comprehensive incident response plan in place to address security incidents promptly and
-                  effectively. In the event of a data breach, we will notify affected users and relevant authorities as
-                  required by law.
+                  We have a comprehensive incident response plan in place to
+                  address security incidents promptly and effectively. In the
+                  event of a data breach, we will notify affected users and
+                  relevant authorities as required by law.
                 </p>
                 <h3>Security Updates</h3>
                 <p>
-                  We regularly update our systems and applications to address security vulnerabilities. We also conduct
-                  security awareness training for our employees to ensure they understand and follow security best
-                  practices.
+                  We regularly update our systems and applications to address
+                  security vulnerabilities. We also conduct security awareness
+                  training for our employees to ensure they understand and
+                  follow security best practices.
                 </p>
               </>
             )}
@@ -417,7 +481,9 @@ const LegalPage: React.FC = () => {
                   </button>
                   {expandedFaqs.includes(index) && (
                     <div className="p-4 bg-gray-50 dark:bg-gray-900/50 border-t border-gray-200 dark:border-gray-700">
-                      <p className="text-gray-600 dark:text-gray-300">{faq.answer}</p>
+                      <p className="text-gray-600 dark:text-gray-300">
+                        {faq.answer}
+                      </p>
                     </div>
                   )}
                 </div>
@@ -434,10 +500,13 @@ const LegalPage: React.FC = () => {
           className="bg-gradient-to-r from-primary-50 to-accent-50 dark:from-primary-900/20 dark:to-accent-900/20 rounded-2xl p-8 border border-primary-100 dark:border-primary-800"
         >
           <div className="text-center">
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Have More Questions?</h2>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+              Have More Questions?
+            </h2>
             <p className="text-gray-600 dark:text-gray-300 mb-6 max-w-2xl mx-auto">
-              If you have any questions about our privacy policy, terms of service, or security practices, please don't
-              hesitate to contact us.
+              If you have any questions about our privacy policy, terms of
+              service, or security practices, please don't hesitate to contact
+              us.
             </p>
             <a
               href="/contact"

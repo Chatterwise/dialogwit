@@ -364,7 +364,7 @@ function getWelcomeEmailTemplate(name) {
           <div class="cta-section">
             <h3 style="margin: 0 0 15px 0; color: #1e293b;">Ready to build your first chatbot?</h3>
             <p style="margin: 0 0 20px 0; color: #64748b;">Jump into your dashboard and start creating amazing conversational experiences.</p>
-            <a href="https://app.chatterwise.ai/dashboard" class="button">Go to Dashboard →</a>
+            <a href="https://app.chatterwise.io/dashboard" class="button">Go to Dashboard →</a>
           </div>
 
           <div style="background-color: #eff6ff; border-radius: 8px; padding: 20px; margin: 30px 0;">
@@ -378,9 +378,9 @@ function getWelcomeEmailTemplate(name) {
             <h4 style="color: #1e293b; margin-bottom: 15px;">Need help getting started?</h4>
             <p style="color: #64748b; margin-bottom: 20px;">Our team is here to support you every step of the way.</p>
             <div style="display: flex; justify-content: center; gap: 20px; flex-wrap: wrap;">
-              <a href="https://docs.chatterwise.ai" style="color: #667eea; text-decoration: none; font-weight: 500;">📚 Documentation</a>
-              <a href="https://chatterwise.ai/support" style="color: #667eea; text-decoration: none; font-weight: 500;">💬 Live Chat</a>
-              <a href="https://chatterwise.ai/tutorials" style="color: #667eea; text-decoration: none; font-weight: 500;">🎥 Video Tutorials</a>
+              <a href="https://docs.chatterwise.io" style="color: #667eea; text-decoration: none; font-weight: 500;">📚 Documentation</a>
+              <a href="https://chatterwise.io/support" style="color: #667eea; text-decoration: none; font-weight: 500;">💬 Live Chat</a>
+              <a href="https://chatterwise.io/tutorials" style="color: #667eea; text-decoration: none; font-weight: 500;">🎥 Video Tutorials</a>
             </div>
           </div>
         </div>
@@ -391,9 +391,9 @@ function getWelcomeEmailTemplate(name) {
           <div style="border-top: 1px solid #e2e8f0; padding-top: 15px; margin-top: 15px;">
             <p style="margin: 0; font-size: 12px;">© 2025 ChatterWise. All rights reserved.</p>
             <p style="margin: 5px 0 0 0; font-size: 12px;">
-              <a href="https://chatterwise.ai/privacy">Privacy Policy</a> • 
-              <a href="https://chatterwise.ai/terms">Terms of Service</a> • 
-              <a href="https://chatterwise.ai/unsubscribe">Unsubscribe</a>
+              <a href="https://chatterwise.io/privacy">Privacy Policy</a> • 
+              <a href="https://chatterwise.io/terms">Terms of Service</a> • 
+              <a href="https://chatterwise.io/unsubscribe">Unsubscribe</a>
             </p>
           </div>
         </div>

@@ -68,7 +68,7 @@ const CancelPage: React.FC = () => {
             </p>
             <div className="space-y-2">
               <a
-                href="mailto:support@chatterwise.ai"
+                href="mailto:support@chatterwise.io"
                 className="block text-blue-500 hover:text-blue-600 text-sm font-medium"
               >
                 Email Support

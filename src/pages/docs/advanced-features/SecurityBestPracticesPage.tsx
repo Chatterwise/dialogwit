@@ -13,19 +13,19 @@ const SecurityBestPracticesPage: React.FC = () => {
         "@type": "ListItem",
         position: 1,
         name: "Documentation",
-        item: "https://chatterwise.ai/documentation",
+        item: "https://chatterwise.io/documentation",
       },
       {
         "@type": "ListItem",
         position: 2,
         name: "Advanced Features",
-        item: "https://chatterwise.ai/docs/advanced-features",
+        item: "https://chatterwise.io/docs/advanced-features",
       },
       {
         "@type": "ListItem",
         position: 3,
         name: "Security Best Practices",
-        item: "https://chatterwise.ai/docs/advanced-features/security-best-practices",
+        item: "https://chatterwise.io/docs/advanced-features/security-best-practices",
       },
     ],
   };
@@ -178,7 +178,7 @@ const SecurityBestPracticesPage: React.FC = () => {
                   {`// Server-side code (Node.js example)
 app.post('/api/chat', async (req, res) => {
   try {
-    const response = await fetch('https://api.chatterwise.ai/v1/chat', {
+    const response = await fetch('https://api.chatterwise.io/v1/chat', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

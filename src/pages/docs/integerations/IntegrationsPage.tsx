@@ -13,13 +13,13 @@ const IntegrationsPage: React.FC = () => {
         "@type": "ListItem",
         position: 1,
         name: "Documentation",
-        item: "https://chatterwise.ai/documentation",
+        item: "https://chatterwise.io/documentation",
       },
       {
         "@type": "ListItem",
         position: 2,
         name: "Integrations",
-        item: "https://chatterwise.ai/docs/integrations",
+        item: "https://chatterwise.io/docs/integrations",
       },
     ],
   };

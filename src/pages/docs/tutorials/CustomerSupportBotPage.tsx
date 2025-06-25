@@ -13,19 +13,19 @@ const CustomerSupportBotPage: React.FC = () => {
         "@type": "ListItem",
         position: 1,
         name: "Documentation",
-        item: "https://chatterwise.ai/documentation",
+        item: "https://chatterwise.io/documentation",
       },
       {
         "@type": "ListItem",
         position: 2,
         name: "Tutorials",
-        item: "https://chatterwise.ai/docs/tutorials",
+        item: "https://chatterwise.io/docs/tutorials",
       },
       {
         "@type": "ListItem",
         position: 3,
         name: "Building a Customer Support Bot",
-        item: "https://chatterwise.ai/docs/tutorials/customer-support-bot",
+        item: "https://chatterwise.io/docs/tutorials/customer-support-bot",
       },
     ],
   };
@@ -481,7 +481,7 @@ End each interaction by asking if there's anything else you can help with.`}
 
             <pre className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg text-sm">
               {`// Example of passing user context to the chatbot
-<script src="https://cdn.chatterwise.ai/widget.js" 
+<script src="https://cdn.chatterwise.io/widget.js" 
         data-bot-id="your-bot-id"
         data-context='{"user_name": "John", "account_type": "premium", "last_order_id": "ORD-12345"}'
         async></script>`}
