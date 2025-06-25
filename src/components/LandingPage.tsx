@@ -42,7 +42,6 @@ type FeatureCardProps = {
   delay?: number;
 };
 
-// Demo chatbot component
 const DemoChatbot = () => {
   const [messages, setMessages] = useState([
     { id: 1, text: "Hi there! How can I help you today?", sender: "bot" },
@@ -52,15 +51,9 @@ const DemoChatbot = () => {
 
   const handleSend = () => {
     if (!input.trim()) return;
-
-    // Add user message
     setMessages([...messages, { id: Date.now(), text: input, sender: "user" }]);
     setInput("");
-
-    // Simulate bot typing
     setIsTyping(true);
-
-    // Simulate bot response
     setTimeout(() => {
       setIsTyping(false);
       setMessages((prev) => [
@@ -76,7 +69,6 @@ const DemoChatbot = () => {
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 w-full max-w-md overflow-hidden">
-      {/* Header */}
       <div className="bg-gradient-to-r from-primary-500 to-primary-600 p-4 text-white">
         <div className="flex items-center">
           <Bot className="h-6 w-6 mr-2" />
@@ -86,8 +78,6 @@ const DemoChatbot = () => {
           </div>
         </div>
       </div>
-
-      {/* Messages */}
       <div className="h-64 overflow-y-auto p-4 bg-gray-50 dark:bg-gray-900">
         {messages.map((msg) => (
           <div
@@ -107,7 +97,6 @@ const DemoChatbot = () => {
             </div>
           </div>
         ))}
-
         {isTyping && (
           <div className="flex mb-3">
             <div className="bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 p-3 rounded-lg rounded-tl-none">
@@ -126,8 +115,6 @@ const DemoChatbot = () => {
           </div>
         )}
       </div>
-
-      {/* Input */}
       <div className="p-4 border-t border-gray-200 dark:border-gray-700 flex">
         <input
           type="text"
@@ -236,30 +223,20 @@ const LandingPage: React.FC = () => {
   const heroY = useTransform(scrollYProgress, [0, 0.1], [0, -50]);
   const { theme, toggleTheme } = useTheme();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
   const [isVisible, setIsVisible] = useState(false);
   const chatbotRef = useRef(null);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
-      ([entry]) => {
-        setIsVisible(entry.isIntersecting);
-      },
+      ([entry]) => setIsVisible(entry.isIntersecting),
       { threshold: 0.1 }
     );
-
-    if (chatbotRef.current) {
-      observer.observe(chatbotRef.current);
-    }
-
+    if (chatbotRef.current) observer.observe(chatbotRef.current);
     return () => {
-      if (chatbotRef.current) {
-        observer.unobserve(chatbotRef.current);
-      }
+      if (chatbotRef.current) observer.unobserve(chatbotRef.current);
     };
   }, []);
 
-  // Schema.org data for the landing page
   const schemaData = {
     "@context": "https://schema.org",
     "@type": "SoftwareApplication",
@@ -288,7 +265,6 @@ const LandingPage: React.FC = () => {
     },
   };
 
-  // BreadcrumbList schema for the landing page
   const breadcrumbSchema = {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
@@ -305,27 +281,21 @@ const LandingPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white dark:from-gray-900 dark:to-gray-800 overflow-hidden">
       <SEO
-        title="ChatterWise - AI-Powered Chatbot Platform"
-        description="Build and deploy AI-powered chatbots with ease. Create intelligent, context-aware chatbots in minutes with your own knowledge base."
+        title="ChatterWise: No-Code AI Chatbot Builder for Teams & Customers"
+        description="Build, train, and launch AI chatbots with your own data—no coding required. Start free, no credit card needed. Boost sales, customer service, and empower internal teams with ChatterWise."
         canonicalUrl="/"
         ogImage="https://images.pexels.com/photos/7567557/pexels-photo-7567557.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2"
         schemaType="WebPage"
         schemaData={schemaData}
       />
-
-      {/* Add BreadcrumbList schema */}
       <Helmet>
         <script type="application/ld+json">
           {JSON.stringify(breadcrumbSchema)}
         </script>
       </Helmet>
-
-      {/* Animated background */}
       <div className="fixed inset-0 z-0 opacity-30 dark:opacity-20">
         <ParticlesBg type="cobweb" bg={true} color="#3B82F6" num={100} />
       </div>
-
-      {/* Navigation */}
       <nav className="bg-white/90 dark:bg-gray-900/90 backdrop-blur-md border-b border-gray-200 dark:border-gray-800 fixed w-full z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
@@ -364,7 +334,7 @@ const LandingPage: React.FC = () => {
               </Link>
               <Link
                 to="/documentation"
-                className="text-gray-7 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 px-3 py-2 text-sm font-medium"
+                className="text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 px-3 py-2 text-sm font-medium"
               >
                 Documentation
               </Link>
@@ -387,7 +357,6 @@ const LandingPage: React.FC = () => {
                 Sign Up Free
               </Link>
             </motion.div>
-            {/* Mobile Menu Button */}
             <div className="flex items-center md:hidden">
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -402,7 +371,6 @@ const LandingPage: React.FC = () => {
             </div>
           </div>
         </div>
-        {/* Mobile Menu */}
         <motion.div
           initial={{ opacity: 0, height: 0 }}
           animate={{
@@ -434,7 +402,7 @@ const LandingPage: React.FC = () => {
             <Link
               to="/documentation"
               onClick={() => setMobileMenuOpen(false)}
-              className="block px-3 py-2 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+              className="block px-3 py-2 rounded-md text-sm font-medium text-gray-7 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
             >
               Documentation
             </Link>
@@ -501,8 +469,11 @@ const LandingPage: React.FC = () => {
                 transition={{ duration: 0.5, delay: 0.4 }}
                 className="mt-6 text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto lg:mx-0"
               >
-                Create, train, and deploy intelligent chatbots powered by your
-                own data. No coding required.
+                ChatterWise empowers businesses and teams to build, train, and
+                deploy AI chatbots using their unique data—no coding required.
+                Start for free and see how intelligent automation can transform
+                your customer service, boost sales, and streamline internal
+                operations.
               </motion.p>
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
@@ -545,8 +516,6 @@ const LandingPage: React.FC = () => {
                 </span>
               </motion.div>
             </motion.div>
-
-            {/* Interactive chatbot demo */}
             <motion.div
               ref={chatbotRef}
               initial={{ opacity: 0, scale: 0.8 }}
@@ -598,54 +567,56 @@ const LandingPage: React.FC = () => {
               Powerful Features, Simple Interface
             </h2>
             <p className="mt-4 text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
-              Everything you need to build intelligent chatbots
+              Discover a comprehensive suite of tools designed to make AI
+              accessible. From knowledge base integration to advanced analytics,
+              ChatterWise gives you everything needed to create chatbots that
+              deliver real business value—for sales, customer support, and
+              internal teams.
             </p>
           </motion.div>
-
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             <FeatureCard
               icon={Database}
               title="Knowledge Base Integration"
-              description="Upload documents or add text content to train your chatbot with your specific information."
+              description="Upload documents or add text content to train your chatbot with your specific information. Supports PDFs, Word, and web pages for easy setup."
               delay={0.1}
             />
             <FeatureCard
               icon={Cpu}
               title="Advanced AI Models"
-              description="Powered by GPT-3.5 and GPT-4 with retrieval-augmented generation for accurate, context-aware responses."
+              description="Powered by GPT-3.5 and GPT-4 with retrieval-augmented generation for accurate, context-aware responses. Perfect for complex queries and nuanced conversations."
               delay={0.2}
             />
             <FeatureCard
               icon={Globe}
               title="Multiple Integration Options"
-              description="Embed your chatbot anywhere with our script tag, React components, or REST API."
+              description="Embed your chatbot anywhere with our script tag, React components, or REST API. Seamlessly add AI chat to your website, app, or platform."
               delay={0.3}
             />
             <FeatureCard
               icon={BarChart3}
               title="Comprehensive Analytics"
-              description="Track performance metrics, user engagement, and conversation quality to continuously improve."
+              description="Track performance metrics, user engagement, and conversation quality to continuously improve your chatbot and enhance customer experience."
               delay={0.4}
             />
             <FeatureCard
               icon={Users}
               title="Team Collaboration"
-              description="Work together to build, test, and refine your chatbots with role-based permissions."
+              description="Work together to build, test, and refine your chatbots with role-based permissions. Empower your internal teams with shared access and streamlined workflows."
               delay={0.5}
             />
             <FeatureCard
               icon={Shield}
               title="Enterprise Security"
-              description="Robust security features including API key management, rate limiting, and detailed audit logs."
+              description="Robust security features including API key management, rate limiting, and detailed audit logs. Keep your data safe and your business compliant."
               delay={0.6}
             />
           </div>
         </div>
       </section>
 
-      {/* How It Works Section with Parallax */}
+      {/* How It Works Section */}
       <section className="py-20 bg-gradient-to-br from-gray-50 to-white dark:from-gray-900 dark:to-gray-800 relative overflow-hidden">
-        {/* Parallax background elements */}
         <motion.div
           initial={{ opacity: 0.3 }}
           whileInView={{ opacity: 0.7 }}
@@ -656,7 +627,6 @@ const LandingPage: React.FC = () => {
           <div className="absolute top-20 left-10 w-64 h-64 bg-primary-400/10 dark:bg-primary-400/5 rounded-full blur-3xl"></div>
           <div className="absolute bottom-20 right-10 w-80 h-80 bg-accent-400/10 dark:bg-accent-400/5 rounded-full blur-3xl"></div>
         </motion.div>
-
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -668,14 +638,15 @@ const LandingPage: React.FC = () => {
             <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
               How It Works
             </h2>
-            <p className="mt-4 text-xl text-gray-6 dark:text-gray-300">
-              Build your AI chatbot in minutes, not months
+            <p className="mt-4 text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
+              With ChatterWise, you can build, train, and deploy AI chatbots in
+              minutes—not months. Our intuitive platform guides you through each
+              step, from uploading your content to integrating your chatbot
+              across multiple channels. No technical expertise required.
             </p>
           </motion.div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 relative">
-            {/* Connecting line */}
             <div className="hidden md:block absolute top-1/2 left-0 right-0 h-1 bg-gradient-to-r from-primary-500 to-accent-500 transform -translate-y-1/2 z-0"></div>
-
             {[
               {
                 step: 1,
@@ -727,6 +698,222 @@ const LandingPage: React.FC = () => {
         </div>
       </section>
 
+      {/* FAQ & Use Cases Section */}
+      <section className="py-20 bg-white dark:bg-gray-800 relative z-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            viewport={{ once: true }}
+            className="text-center mb-16"
+          >
+            <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
+              FAQs & Use Cases
+            </h2>
+            <p className="mt-4 text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
+              Explore how ChatterWise can help your business—whether you want to
+              boost sales, improve customer service, or empower your internal
+              teams.
+            </p>
+          </motion.div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {/* FAQ Card 1 */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+              viewport={{ once: true }}
+              className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 p-8 transition-all duration-300 hover:shadow-2xl"
+            >
+              <div className="w-14 h-14 bg-gradient-to-br from-primary-400 to-primary-600 rounded-2xl flex items-center justify-center mb-6 shadow-lg">
+                <svg
+                  className="h-7 w-7 text-white"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3">
+                How does ChatterWise help increase sales?
+              </h3>
+              <p className="text-gray-600 dark:text-gray-300">
+                ChatterWise chatbots can engage leads, answer product questions,
+                and guide users through your sales funnel—24/7. By automating
+                initial conversations, you increase conversion rates and free up
+                your sales team for high-value interactions.
+              </p>
+            </motion.div>
+            {/* FAQ Card 2 */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+              viewport={{ once: true }}
+              className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 p-8 transition-all duration-300 hover:shadow-2xl"
+            >
+              <div className="w-14 h-14 bg-gradient-to-br from-primary-400 to-primary-600 rounded-2xl flex items-center justify-center mb-6 shadow-lg">
+                <svg
+                  className="h-7 w-7 text-white"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+                  />
+                </svg>
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3">
+                Can ChatterWise be used for internal team support?
+              </h3>
+              <p className="text-gray-600 dark:text-gray-300">
+                Absolutely! ChatterWise is ideal for internal knowledge sharing.
+                Empower your teams with instant access to company policies,
+                procedures, and best practices—reducing repetitive questions and
+                improving productivity.
+              </p>
+            </motion.div>
+            {/* FAQ Card 3 */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.3 }}
+              viewport={{ once: true }}
+              className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 p-8 transition-all duration-300 hover:shadow-2xl"
+            >
+              <div className="w-14 h-14 bg-gradient-to-br from-primary-400 to-primary-600 rounded-2xl flex items-center justify-center mb-6 shadow-lg">
+                <svg
+                  className="h-7 w-7 text-white"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+                  />
+                </svg>
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3">
+                What types of data can I use to train my chatbot?
+              </h3>
+              <p className="text-gray-600 dark:text-gray-300">
+                You can upload PDFs, Word documents, web pages, or simply add
+                text. Our platform supports a wide range of formats to ensure
+                your chatbot is trained on the most relevant and up-to-date
+                information.
+              </p>
+            </motion.div>
+            {/* Use Case Card 1 */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.4 }}
+              viewport={{ once: true }}
+              className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 p-8 transition-all duration-300 hover:shadow-2xl"
+            >
+              <div className="w-14 h-14 bg-gradient-to-br from-accent-400 to-accent-600 rounded-2xl flex items-center justify-center mb-6 shadow-lg">
+                <svg
+                  className="h-7 w-7 text-white"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3">
+                Customer Support
+              </h3>
+              <p className="text-gray-600 dark:text-gray-300">
+                Automate responses to common queries, reduce response times, and
+                provide consistent, accurate support—day or night.
+              </p>
+            </motion.div>
+            {/* Use Case Card 2 */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.5 }}
+              viewport={{ once: true }}
+              className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 p-8 transition-all duration-300 hover:shadow-2xl"
+            >
+              <div className="w-14 h-14 bg-gradient-to-br from-accent-400 to-accent-600 rounded-2xl flex items-center justify-center mb-6 shadow-lg">
+                <svg
+                  className="h-7 w-7 text-white"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+                  />
+                </svg>
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3">
+                Sales & Lead Generation
+              </h3>
+              <p className="text-gray-600 dark:text-gray-300">
+                Engage website visitors, qualify leads, and schedule
+                meetings—all through conversational AI.
+              </p>
+            </motion.div>
+            {/* Use Case Card 3 */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.6 }}
+              viewport={{ once: true }}
+              className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 p-8 transition-all duration-300 hover:shadow-2xl"
+            >
+              <div className="w-14 h-14 bg-gradient-to-br from-accent-400 to-accent-600 rounded-2xl flex items-center justify-center mb-6 shadow-lg">
+                <svg
+                  className="h-7 w-7 text-white"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+                  />
+                </svg>
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3">
+                Internal Knowledge Management
+              </h3>
+              <p className="text-gray-600 dark:text-gray-300">
+                Empower employees with instant access to company knowledge,
+                onboarding materials, and best practices.
+              </p>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
       {/* Pricing Section */}
       <section className="py-20 bg-gradient-to-br from-gray-50 to-blue-50 dark:from-gray-900 dark:to-gray-800 relative z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -744,7 +931,6 @@ const LandingPage: React.FC = () => {
               Start for free, upgrade as you grow
             </p>
           </motion.div>
-
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <PricingCard
               name="Chatterwise Free"
@@ -795,13 +981,11 @@ const LandingPage: React.FC = () => {
         </div>
       </section>
 
-      {/* CTA Section with animated gradient */}
+      {/* CTA Section */}
       <section className="py-20 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-r from-primary-600 to-accent-500 dark:from-primary-800 dark:to-accent-700">
           <motion.div
-            animate={{
-              backgroundPosition: ["0% 0%", "100% 100%"],
-            }}
+            animate={{ backgroundPosition: ["0% 0%", "100% 100%"] }}
             transition={{
               duration: 15,
               repeat: Infinity,
@@ -900,7 +1084,7 @@ const LandingPage: React.FC = () => {
                 </a>
                 <a
                   href="#"
-                  className="text-gray-4 hover:text-white transition-colors"
+                  className="text-gray-400 hover:text-white transition-colors"
                 >
                   <svg
                     className="h-6 w-6"
@@ -959,7 +1143,7 @@ const LandingPage: React.FC = () => {
                 <li>
                   <Link
                     to="/documentation"
-                    className="text-gray-400 hover:text-white transition-colors"
+                    className="text-gray-4 hover:text-white transition-colors"
                   >
                     Documentation
                   </Link>
@@ -1019,7 +1203,6 @@ const LandingPage: React.FC = () => {
                 </li>
               </ul>
             </div>
-            {/* Hackathon Badge */}
             <div className="flex justify-center items-center relative z-10 min-h-[120px]">
               <motion.a
                 initial={{ opacity: 0, y: 20 }}
