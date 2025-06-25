@@ -553,68 +553,6 @@ const LandingPage: React.FC = () => {
         </motion.a>
       </div>
 
-      {/* Features Section */}
-      <section className="py-20 bg-white dark:bg-gray-800 relative z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            viewport={{ once: true }}
-            className="text-center mb-16"
-          >
-            <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
-              Powerful Features, Simple Interface
-            </h2>
-            <p className="mt-4 text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
-              Discover a comprehensive suite of tools designed to make AI
-              accessible. From knowledge base integration to advanced analytics,
-              ChatterWise gives you everything needed to create chatbots that
-              deliver real business value—for sales, customer support, and
-              internal teams.
-            </p>
-          </motion.div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <FeatureCard
-              icon={Database}
-              title="Knowledge Base Integration"
-              description="Upload documents or add text content to train your chatbot with your specific information. Supports PDFs, Word, and web pages for easy setup."
-              delay={0.1}
-            />
-            <FeatureCard
-              icon={Cpu}
-              title="Advanced AI Models"
-              description="Powered by GPT-3.5 and GPT-4 with retrieval-augmented generation for accurate, context-aware responses. Perfect for complex queries and nuanced conversations."
-              delay={0.2}
-            />
-            <FeatureCard
-              icon={Globe}
-              title="Multiple Integration Options"
-              description="Embed your chatbot anywhere with our script tag, React components, or REST API. Seamlessly add AI chat to your website, app, or platform."
-              delay={0.3}
-            />
-            <FeatureCard
-              icon={BarChart3}
-              title="Comprehensive Analytics"
-              description="Track performance metrics, user engagement, and conversation quality to continuously improve your chatbot and enhance customer experience."
-              delay={0.4}
-            />
-            <FeatureCard
-              icon={Users}
-              title="Team Collaboration"
-              description="Work together to build, test, and refine your chatbots with role-based permissions. Empower your internal teams with shared access and streamlined workflows."
-              delay={0.5}
-            />
-            <FeatureCard
-              icon={Shield}
-              title="Enterprise Security"
-              description="Robust security features including API key management, rate limiting, and detailed audit logs. Keep your data safe and your business compliant."
-              delay={0.6}
-            />
-          </div>
-        </div>
-      </section>
-
       {/* How It Works Section */}
       <section className="py-20 bg-gradient-to-br from-gray-50 to-white dark:from-gray-900 dark:to-gray-800 relative overflow-hidden">
         <motion.div
@@ -694,6 +632,68 @@ const LandingPage: React.FC = () => {
                 </p>
               </motion.div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Features Section */}
+      <section className="py-20 bg-white dark:bg-gray-800 relative z-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            viewport={{ once: true }}
+            className="text-center mb-16"
+          >
+            <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
+              Powerful Features, Simple Interface
+            </h2>
+            <p className="mt-4 text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
+              Discover a comprehensive suite of tools designed to make AI
+              accessible. From knowledge base integration to advanced analytics,
+              ChatterWise gives you everything needed to create chatbots that
+              deliver real business value—for sales, customer support, and
+              internal teams.
+            </p>
+          </motion.div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <FeatureCard
+              icon={Database}
+              title="Knowledge Base Integration"
+              description="Upload documents or add text content to train your chatbot with your specific information. Supports PDFs, Word, and web pages for easy setup."
+              delay={0.1}
+            />
+            <FeatureCard
+              icon={Cpu}
+              title="Advanced AI Models"
+              description="Powered by GPT-3.5 and GPT-4 with retrieval-augmented generation for accurate, context-aware responses. Perfect for complex queries and nuanced conversations."
+              delay={0.2}
+            />
+            <FeatureCard
+              icon={Globe}
+              title="Multiple Integration Options"
+              description="Embed your chatbot anywhere with our script tag, React components, or REST API. Seamlessly add AI chat to your website, app, or platform."
+              delay={0.3}
+            />
+            <FeatureCard
+              icon={BarChart3}
+              title="Comprehensive Analytics"
+              description="Track performance metrics, user engagement, and conversation quality to continuously improve your chatbot and enhance customer experience."
+              delay={0.4}
+            />
+            <FeatureCard
+              icon={Users}
+              title="Team Collaboration"
+              description="Work together to build, test, and refine your chatbots with role-based permissions. Empower your internal teams with shared access and streamlined workflows."
+              delay={0.5}
+            />
+            <FeatureCard
+              icon={Shield}
+              title="Enterprise Security"
+              description="Robust security features including API key management, rate limiting, and detailed audit logs. Keep your data safe and your business compliant."
+              delay={0.6}
+            />
           </div>
         </div>
       </section>
