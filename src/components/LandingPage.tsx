@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import { motion, useScroll, useTransform } from "framer-motion";
 import {
@@ -11,7 +11,6 @@ import {
   ChevronRight,
   ArrowRight,
   CheckCircle,
-  Star,
   Cpu,
   Moon,
   Sun,
@@ -19,6 +18,8 @@ import {
   X,
 } from "lucide-react";
 import ParticlesBg from "particles-bg";
+import { SEO } from "./SEO";
+import { Helmet } from "react-helmet-async";
 import { Logo } from "./ui/Logo";
 import BoltLogo from "../resources/bolt-logo-white.png";
 import { useTheme } from "../hooks/useTheme";
@@ -149,39 +150,6 @@ const FeatureCard = ({ icon: Icon, title, description, delay = 0 }) => (
   </motion.div>
 );
 
-// // Testimonial card
-// const TestimonialCard = ({ name, role, company, quote, avatar, delay = 0 }) => (
-//   <motion.div
-//     initial={{ opacity: 0, scale: 0.9 }}
-//     whileInView={{ opacity: 1, scale: 1 }}
-//     transition={{ duration: 0.5, delay }}
-//     viewport={{ once: true, margin: "-100px" }}
-//     className="bg-white dark:bg-gray-800 p-8 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-xl"
-//   >
-//     <div className="flex items-center mb-4">
-//       <div
-//         className={`h-12 w-12 rounded-full flex items-center justify-center text-white font-bold ${avatar}`}
-//       >
-//         {name.charAt(0)}
-//       </div>
-//       <div className="ml-4">
-//         <h4 className="text-lg font-semibold text-gray-900 dark:text-white">
-//           {name}
-//         </h4>
-//         <p className="text-gray-500 dark:text-gray-400 text-sm">
-//           {role}, {company}
-//         </p>
-//       </div>
-//     </div>
-//     <p className="text-gray-600 dark:text-gray-300 italic">"{quote}"</p>
-//     <div className="mt-4 flex text-yellow-400">
-//       {[...Array(5)].map((_, i) => (
-//         <Star key={i} className="h-4 w-4 fill-current" />
-//       ))}
-//     </div>
-//   </motion.div>
-// );
-
 // Pricing card
 const PricingCard = ({
   name,
@@ -241,7 +209,6 @@ const PricingCard = ({
   </motion.div>
 );
 
-// Main landing page component
 const LandingPage: React.FC = () => {
   const { scrollYProgress } = useScroll();
   const heroOpacity = useTransform(scrollYProgress, [0, 0.1], [1, 0]);
@@ -271,12 +238,72 @@ const LandingPage: React.FC = () => {
     };
   }, []);
 
+  // Schema.org data for the landing page
+  const schemaData = {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    name: "ChatterWise",
+    applicationCategory: "BusinessApplication",
+    operatingSystem: "Web",
+    offers: {
+      "@type": "Offer",
+      price: "0",
+      priceCurrency: "USD",
+      priceSpecification: {
+        "@type": "UnitPriceSpecification",
+        price: "0",
+        priceCurrency: "USD",
+        unitText: "monthly subscription",
+      },
+    },
+    description:
+      "AI-powered chatbot platform for businesses. Build and deploy intelligent chatbots in minutes.",
+    aggregateRating: {
+      "@type": "AggregateRating",
+      ratingValue: "4.8",
+      ratingCount: "127",
+      bestRating: "5",
+      worstRating: "1",
+    },
+  };
+
+  // BreadcrumbList schema for the landing page
+  const breadcrumbSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: "Home",
+        item: "https://chatterwise.ai",
+      },
+    ],
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white dark:from-gray-900 dark:to-gray-800 overflow-hidden">
+      <SEO
+        title="ChatterWise - AI-Powered Chatbot Platform"
+        description="Build and deploy AI-powered chatbots with ease. Create intelligent, context-aware chatbots in minutes with your own knowledge base."
+        canonicalUrl="/"
+        ogImage="https://images.pexels.com/photos/7567557/pexels-photo-7567557.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2"
+        schemaType="WebPage"
+        schemaData={schemaData}
+      />
+
+      {/* Add BreadcrumbList schema */}
+      <Helmet>
+        <script type="application/ld+json">
+          {JSON.stringify(breadcrumbSchema)}
+        </script>
+      </Helmet>
+
       {/* Animated background */}
       <div className="fixed inset-0 z-0 opacity-30 dark:opacity-20">
         <ParticlesBg type="cobweb" bg={true} color="#3B82F6" num={100} />
       </div>
+
       {/* Navigation */}
       <nav className="bg-white/90 dark:bg-gray-900/90 backdrop-blur-md border-b border-gray-200 dark:border-gray-800 fixed w-full z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -291,8 +318,6 @@ const LandingPage: React.FC = () => {
                 <Logo className="h-10 w-40 sm:h-12 sm:w-52" />
               </motion.div>
             </div>
-
-            {/* Desktop Navigation */}
             <motion.div
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
@@ -318,7 +343,7 @@ const LandingPage: React.FC = () => {
               </Link>
               <Link
                 to="/documentation"
-                className="text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 px-3 py-2 text-sm font-medium"
+                className="text-gray-7 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 px-3 py-2 text-sm font-medium"
               >
                 Documentation
               </Link>
@@ -341,7 +366,6 @@ const LandingPage: React.FC = () => {
                 Sign Up Free
               </Link>
             </motion.div>
-
             {/* Mobile Menu Button */}
             <div className="flex items-center md:hidden">
               <button
@@ -357,7 +381,6 @@ const LandingPage: React.FC = () => {
             </div>
           </div>
         </div>
-
         {/* Mobile Menu */}
         <motion.div
           initial={{ opacity: 0, height: 0 }}
@@ -519,6 +542,7 @@ const LandingPage: React.FC = () => {
           </div>
         </div>
       </motion.section>
+
       {/* Hackathon Badge */}
       <div className="flex justify-center mb-8 items-center relative z-10 min-h-[120px]">
         <motion.a
@@ -538,38 +562,7 @@ const LandingPage: React.FC = () => {
           />
         </motion.a>
       </div>
-      {/* Trusted By Section */}
-      {/* <motion.section
-        initial={{ opacity: 0 }}
-        whileInView={{ opacity: 1 }}
-        transition={{ duration: 1 }}
-        viewport={{ once: true }}
-        className="py-12 bg-gray-50 dark:bg-gray-900/50 relative z-10"
-      >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-10">
-            <h2 className="text-xl font-semibold text-gray-600 dark:text-gray-400">
-              Trusted by innovative companies
-            </h2>
-          </div>
-          <div className="flex flex-wrap justify-center items-center gap-8 md:gap-16">
-            {["Microsoft", "Airbnb", "Shopify", "Slack", "Spotify"].map(
-              (company, idx) => (
-                <motion.div
-                  key={company}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: idx * 0.1 }}
-                  viewport={{ once: true }}
-                  className="text-2xl font-bold text-gray-400 dark:text-gray-600"
-                >
-                  {company}
-                </motion.div>
-              )
-            )}
-          </div>
-        </div>
-      </motion.section> */}
+
       {/* Features Section */}
       <section className="py-20 bg-white dark:bg-gray-800 relative z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -628,6 +621,7 @@ const LandingPage: React.FC = () => {
           </div>
         </div>
       </section>
+
       {/* How It Works Section with Parallax */}
       <section className="py-20 bg-gradient-to-br from-gray-50 to-white dark:from-gray-900 dark:to-gray-800 relative overflow-hidden">
         {/* Parallax background elements */}
@@ -653,11 +647,10 @@ const LandingPage: React.FC = () => {
             <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
               How It Works
             </h2>
-            <p className="mt-4 text-xl text-gray-600 dark:text-gray-300">
+            <p className="mt-4 text-xl text-gray-6 dark:text-gray-300">
               Build your AI chatbot in minutes, not months
             </p>
           </motion.div>
-
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 relative">
             {/* Connecting line */}
             <div className="hidden md:block absolute top-1/2 left-0 right-0 h-1 bg-gradient-to-r from-primary-500 to-accent-500 transform -translate-y-1/2 z-0"></div>
@@ -712,52 +705,7 @@ const LandingPage: React.FC = () => {
           </div>
         </div>
       </section>
-      {/* Testimonials Section */}
-      {/* <section className="py-20 bg-white dark:bg-gray-800 relative z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            viewport={{ once: true }}
-            className="text-center mb-16"
-          >
-            <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
-              What Our Users Say
-            </h2>
-            <p className="mt-4 text-xl text-gray-600 dark:text-gray-300">
-              Join thousands of satisfied customers
-            </p>
-          </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <TestimonialCard
-              name="John Doe"
-              role="CEO"
-              company="TechStart"
-              quote="ChatterWise has transformed our customer support. We've reduced response times by 80% while maintaining high customer satisfaction."
-              avatar="bg-blue-500"
-              delay={0.1}
-            />
-            <TestimonialCard
-              name="Alice Smith"
-              role="Marketing Director"
-              company="GrowthCo"
-              quote="The analytics dashboard gives us incredible insights into what our customers are asking about. It's been invaluable for our product development."
-              avatar="bg-green-500"
-              delay={0.3}
-            />
-            <TestimonialCard
-              name="Robert Johnson"
-              role="Developer"
-              company="CodeCraft"
-              quote="As a developer, I appreciate the flexible integration options. I was able to customize the chatbot to match our brand perfectly."
-              avatar="bg-purple-500"
-              delay={0.5}
-            />
-          </div>
-        </div>
-      </section> */}
       {/* Pricing Section */}
       <section className="py-20 bg-gradient-to-br from-gray-50 to-blue-50 dark:from-gray-900 dark:to-gray-800 relative z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -780,7 +728,7 @@ const LandingPage: React.FC = () => {
             <PricingCard
               name="Chatterwise Free"
               price="0"
-              description="Get started with building AI-powered chatbots at no cost. Ideal for experimenting and testing."
+              description="Perfect for getting started and testing the platform."
               features={[
                 "1 chatbot",
                 "20,000 tokens per month",
@@ -809,7 +757,7 @@ const LandingPage: React.FC = () => {
             <PricingCard
               name="Chatterwise Growth"
               price="79"
-              description="For scaling teams and products. Includes GPT-4, high token limits, and webhook integrations."
+              description="For organizations with advanced needs."
               features={[
                 "25 chatbots",
                 "1,000,000 tokens per month",
@@ -825,6 +773,7 @@ const LandingPage: React.FC = () => {
           </div>
         </div>
       </section>
+
       {/* CTA Section with animated gradient */}
       <section className="py-20 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-r from-primary-600 to-accent-500 dark:from-primary-800 dark:to-accent-700">
@@ -845,7 +794,6 @@ const LandingPage: React.FC = () => {
             }}
           />
         </div>
-
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -888,20 +836,18 @@ const LandingPage: React.FC = () => {
           </motion.div>
         </div>
       </section>
+
       {/* Footer */}
-      <footer className="bg-gray-900 text-white py-12  relative z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 z-50">
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-8 z-50">
+      <footer className="bg-gray-900 text-white py-12 relative z-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-8">
             <div>
               <div className="flex items-center">
-                {/* <Bot className="h-8 w-8 text-primary-400" />
-                <span className="ml-2 text-xl font-bold">ChatterWise</span> */}
                 <Logo className="h-12 w-52" />
               </div>
               <p className="mt-4 text-gray-400">
                 Building the future of AI-powered conversations.
               </p>
-
               <div className="mt-4 flex space-x-4">
                 <a
                   href="#"
@@ -933,7 +879,7 @@ const LandingPage: React.FC = () => {
                 </a>
                 <a
                   href="#"
-                  className="text-gray-400 hover:text-white transition-colors"
+                  className="text-gray-4 hover:text-white transition-colors"
                 >
                   <svg
                     className="h-6 w-6"
@@ -942,7 +888,7 @@ const LandingPage: React.FC = () => {
                   >
                     <path
                       fillRule="evenodd"
-                      d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"
+                      d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0 2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"
                       clipRule="evenodd"
                     />
                   </svg>
