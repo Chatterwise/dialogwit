@@ -276,11 +276,6 @@ const DiscordIntegrationPage: React.FC = () => {
               <li>Save your changes</li>
             </ol>
 
-            <p>Users can then interact with your bot using commands:</p>
-            <pre className="bg-gray-100 dark:bg-gray-800 p-3 rounded-lg text-sm">
-              !help
-            </pre>
-
             <h3>Channel Restrictions</h3>
             <p>You can restrict your bot to specific channels:</p>
             <ol>

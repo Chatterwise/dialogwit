@@ -25,7 +25,8 @@ export const useTrainChatbot = () => {
       })
 
       if (!response.ok) {
-        throw new Error('Failed to train chatbot')
+        const text = await response.text();
+        throw new Error(`Train failed: ${response.status} ${text}`);
       }
 
       const data = await response.json()

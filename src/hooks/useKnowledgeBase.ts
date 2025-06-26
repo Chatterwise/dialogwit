@@ -20,6 +20,26 @@ export const useKnowledgeBase = (chatbotId: string) => {
     enabled: !!chatbotId,
   });
 };
+// helper to wait for the insertion to complete
+export const waitForKnowledgeBaseToPersist = async (
+  chatbotId: string,
+  timeout = 5000
+): Promise<boolean> => {
+  const start = Date.now();
+  while (Date.now() - start < timeout) {
+    const { data, error } = await supabase
+      .from("knowledge_base")
+      .select("id")
+      .eq("chatbot_id", chatbotId)
+      .eq("processed", false)
+      .maybeSingle();
+
+    if (data && !error) return true;
+
+    await new Promise((res) => setTimeout(res, 300));
+  }
+  return false;
+};
 
 // Add a new knowledge base item
 export const useAddKnowledgeBase = () => {

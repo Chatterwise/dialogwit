@@ -16,9 +16,13 @@ import {
 } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
 import { useCreateChatbot, useRoleTemplates } from "../hooks/useChatbots";
-import { useAddKnowledgeBase } from "../hooks/useKnowledgeBase";
+import {
+  useAddKnowledgeBase,
+  waitForKnowledgeBaseToPersist,
+} from "../hooks/useKnowledgeBase";
 import { useTrainChatbot } from "../hooks/useTraining";
 import { useEmail } from "../hooks/useEmail";
+import { useBilling } from "../hooks/useBilling";
 
 function EnhancedTrainingDataDropzone({
   value,
@@ -281,7 +285,7 @@ export const ChatbotBuilder = () => {
   const trainChatbot = useTrainChatbot();
   const { sendNewChatbotEmail } = useEmail();
   const { data: templates } = useRoleTemplates();
-
+  const { subscription } = useBilling();
   const [step, setStep] = useState(1);
   const [createdChatbotId, setCreatedChatbotId] = useState<string>("");
   const [formData, setFormData] = useState({
@@ -296,19 +300,16 @@ export const ChatbotBuilder = () => {
 
   const handleNext = () => setStep(Math.min(step + 1, 5));
   const handleBack = () => setStep(Math.max(step - 1, 1));
-  // console.log(
-  //   "Form Data:",
-  //   (templates ?? []).find((t) => t.id === formData.bot_role_template_id)
-  // );
+
   const handleSubmit = async () => {
     if (!user) return;
+
     try {
-      // Get selected template data
-      const selectedTemplate = (templates ?? []).find(
+      const selectedTemplate = templates?.find(
         (t) => t.id === formData.bot_role_template_id
       );
 
-      // Create chatbot
+      // 1. Create chatbot
       const chatbot = await createChatbot.mutateAsync({
         name: formData.name,
         description: formData.description,
@@ -319,40 +320,48 @@ export const ChatbotBuilder = () => {
         bot_avatar: selectedTemplate?.bot_avatar ?? null,
         status: "creating",
       });
-      setCreatedChatbotId(chatbot.id);
 
-      // Add training data
+      setCreatedChatbotId(chatbot.id);
+      setStep(3); // Move to processing visuals
+
+      // 2. Add KB if available
       if (formData.trainingData) {
+        console.log("📄 Adding training data...");
         await addKnowledgeBase.mutateAsync({
           chatbot_id: chatbot.id,
           content: formData.trainingData,
           content_type: formData.trainingDataType,
           processed: false,
         });
+
+        console.log("⏳ Waiting for knowledge base to persist...");
+        const kbReady = await waitForKnowledgeBaseToPersist(chatbot.id);
+        if (!kbReady) {
+          throw new Error("Knowledge base not ready, aborting training.");
+        }
       }
 
-      setStep(3); // Move to processing step
-
-      // Start RAG processing with OpenAI
+      // 3. Train if OpenAI is enabled
       if (formData.useOpenAI) {
+        console.log("⚙️ Starting training...");
         await trainChatbot.mutateAsync({
           chatbotId: chatbot.id,
           model: formData.openAIModel,
         });
       }
 
-      setStep(4); // Move to training step
+      setStep(4); // Show training visuals
 
-      // Simulate final processing
+      // 4. Simulate completion
       setTimeout(() => {
-        setStep(5); // Completion step
+        setStep(5); // Completion
         sendNewChatbotEmail.mutate({
           chatbotId: chatbot.id,
           chatbotName: formData.name,
         });
       }, 3000);
     } catch (error) {
-      console.error("Error creating chatbot:", error);
+      console.error("❌ Error creating chatbot:", error);
     }
   };
 
@@ -515,7 +524,7 @@ export const ChatbotBuilder = () => {
               {formData.useOpenAI && (
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    AI Model
+                    Training AI Model
                   </label>
                   <select
                     value={formData.openAIModel}
@@ -527,8 +536,9 @@ export const ChatbotBuilder = () => {
                     <option value="gpt-3.5-turbo">
                       GPT-3.5 Turbo (Recommended)
                     </option>
-                    <option value="gpt-4">GPT-4 (Advanced)</option>
-                    <option value="gpt-4-turbo">GPT-4 Turbo (Latest)</option>
+                    {subscription?.features.gpt_model === "gpt-4" && (
+                      <option value="gpt-4">GPT-4 (Advanced)</option>
+                    )}
                   </select>
                 </div>
               )}

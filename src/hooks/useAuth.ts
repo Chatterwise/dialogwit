@@ -163,34 +163,34 @@ export function useAuth() {
       if (error) throw error;
 
       // Send confirmation email immediately after signup
-      if (data.user && !data.user.email_confirmed_at) {
-        try {
-          const confirmResponse = await fetch(
-            `${
-              import.meta.env.VITE_SUPABASE_URL
-            }/functions/v1/email-confirm-signup`,
-            {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({
-                email,
-                confirmUrl: `${window.location.origin}/auth/confirm`,
-              }),
-            }
-          );
+      // if (data.user && !data.user.email_confirmed_at) {
+      //   try {
+      //     const confirmResponse = await fetch(
+      //       `${
+      //         import.meta.env.VITE_SUPABASE_URL
+      //       }/functions/v1/email-confirm-signup`,
+      //       {
+      //         method: "POST",
+      //         headers: {
+      //           "Content-Type": "application/json",
+      //         },
+      //         body: JSON.stringify({
+      //           email,
+      //           confirmUrl: `${window.location.origin}/auth/confirm`,
+      //         }),
+      //       }
+      //     );
 
-          if (!confirmResponse.ok) {
-            const errorData = await confirmResponse.json();
-            console.error("Failed to send confirmation email:", errorData);
-          } else {
-            console.log("Confirmation email sent successfully");
-          }
-        } catch (emailError) {
-          console.error("Error sending confirmation email:", emailError);
-        }
-      }
+      //     if (!confirmResponse.ok) {
+      //       const errorData = await confirmResponse.json();
+      //       console.error("Failed to send confirmation email:", errorData);
+      //     } else {
+      //       console.log("Confirmation email sent successfully");
+      //     }
+      //   } catch (emailError) {
+      //     console.error("Error sending confirmation email:", emailError);
+      //   }
+      // }
 
       return { data, error: null };
     } catch (error) {

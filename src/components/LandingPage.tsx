@@ -1127,14 +1127,6 @@ const LandingPage: React.FC = () => {
                     Integrations
                   </Link>
                 </li>
-                {/* <li>
-                  <Link
-                    to="/enterprise"
-                    className="text-gray-400 hover:text-white transition-colors"
-                  >
-                    Enterprise
-                  </Link>
-                </li> */}
               </ul>
             </div>
             <div>
@@ -1156,22 +1148,6 @@ const LandingPage: React.FC = () => {
                     API Reference
                   </Link>
                 </li>
-                {/* <li>
-                  <Link
-                    to="/blog"
-                    className="text-gray-400 hover:text-white transition-colors"
-                  >
-                    Blog
-                  </Link>
-                </li> */}
-                {/* <li>
-                  <Link
-                    to="/community"
-                    className="text-gray-400 hover:text-white transition-colors"
-                  >
-                    Community
-                  </Link>
-                </li> */}
               </ul>
             </div>
             <div>

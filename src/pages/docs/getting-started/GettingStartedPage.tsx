@@ -1,9 +1,20 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { motion } from "framer-motion";
 import { Bot, FileText, Database, Brain } from "lucide-react";
 import { SEO } from "../../../components/SEO";
 import { DocBreadcrumbs } from "../../../components/DocBreadcrumbs";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
+
+// ScrollToTop component (for auto-scroll to top on navigation)
+const ScrollToTop = () => {
+  const { pathname } = useLocation();
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+
+  return null;
+};
 
 const GettingStartedPage: React.FC = () => {
   // Schema data for breadcrumbs
@@ -72,6 +83,7 @@ const GettingStartedPage: React.FC = () => {
         schemaData={breadcrumbSchema}
         keywords="ChatterWise getting started, chatbot basics, AI chatbot tutorial, beginner chatbot guide, create chatbot"
       />
+      <ScrollToTop />
 
       <div className="mx-auto px-10 py-12 bg-gradient-to-br from-gray-50 to-white dark:from-gray-900 dark:to-gray-800">
         <DocBreadcrumbs

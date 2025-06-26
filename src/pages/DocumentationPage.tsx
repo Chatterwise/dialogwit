@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   ChevronRight,
   FileText,
@@ -10,6 +10,17 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { SEO } from "../components/SEO";
+
+// ScrollToTop component (for auto-scroll to top on navigation)
+const ScrollToTop = () => {
+  const { pathname } = useLocation();
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+
+  return null;
+};
 
 const DocumentationPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -141,6 +152,7 @@ const DocumentationPage: React.FC = () => {
 
   return (
     <>
+      <ScrollToTop />
       <SEO
         title="ChatterWise Documentation | AI Chatbot Platform"
         description="Comprehensive documentation for ChatterWise, the AI-powered chatbot platform. Learn how to build, train, and deploy intelligent chatbots with our step-by-step guides."
@@ -152,6 +164,12 @@ const DocumentationPage: React.FC = () => {
 
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white dark:from-gray-900 dark:to-gray-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          <a
+            href="/"
+            className="text-primary-600 dark:text-primary-400 hover:underline mb-6 inline-block"
+          >
+            Go back
+          </a>
           {/* Header */}
           <motion.div
             initial={{ opacity: 0, y: -20 }}

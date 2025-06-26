@@ -8,7 +8,6 @@ import {
   Bot,
   Sparkles,
   Rocket,
-  Briefcase,
   Users,
 } from "lucide-react";
 
@@ -301,31 +300,6 @@ const AboutUsPage: React.FC = () => {
                   </div>
                 ))}
               </div>
-            </div>
-          </div>
-        </motion.div>
-
-        {/* Join Us */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 1.7 }}
-          className="bg-gradient-to-r from-primary-600 to-primary-500 dark:from-primary-700 dark:to-primary-600 rounded-2xl p-8 text-white shadow-xl"
-        >
-          <div className="text-center">
-            <h2 className="text-3xl font-bold mb-4">Join Us</h2>
-            <p className="text-primary-100 mb-8 max-w-3xl mx-auto">
-              We’re always looking for passionate people who want to help shape
-              the future of AI-powered conversations.
-            </p>
-            <div className="flex flex-col sm:flex-row justify-center gap-4">
-              <a
-                href="#"
-                className="px-8 py-3 bg-white text-primary-600 rounded-xl font-semibold hover:bg-gray-100 transition-colors shadow-md"
-              >
-                <Briefcase className="h-5 w-5 mr-2 inline-block" />
-                View Open Positions
-              </a>
             </div>
           </div>
         </motion.div>
