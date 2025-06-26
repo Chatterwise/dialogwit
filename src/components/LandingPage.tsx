@@ -177,14 +177,15 @@ const PricingCard = ({
       popular
         ? "border-primary-500 ring-4 ring-primary-500/20"
         : "border-gray-200 dark:border-gray-700"
-    } overflow-hidden`}
+    } overflow-hidden flex flex-col h-full`} // 👈 Add flex flex-col h-full to the card
   >
     {popular && (
       <div className="absolute top-0 right-0 bg-primary-500 text-white px-4 py-1 rounded-bl-lg font-medium text-sm">
         Most Popular
       </div>
     )}
-    <div className="p-8">
+    <div className="p-8 flex flex-col flex-grow">
+      {" "}
       <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
         {name}
       </h3>
@@ -195,7 +196,9 @@ const PricingCard = ({
         <span className="text-gray-500 dark:text-gray-400">/month</span>
       </div>
       <p className="text-gray-600 dark:text-gray-300 mb-6">{description}</p>
-      <ul className="space-y-3 mb-8">
+      <ul className="space-y-3 mb-8 flex-grow">
+        {" "}
+        {/* 👈 Add flex-grow here */}
         {features.map((feature, idx) => (
           <li key={idx} className="flex items-start">
             <CheckCircle className="h-5 w-5 text-green-500 mr-2 flex-shrink-0 mt-0.5" />
@@ -915,8 +918,8 @@ const LandingPage: React.FC = () => {
       </section>
 
       {/* Pricing Section */}
-      <section className="py-20 bg-gradient-to-br from-gray-50 to-blue-50 dark:from-gray-900 dark:to-gray-800 relative z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="py-20 bg-gradient-to-br from-gray-50 to-blue-50 dark:from-gray-900 dark:to-gray-800 relative z-10 flex flex-col min-h-[600px]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col flex-grow">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -931,15 +934,13 @@ const LandingPage: React.FC = () => {
               Start for free, upgrade as you grow
             </p>
           </motion.div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 flex-grow">
             <PricingCard
               name="Chatterwise Free"
               price="0"
               description="Perfect for getting started and testing the platform."
               features={[
                 "20,000 tokens per month",
-                // "10 document uploads",
-                // "1 chatbot",
                 "GPT-3.5 model",
                 "Basic support",
                 "Community access",
@@ -953,8 +954,6 @@ const LandingPage: React.FC = () => {
               description="Perfect for indie developers or small teams. Includes GPT-3.5 and increased document uploads."
               features={[
                 "200,000 tokens per month",
-                // "50 document uploads",
-                // "5 chatbots",
                 "GPT-3.5 model",
                 "Email support",
                 "Analytics dashboard",
@@ -969,19 +968,36 @@ const LandingPage: React.FC = () => {
               description="For organizations with advanced needs."
               features={[
                 "1,000,000 tokens per month",
-                // "250 document uploads",
-                // "25 chatbots",
                 "GPT-4 model access",
                 "Priority support",
-                // "Advanced analytics",
                 "Webhook integrations",
-                // "Custom branding",
+              ]}
+              popular={false}
+              delay={0.5}
+            />
+            <PricingCard
+              name="Chatterwise Business"
+              price="249"
+              description="Enterprise-grade chatbot infrastructure."
+              features={[
+                "5,000,000 tokens per month",
+                "GPT-4 model access",
+                "Extended support",
+                "Custom KB scaling",
+                "Webhook integrations",
               ]}
               popular={false}
               delay={0.5}
             />
           </div>
         </div>
+        {/* <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8">
+          <div className="flex justify-center">
+            <button className="bg-primary-600 text-white px-8 py-4 rounded-xl text-lg font-semibold shadow-lg hover:bg-primary-700 transition-all">
+              Get Started Free
+            </button>
+          </div>
+        </div> */}
       </section>
 
       {/* CTA Section */}
