@@ -25,7 +25,6 @@ export const BillingDashboard: React.FC = () => {
   const [activeTab, setActiveTab] = useState<"overview" | "invoices" | "usage">(
     "overview"
   );
-
   const handleManageBilling = async () => {
     await createPortalSession();
   };
@@ -440,10 +439,13 @@ export const BillingDashboard: React.FC = () => {
                           Tokens
                         </span>
                         <span className="text-sm text-gray-600 dark:text-gray-400">
-                          {usage.tokens_used?.toLocaleString() || 0} / 100,000
+                          {usage.tokens_used?.toLocaleString() || 0} /{" "}
+                          {(
+                            subscription?.limits?.tokens_per_month ?? 0
+                          ).toLocaleString("en-US")}
                         </span>
                       </div>
-                      <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
+                      {/* <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
                         <div
                           className="bg-primary-600 dark:bg-primary-500 h-2.5 rounded-full"
                           style={{
@@ -453,16 +455,32 @@ export const BillingDashboard: React.FC = () => {
                             )}%`,
                           }}
                         ></div>
+                      </div> */}
+                      <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
+                        {subscription && (
+                          <div
+                            className="bg-primary-600 dark:bg-primary-500 h-2.5 rounded-full"
+                            style={{
+                              width: `${Math.min(
+                                100,
+                                ((usage.tokens_used || 0) /
+                                  (subscription?.limits?.tokens_per_month ||
+                                    1)) *
+                                  100
+                              )}%`,
+                            }}
+                          ></div>
+                        )}
                       </div>
                     </div>
 
-                    <div>
+                    {/* <div>
                       <div className="flex justify-between mb-2">
                         <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
                           Chatbots
                         </span>
                         <span className="text-sm text-gray-600 dark:text-gray-400">
-                          {usage.chatbots_created || 0} / 5
+                          {usage.chatbots_created || 0} / 100
                         </span>
                       </div>
                       <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
@@ -471,20 +489,20 @@ export const BillingDashboard: React.FC = () => {
                           style={{
                             width: `${Math.min(
                               100,
-                              ((usage.chatbots_created || 0) / 5) * 100
+                              ((usage.chatbots_created || 0) / 100) * 100
                             )}%`,
                           }}
                         ></div>
                       </div>
-                    </div>
+                    </div> */}
 
-                    <div>
+                    {/* <div>
                       <div className="flex justify-between mb-2">
                         <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
                           Documents
                         </span>
                         <span className="text-sm text-gray-600 dark:text-gray-400">
-                          {usage.documents_uploaded || 0} / 50
+                          {usage.documents_uploaded || 0} / 500
                         </span>
                       </div>
                       <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
@@ -498,7 +516,7 @@ export const BillingDashboard: React.FC = () => {
                           }}
                         ></div>
                       </div>
-                    </div>
+                    </div> */}
                   </div>
 
                   {/* Usage Metrics */}
@@ -523,7 +541,9 @@ export const BillingDashboard: React.FC = () => {
                           Limit
                         </span>
                         <span className="text-sm font-medium text-gray-900 dark:text-white">
-                          100,000
+                          {(
+                            subscription?.limits?.tokens_per_month ?? 0
+                          ).toLocaleString("en-US")}
                         </span>
                       </div>
                     </div>
@@ -540,17 +560,19 @@ export const BillingDashboard: React.FC = () => {
                           Created
                         </span>
                         <span className="text-sm font-medium text-gray-900 dark:text-white">
-                          {usage.chatbots_created || 0}
+                          {(usage.chatbots_created || 0).toLocaleString(
+                            "en-US"
+                          )}
                         </span>
                       </div>
-                      <div className="flex items-center justify-between mt-1">
+                      {/* <div className="flex items-center justify-between mt-1">
                         <span className="text-sm text-gray-600 dark:text-gray-400">
                           Limit
                         </span>
                         <span className="text-sm font-medium text-gray-900 dark:text-white">
                           5
                         </span>
-                      </div>
+                      </div> */}
                     </div>
 
                     <div className="bg-gray-50 dark:bg-gray-900/50 p-4 rounded-lg">
@@ -568,14 +590,14 @@ export const BillingDashboard: React.FC = () => {
                           {usage.documents_uploaded || 0}
                         </span>
                       </div>
-                      <div className="flex items-center justify-between mt-1">
+                      {/* <div className="flex items-center justify-between mt-1">
                         <span className="text-sm text-gray-600 dark:text-gray-400">
                           Limit
                         </span>
                         <span className="text-sm font-medium text-gray-900 dark:text-white">
                           50
                         </span>
-                      </div>
+                      </div> */}
                     </div>
 
                     <div className="bg-gray-50 dark:bg-gray-900/50 p-4 rounded-lg">

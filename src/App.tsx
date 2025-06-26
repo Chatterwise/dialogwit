@@ -66,6 +66,7 @@ import WordPressIntegrationPage from "./pages/docs/integerations/WordPressIntegr
 import IntroductionPage from "./pages/docs/IntroductionPage";
 import KnowledgeBasePage from "./pages/docs/KnowledgeBasePage";
 import TrainingChatbotPage from "./pages/docs/TrainingChatbotPage";
+import { BotChatsPage } from "./components/BotChatsPage";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -210,6 +211,7 @@ function AppContent() {
                   {/* Wrap chatbot-related routes with ChatbotLimitGuard */}
                   <Route path="/chatbots/new" element={<ChatbotBuilder />} />
                   <Route path="/chatbots/:id" element={<ChatbotDetail />} />
+                  <Route path="/chatbots/:id/chat" element={<BotChatsPage />} />
                   <Route
                     path="/chatbots/:id/knowledge"
                     element={<KnowledgeBase />}

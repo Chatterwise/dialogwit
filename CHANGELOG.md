@@ -4,6 +4,19 @@ All notable changes to this project will be documented in this file. See [standa
 
 ## [Unreleased]
 
+### 0.0.16 (2025-06-26)
+
+### Added
+
+- bot chat pages with export and filters
+
+### Fixed
+
+- bot model options
+- form field name
+- review pricing model
+- bot knowledge management
+
 ### 0.0.12 (2025-06-25)
 
 ### Added

@@ -19,6 +19,7 @@ export const useChatMessages = (chatbotId: string) => {
       return data as ChatMessage[];
     },
     enabled: !!chatbotId,
+    refetchOnMount: "always"
   });
 };
 
@@ -69,6 +70,8 @@ export const useChatMessages = (chatbotId: string) => {
 // };
 
 export const useSendMessage = () => {
+  const queryClient = useQueryClient();
+
   return useMutation({
     mutationFn: async ({
       chatbotId,
@@ -79,7 +82,7 @@ export const useSendMessage = () => {
       chatbotId: string;
       message: string;
       userId: string;
-      onChunk: (chunk: string) => void; // callback to process each streamed piece
+      onChunk: (chunk: string) => void;
     }) => {
       const response = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat`,
@@ -93,7 +96,7 @@ export const useSendMessage = () => {
             chatbot_id: chatbotId,
             message,
             user_ip: userId,
-             stream: true, // enable streaming
+            stream: true,
           }),
         }
       );
@@ -112,11 +115,23 @@ export const useSendMessage = () => {
 
         const chunk = decoder.decode(value, { stream: true });
         fullMessage += chunk;
-        onChunk(chunk); // update UI as chunks come in
+        onChunk(chunk);
       }
 
-      return fullMessage; // return the complete message
+      return fullMessage;
     },
+onSuccess: (_, { chatbotId }) => {
+  // Invalidate the query for this chatbot's messages
+  queryClient.invalidateQueries({
+    queryKey: ["chat_messages", chatbotId || ""],
+    exact: true,
+  });
+  // Manually refetch if you want to be extra sure
+  queryClient.refetchQueries({
+    queryKey: ["chat_messages", chatbotId || ""],
+    exact: true,
+  });
+},
   });
 };
 

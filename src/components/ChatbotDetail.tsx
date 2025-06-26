@@ -24,6 +24,7 @@ import {
   Plus,
   Search,
   X,
+  XCircle,
 } from "lucide-react";
 import { useChatbot, useDeleteChatbot } from "../hooks/useChatbots";
 import {
@@ -69,7 +70,7 @@ export const ChatbotDetail = () => {
 
   const {
     data: knowledgeBase = [],
-    isLoading,
+    isLoading: isKnowledgeLoading,
     refetch: refetchKnowledgeBase,
   } = useKnowledgeBase(id ?? "");
   const addKnowledgeBase = useAddKnowledgeBase();
@@ -480,14 +481,14 @@ export const ChatbotDetail = () => {
           </a>
           <Link
             to={`/chatbots/${id}/settings`}
-            className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-8 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200"
+            className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200"
           >
             <Settings className="h-4 w-4 mr-2" />
             Settings
           </Link>
           <Link
             to="/integrations"
-            className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg text-sm font-medium text-white bg-primary-600 hover:bg-primary-7 dark:bg-primary-500 dark:hover:bg-primary-600 transition-colors duration-200"
+            className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 dark:bg-primary-500 dark:hover:bg-primary-600 transition-colors duration-200"
           >
             <Code className="h-4 w-4 mr-2" />
             Get Code
@@ -507,7 +508,7 @@ export const ChatbotDetail = () => {
                 className={`py-2 px-1 border-b-2 font-medium text-sm transition-colors duration-200 ${
                   activeTab === tab.id
                     ? "border-primary-600 dark:border-primary-400 text-primary-700 dark:text-primary-400"
-                    : "border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-7 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600"
+                    : "border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600"
                 }`}
               >
                 <div className="flex items-center">
@@ -638,9 +639,24 @@ export const ChatbotDetail = () => {
 
       {activeTab === "knowledge" && (
         <div className="space-y-8">
+          {/* Add Knowledge Button (always visible) */}
+          <div className="flex justify-end">
+            <button
+              onClick={() => {
+                setEditingItem(null);
+                setShowKnowledgeEditor(true);
+              }}
+              disabled={processing}
+              className="inline-flex items-center px-5 py-2.5 border border-transparent text-sm font-semibold rounded-xl shadow-card text-white bg-primary-600 hover:bg-primary-700 dark:bg-primary-600 dark:hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Add Knowledge
+            </button>
+          </div>
+
           {/* Progress Bar */}
           <AnimatePresence>
-            {(processing || isLoading) && (
+            {(processing || isKnowledgeLoading) && (
               <motion.div
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -650,7 +666,7 @@ export const ChatbotDetail = () => {
                 <div className="flex items-center justify-between text-sm text-gray-600 dark:text-gray-400">
                   <span>
                     {progressLabel ||
-                      (isLoading ? "Loading..." : "Processing...")}
+                      (isKnowledgeLoading ? "Loading..." : "Processing...")}
                   </span>
                   <span>{Math.round(progress)}%</span>
                 </div>
@@ -790,7 +806,7 @@ export const ChatbotDetail = () => {
                             className={`ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                               item.content_type === "text"
                                 ? "bg-primary-100 dark:bg-primary-900/20 text-primary-700 dark:text-primary-400"
-                                : "bg-accent-100 dark:bg-accent-900/20 text-accent-700 dark:text-accent-400"
+                                : "bg-accent-100 dark:bg-accent-9/20 text-accent-700 dark:text-accent-400"
                             }`}
                           >
                             {item.content_type}
@@ -801,7 +817,7 @@ export const ChatbotDetail = () => {
                             className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                               item.processed
                                 ? "bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-400"
-                                : "bg-yellow-100 dark:bg-yellow-900/20 text-yellow-7 dark:text-yellow-400"
+                                : "bg-yellow-100 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-400"
                             }`}
                           >
                             {item.processed ? (
@@ -912,7 +928,7 @@ export const ChatbotDetail = () => {
                 </button>
               </div>
               <div className="flex-1 overflow-y-auto p-8">
-                <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center justify-between mb=4">
                   <div className="flex items-center space-x-2">
                     <span
                       className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
@@ -931,9 +947,9 @@ export const ChatbotDetail = () => {
                       }`}
                     >
                       {viewingItem.processed ? (
-                        <CheckCircle className="h-3 w-3 mr-1" />
+                        <CheckCircle className="h-3 w=3 mr-1" />
                       ) : (
-                        <XCircle className="h-3 w-3 mr-1" />
+                        <XCircle className="h-3 w=3 mr-1" />
                       )}
                       {viewingItem.processed ? "Processed" : "Not Processed"}
                     </span>
@@ -942,14 +958,14 @@ export const ChatbotDetail = () => {
                     Added: {new Date(viewingItem.created_at).toLocaleString()}
                   </div>
                 </div>
-                <div className="bg-gray-50 dark:bg-gray-900/50 rounded-xl p-4 border border-gray-200 dark:border-gray-700 whitespace-pre-wrap text-sm text-gray-800 dark:text-gray-200 max-h-[60vh] overflow-y-auto">
+                <div className="bg-gray-50 dark:bg-gray-900/50 rounded-xl p-4 border border-gray-200 dark:border-gray=700 whitespace-pre-wrap text-sm text-gray-800 dark:text-gray-200 max-h-[60vh] overflow-y-auto">
                   {viewingItem.content}
                 </div>
               </div>
-              <div className="px-8 py-5 border-t border-gray-100 dark:border-gray-700 flex justify-between">
+              <div className="px-8 py-5 border-t border-gray-100 dark:border-gray=700 flex justify-between">
                 <button
                   onClick={() => setViewingItem(null)}
-                  className="px-5 py-2 text-sm font-semibold text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors duration-200"
+                  className="px-5 py-2 text-sm font-semibold text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors duration=200"
                 >
                   Close
                 </button>
@@ -959,14 +975,14 @@ export const ChatbotDetail = () => {
                       handleEdit(viewingItem);
                       setViewingItem(null);
                     }}
-                    className="px-5 py-2 text-sm font-semibold text-white bg-blue-600 dark:bg-blue-700 border border-transparent rounded-xl hover:bg-blue-700 dark:hover:bg-blue-800 transition-colors duration-200"
+                    className="px-5 py-2 text-sm font-semibold text-white bg-blue-600 dark:bg-blue-700 border border-transparent rounded-xl hover:bg-blue-700 dark:hover:bg-blue-800 transition-colors duration=200"
                   >
                     <Edit className="h-4 w-4 mr-2 inline" />
                     Edit
                   </button>
                   <button
                     onClick={() => handleDownload(viewingItem)}
-                    className="px-5 py-2 text-sm font-semibold text-white bg-green-600 dark:bg-green-700 border border-transparent rounded-xl hover:bg-green-7 dark:hover:bg-green-800 transition-colors duration-200"
+                    className="px-5 py-2 text-sm font-semibold text-white bg-green-600 dark:bg-green-700 border border-transparent rounded-xl hover:bg-green-700 dark:hover:bg-green-800 transition-colors duration=200"
                   >
                     <Download className="h-4 w-4 mr-2 inline" />
                     Download
@@ -997,7 +1013,7 @@ const renderCard = (
     <ul className="divide-y divide-gray-100 dark:divide-gray-800">
       {data.map(({ label, value, icon: Icon }, i) => (
         <li key={i} className="flex items-center py-3 space-x-3">
-          <div className="p-2 rounded-xl bg-primary-100 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400">
+          <div className="p-2 rounded-xl bg-primary-100 dark:bg-primary-900/20 text-primary-6 dark:text-primary-400">
             <Icon className="w-4 h-4" />
           </div>
           <div className="flex-1">

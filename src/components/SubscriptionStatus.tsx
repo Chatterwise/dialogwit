@@ -253,7 +253,7 @@ const SubscriptionStatus: React.FC = () => {
             Usage Overview
           </h4>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-1 gap-6">
             {/* Tokens Usage */}
             <div className="bg-white dark:bg-gray-900/50 rounded-xl border border-gray-100 dark:border-gray-700 p-4">
               <div className="flex items-center mb-3">
@@ -307,7 +307,7 @@ const SubscriptionStatus: React.FC = () => {
             </div>
 
             {/* Chatbots Usage */}
-            <div className="bg-white dark:bg-gray-900/50 rounded-xl border border-gray-100 dark:border-gray-700 p-4">
+            {/* <div className="bg-white dark:bg-gray-900/50 rounded-xl border border-gray-100 dark:border-gray-700 p-4">
               <div className="flex items-center mb-3">
                 <Bot className="w-5 h-5 text-primary-500 dark:text-primary-400 mr-2" />
                 <h5 className="font-medium text-gray-900 dark:text-white">
@@ -356,7 +356,7 @@ const SubscriptionStatus: React.FC = () => {
                 ).toFixed(1)}
                 % used
               </div>
-            </div>
+            </div> */}
           </div>
 
           <div className="mt-6 pt-6 border-t border-gray-100 dark:border-gray-700 flex justify-between items-center">

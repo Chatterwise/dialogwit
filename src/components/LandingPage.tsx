@@ -937,11 +937,12 @@ const LandingPage: React.FC = () => {
               price="0"
               description="Perfect for getting started and testing the platform."
               features={[
-                "1 chatbot",
                 "20,000 tokens per month",
-                "10 document uploads",
-                "Basic analytics",
-                "Community support",
+                // "10 document uploads",
+                // "1 chatbot",
+                "GPT-3.5 model",
+                "Basic support",
+                "Community access",
               ]}
               popular={false}
               delay={0.1}
@@ -951,11 +952,12 @@ const LandingPage: React.FC = () => {
               price="19"
               description="Perfect for indie developers or small teams. Includes GPT-3.5 and increased document uploads."
               features={[
-                "5 chatbots",
                 "200,000 tokens per month",
-                "50 document uploads",
-                "Standard analytics",
+                // "50 document uploads",
+                // "5 chatbots",
+                "GPT-3.5 model",
                 "Email support",
+                "Analytics dashboard",
                 "API access",
               ]}
               popular={true}
@@ -966,13 +968,14 @@ const LandingPage: React.FC = () => {
               price="79"
               description="For organizations with advanced needs."
               features={[
-                "25 chatbots",
                 "1,000,000 tokens per month",
-                "250 document uploads",
-                "Advanced analytics",
-                "Priority support",
-                "Webhook integrations",
+                // "250 document uploads",
+                // "25 chatbots",
                 "GPT-4 model access",
+                "Priority support",
+                // "Advanced analytics",
+                "Webhook integrations",
+                // "Custom branding",
               ]}
               popular={false}
               delay={0.5}
