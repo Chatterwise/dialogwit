@@ -86,3 +86,15 @@
   for = "/robots.txt"
   [headers.values]
     Content-Type = "text/plain"
+
+[[headers]]
+  for = "/*.ico"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+    Expires = "31536000"
+
+[[headers]]
+  for = "/site.webmanifest"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+    Content-Type = "application/manifest+json"
