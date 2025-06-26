@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { User, Session, AuthError } from "@supabase/supabase-js";
 import { supabase } from "../lib/supabase";
+import posthog from "posthog-js";
 
 interface AuthState {
   user: User | null;
@@ -80,6 +81,8 @@ export function useAuth() {
       });
 
       if (error) throw error;
+          posthog.capture('user_signed_in', { method: 'github' });
+
       return { data, error: null };
     } catch (error) {
       console.error("GitHub sign-in error:", error);
@@ -96,6 +99,8 @@ export function useAuth() {
         },
       });
       if (error) throw error;
+                posthog.capture('user_signed_in', { method: 'discord' });
+
       return { data, error: null };
     } catch (error) {
       console.error("Discord sign-in error:", error);
@@ -135,13 +140,9 @@ export function useAuth() {
         }
       );
 
-      if (!response.ok) {
-        // const errorData = await response.json();
-        // console.error("Email confirmation handler error:", errorData);
-      } else {
-        // const result = await response.json();
-        // console.log("Email confirmation handler result:", result);
-      }
+    if (response.ok) {
+      posthog.capture('email_confirmed', { user_id: session.user?.id });
+    }
     } catch  {
       // console.error("Email confirmation handler error:", error);
     }
@@ -161,7 +162,9 @@ export function useAuth() {
       });
 
       if (error) throw error;
-
+    if (data.user) {
+      posthog.capture('user_signed_up', { email, method: 'email' });
+    }
       // Send confirmation email immediately after signup
       // if (data.user && !data.user.email_confirmed_at) {
       //   try {
@@ -207,7 +210,8 @@ export function useAuth() {
       });
 
       if (error) throw error;
-
+      posthog.identify();
+    posthog.capture('user_signed_in', { method: 'email' });
       return { data, error: null };
     } catch (error) {
       console.error("Signin error:", error);
@@ -219,6 +223,7 @@ export function useAuth() {
     try {
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
+       posthog.capture('user_signed_out');
       return { error: null };
     } catch (error) {
       console.error("Signout error:", error);
@@ -233,6 +238,7 @@ export function useAuth() {
       });
 
       if (error) throw error;
+    posthog.capture('password_reset_requested', { email });
 
       // Send reset password email
       try {
