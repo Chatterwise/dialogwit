@@ -1,0 +1,4 @@
+{
+  "imports": {},
+  "importMap": "./supabase/functions/import_map.json"
+}

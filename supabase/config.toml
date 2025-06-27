@@ -326,3 +326,25 @@ entrypoint = "./functions/token-rollover/index.ts"
 # Specifies static files to be bundled with the function. Supports glob patterns.
 # For example, if you want to serve static HTML pages in your function:
 # static_files = [ "./functions/token-rollover/*.html" ]
+
+[functions.process-large-documents]
+enabled = true
+verify_jwt = true
+import_map = "./functions/process-large-documents/deno.json"
+# Uncomment to specify a custom file path to the entrypoint.
+# Supported file extensions are: .ts, .js, .mjs, .jsx, .tsx
+entrypoint = "./functions/process-large-documents/index.ts"
+# Specifies static files to be bundled with the function. Supports glob patterns.
+# For example, if you want to serve static HTML pages in your function:
+# static_files = [ "./functions/process-large-documents/*.html" ]
+
+[functions.cron-process-knowledge]
+enabled = true
+verify_jwt = true
+import_map = "./functions/cron-process-knowledge/deno.json"
+# Uncomment to specify a custom file path to the entrypoint.
+# Supported file extensions are: .ts, .js, .mjs, .jsx, .tsx
+entrypoint = "./functions/cron-process-knowledge/index.ts"
+# Specifies static files to be bundled with the function. Supports glob patterns.
+# For example, if you want to serve static HTML pages in your function:
+# static_files = [ "./functions/cron-process-knowledge/*.html" ]

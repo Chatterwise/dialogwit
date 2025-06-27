@@ -12,6 +12,8 @@ import {
   Save,
 } from "lucide-react";
 import { FileUpload } from "./FileUpload";
+import { supabase } from "../lib/supabase";
+import { useToast } from "../lib/toastStore";
 
 interface ProcessedFile {
   file: File;
@@ -43,6 +45,7 @@ interface KnowledgeEditorModalProps {
   }) => Promise<void>;
   editingItem?: KnowledgeItem | null;
   isProcessing?: boolean;
+  chatbotId: string;
 }
 
 export const KnowledgeEditorModal: React.FC<KnowledgeEditorModalProps> = ({
@@ -51,6 +54,7 @@ export const KnowledgeEditorModal: React.FC<KnowledgeEditorModalProps> = ({
   onSave,
   editingItem = null,
   isProcessing = false,
+  chatbotId,
 }) => {
   const [step, setStep] = useState(1);
   const [contentType, setContentType] = useState<"text" | "document">("text");
@@ -58,6 +62,7 @@ export const KnowledgeEditorModal: React.FC<KnowledgeEditorModalProps> = ({
   const [filename, setFilename] = useState("");
   const [files, setFiles] = useState<ProcessedFile[]>([]);
   const [saving, setSaving] = useState(false);
+  const toast = useToast();
 
   // Reset state when modal opens or editing item changes
   useEffect(() => {
@@ -84,31 +89,49 @@ export const KnowledgeEditorModal: React.FC<KnowledgeEditorModalProps> = ({
   const handleBack = () => {
     setStep(Math.max(step - 1, 1));
   };
-
   const handleSave = async () => {
     setSaving(true);
     try {
-      if (contentType === "document" && files.length > 0 && files[0].content) {
-        await onSave({
-          content: files[0].content,
-          contentType,
-          filename: files[0].name,
+      if (contentType === "document" && files.length > 0) {
+        const file = files[0];
+        const path = `${chatbotId}/${Date.now()}_${file.name}`;
+
+        // 1. Upload the file to Supabase Storage
+        const { error: uploadError } = await supabase.storage
+          .from("knowledge-files")
+          .upload(path, file.file);
+
+        if (uploadError) throw uploadError;
+
+        // 2. Create knowledge base entry
+        await supabase.from("knowledge_base").insert({
+          chatbot_id: chatbotId,
+          content_type: "document",
+          filename: file.name,
+          file_path: path,
+          processed: false,
+          status: "pending", // <-- Add this if your table supports it
+          content: file.name, // <-- Optionally, set to empty or placeholder
         });
+
+        toast.success("File uploaded and ready for processing");
       } else {
+        // For text-based content
         await onSave({
           content,
           contentType,
           filename,
         });
       }
+
       onClose();
     } catch (error) {
       console.error("Error saving knowledge:", error);
+      toast.error(`Error saving knowledge: ${error}`);
     } finally {
       setSaving(false);
     }
   };
-
   const handleFilesSelected = (selectedFiles: ProcessedFile[]) => {
     setFiles(selectedFiles);
     if (selectedFiles.length > 0 && selectedFiles[0].content) {

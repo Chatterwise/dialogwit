@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import {
   Bot,
@@ -40,6 +40,7 @@ import { ActionModal } from "./ActionModal";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTrainChatbot } from "../hooks/useTraining";
 import { KnowledgeEditorModal } from "./KnowledgeEditorModal";
+import { supabase } from "../lib/supabase";
 
 export const ChatbotDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -67,7 +68,8 @@ export const ChatbotDetail = () => {
   const [showKnowledgeEditor, setShowKnowledgeEditor] = useState(false);
   const [editingItem, setEditingItem] = useState<any>(null);
   const [viewingItem, setViewingItem] = useState<any>(null);
-
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const publicChatUrl = `${window.location.origin}/chat/${id}`;
   const {
     data: knowledgeBase = [],
     isLoading: isKnowledgeLoading,
@@ -87,6 +89,30 @@ export const ChatbotDetail = () => {
       filterType === "all" || item.content_type === filterType;
     return matchesSearch && matchesFilter;
   });
+
+  useEffect(() => {
+    if (!id) return;
+
+    const channel = supabase
+      .channel("knowledge-base-changes")
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "knowledge_base",
+          filter: `chatbot_id=eq.${id}`,
+        },
+        () => {
+          refetchKnowledgeBase();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [id, refetchKnowledgeBase]);
 
   const handleSaveKnowledge = async (data: {
     content: string;
@@ -279,9 +305,6 @@ export const ChatbotDetail = () => {
     element.click();
     document.body.removeChild(element);
   };
-
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const publicChatUrl = `${window.location.origin}/chat/${id}`;
 
   const handleDeleteConfirmed = async () => {
     if (!chatbot) return;
@@ -900,6 +923,7 @@ export const ChatbotDetail = () => {
         onSave={handleSaveKnowledge}
         editingItem={editingItem}
         isProcessing={processing}
+        chatbotId={chatbot.id}
       />
 
       {/* View Item Modal */}

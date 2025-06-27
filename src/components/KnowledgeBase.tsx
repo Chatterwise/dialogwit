@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   FileText,
   Plus,
@@ -11,19 +11,19 @@ import {
   XCircle,
   Loader,
   X,
+  Clock,
 } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
 import { useChatbots } from "../hooks/useChatbots";
 import {
   useKnowledgeBase,
-  useAddKnowledgeBase,
   useDeleteKnowledgeBase,
-  useUpdateKnowledgeBase,
 } from "../hooks/useKnowledgeBase";
-import { useTrainChatbot } from "../hooks/useTraining";
 import { ChatbotSelector } from "./ChatbotSelector";
 import { KnowledgeEditorModal } from "./KnowledgeEditorModal";
 import { motion, AnimatePresence } from "framer-motion";
+import { useProcessLargeDocument } from "../hooks/useProcessLargeDocument";
+import { supabase } from "../lib/supabase";
 
 interface ProcessedFile {
   file: File;
@@ -52,15 +52,16 @@ export const KnowledgeBase = () => {
   const [editingItem, setEditingItem] = useState<any>(null);
   const [viewingItem, setViewingItem] = useState<any>(null);
 
+  const { mutate, isPending, isSuccess, isError, error } =
+    useProcessLargeDocument();
+
   const {
     data: knowledgeBase = [],
     isLoading,
     refetch: refetchKnowledgeBase,
   } = useKnowledgeBase(selectedChatbot);
-  const addKnowledgeBase = useAddKnowledgeBase();
-  const updateKnowledgeBase = useUpdateKnowledgeBase();
+
   const deleteKnowledgeBase = useDeleteKnowledgeBase();
-  const trainChatbot = useTrainChatbot();
 
   const filteredKnowledge = knowledgeBase.filter((item) => {
     const matchesSearch =
@@ -72,86 +73,69 @@ export const KnowledgeBase = () => {
     return matchesSearch && matchesFilter;
   });
 
-  const handleSaveKnowledge = async (data: {
-    content: string;
-    contentType: "text" | "document";
-    filename: string;
-  }) => {
-    if (!selectedChatbot || !data.content.trim()) return;
+  const createKnowledgeItem = (chatbotId: string) => {
+    return async ({
+      content,
+      contentType,
+      filename,
+    }: {
+      content: string;
+      contentType: "text" | "document";
+      filename: string;
+    }) => {
+      if (!chatbotId) throw new Error("Chatbot ID is missing.");
 
-    setProcessing(true);
-    setProgress(0);
+      if (contentType === "document") {
+        const fileInput = document.querySelector(
+          'input[type="file"]'
+        ) as HTMLInputElement;
 
-    try {
-      if (editingItem) {
-        // Update existing item
-        setProgressLabel("Updating knowledge...");
-        await updateKnowledgeBase.mutateAsync({
-          id: editingItem.id,
-          updates: {
-            content: data.content,
-            content_type: data.contentType,
-            filename: data.filename || null,
-            processed: false, // Mark for reprocessing
-          },
-        });
+        if (!fileInput?.files?.length) {
+          throw new Error("No file selected for upload.");
+        }
+
+        const file = fileInput.files[0];
+        const filePath = `kb/${chatbotId}/${filename}`;
+
+        // Upload to Supabase Storage
+        const { error: uploadError } = await supabase.storage
+          .from("documents")
+          .upload(filePath, file, { upsert: true });
+
+        if (uploadError) {
+          throw new Error(`Upload failed: ${uploadError.message}`);
+        }
+
+        // Insert placeholder for processing
+        const { error: insertError } = await supabase
+          .from("knowledge_base")
+          .insert({
+            chatbot_id: chatbotId,
+            content_type: "document",
+            file_path: filePath,
+            filename,
+            content: "",
+            processed: false,
+          });
+
+        if (insertError) {
+          throw new Error(`Insert failed: ${insertError.message}`);
+        }
       } else {
-        // Add new item
-        setProgressLabel("Adding knowledge...");
-        await addKnowledgeBase.mutateAsync({
-          chatbot_id: selectedChatbot,
-          content: data.content,
-          content_type: data.contentType,
-          filename: data.filename || null,
-          processed: false,
+        // Insert text content directly
+        const { error } = await supabase.from("knowledge_base").insert({
+          chatbot_id: chatbotId,
+          content_type: "text",
+          content,
+          filename,
+          processed: true,
         });
+
+        if (error) {
+          throw new Error(`Insert failed: ${error.message}`);
+        }
       }
-      setProgress(40);
-
-      // Trigger training to reprocess the knowledge base
-      setProgressLabel("Training chatbot...");
-      await trainChatbot.mutateAsync({
-        chatbotId: selectedChatbot,
-        model: "gpt-3.5-turbo",
-      });
-      setProgress(80);
-
-      // Refetch knowledge base to update UI
-      setProgressLabel("Updating UI...");
-      await refetchKnowledgeBase();
-      setProgress(100);
-
-      // Reset state
-      setEditingItem(null);
-
-      // Show success message
-      window.dispatchEvent(
-        new CustomEvent("toast", {
-          detail: {
-            type: "success",
-            message: editingItem
-              ? "Knowledge item updated successfully"
-              : "Knowledge item added successfully",
-          },
-        })
-      );
-    } catch (error) {
-      console.error("Error saving knowledge:", error);
-      window.dispatchEvent(
-        new CustomEvent("toast", {
-          detail: {
-            type: "error",
-            message: "Failed to save knowledge item",
-          },
-        })
-      );
-    } finally {
-      setTimeout(() => {
-        setProcessing(false);
-        setProgress(0);
-        setProgressLabel("");
-      }, 500);
-    }
+    };
   };
 
   const handleDelete = async (id: string) => {
@@ -269,6 +253,30 @@ export const KnowledgeBase = () => {
     element.click();
     document.body.removeChild(element);
   };
+
+  useEffect(() => {
+    if (!selectedChatbot) return;
+
+    const channel = supabase
+      .channel("knowledge-base-changes")
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "knowledge_base",
+          filter: `chatbot_id=eq.${selectedChatbot}`,
+        },
+        () => {
+          refetchKnowledgeBase();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [selectedChatbot, refetchKnowledgeBase]);
 
   return (
     <div className="space-y-8 min-h-screen p-4">
@@ -468,16 +476,45 @@ export const KnowledgeBase = () => {
                           className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                             item.processed
                               ? "bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-400"
-                              : "bg-yellow-100 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-400"
+                              : item.status === "processing"
+                              ? "bg-yellow-100 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-400"
+                              : "bg-gray-100 dark:bg-gray-900/20 text-gray-700 dark:text-gray-400"
                           }`}
                         >
                           {item.processed ? (
-                            <CheckCircle className="h-3 w-3 mr-1" />
+                            <>
+                              <CheckCircle className="h-3 w-3 mr-1" />
+                              Processed
+                            </>
+                          ) : item.status === "processing" ? (
+                            <>
+                              <Loader className="h-3 w-3 mr-1 animate-spin" />
+                              Processing
+                            </>
                           ) : (
-                            <Loader className="h-3 w-3 mr-1 animate-spin" />
+                            <>
+                              <Clock className="h-3 w-3 mr-1" />
+                              Pending
+                            </>
                           )}
-                          {item.processed ? "Processed" : "Processing"}
                         </span>
+
+                        {/* Process Document Button */}
+                        {item.content_type === "document" &&
+                          !item.processed && (
+                            <button
+                              onClick={() => mutate(item.id)}
+                              disabled={isPending}
+                              className="ml-2 px-3 py-1 text-sm text-white bg-blue-600 rounded disabled:opacity-50"
+                            >
+                              {isPending
+                                ? "Processing..."
+                                : item.status === "pending"
+                                ? "Start Processing"
+                                : "Process Document"}
+                            </button>
+                          )}
+
                         <button
                           onClick={() => handleView(item)}
                           className="p-1 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-600 rounded transition-colors duration-200"
@@ -512,6 +549,14 @@ export const KnowledgeBase = () => {
                     <p className="text-sm text-gray-600 dark:text-gray-300 line-clamp-2 mb-2">
                       {item.content.substring(0, 200)}...
                     </p>
+
+                    {/* Error Status Display */}
+                    {item.status === "error" && (
+                      <p className="text-xs text-red-500 mt-1">
+                        Error: {item.error_message || "Processing failed"}
+                      </p>
+                    )}
+
                     <div className="flex items-center justify-between text-xs text-gray-400 dark:text-gray-500">
                       <span>
                         Added {new Date(item.created_at).toLocaleDateString()}
@@ -533,9 +578,22 @@ export const KnowledgeBase = () => {
           setShowKnowledgeEditor(false);
           setEditingItem(null);
         }}
-        onSave={handleSaveKnowledge}
+        onSave={async (data) => {
+          try {
+            // Call the function returned by createKnowledgeItem
+            await createKnowledgeItem(selectedChatbot)(data);
+            await refetchKnowledgeBase();
+          } catch (error) {
+            console.error(error);
+            // Optionally show error to user
+          }
+          // Close modal after upload is initiated (or completed, if you want to wait)
+          setShowKnowledgeEditor(false);
+          setEditingItem(null);
+        }}
         editingItem={editingItem}
         isProcessing={processing}
+        chatbotId={selectedChatbot}
       />
 
       {/* View Item Modal */}

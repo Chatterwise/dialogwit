@@ -96,26 +96,33 @@ export const useDeleteChatbot = () => {
 
   return useMutation({
     mutationFn: async (id: string) => {
-      // const { error } = await supabase.from("chatbots").delete().eq("id", id);
-      const { error } = await supabase
+      // First, delete all usage tracking records for this chatbot
+      const { error: usageError } = await supabase
+        .from("usage_tracking")
+        .delete()
+        .eq("chatbot_id", id);
+      if (usageError) throw usageError;
+
+      // Now, delete the chatbot
+      const { error: chatbotError } = await supabase
         .from("chatbots")
-        .update({ status: "deleted" })
+        .delete()
         .eq("id", id);
-      if (error) throw error;
+      if (chatbotError) throw chatbotError;
+
       return { id };
     },
     onSuccess: (_, deletedId) => {
-      // Invalidate all chatbot queries to refresh the list
       queryClient.invalidateQueries({ queryKey: ["chatbots"] });
-      // Also invalidate the specific chatbot query
       queryClient.invalidateQueries({ queryKey: ["chatbot", deletedId] });
-      toast.success("Chatbot successfully marked for deletion");
+      toast.success("Chatbot and related usage data successfully deleted");
     },
     onError: () => {
-      toast.error("Failed to mark for deletion");
+      toast.error("Failed to delete chatbot or related usage data");
     },
   });
 };
+
 
 export const useChatbot = (id: string) => {
   return useQuery({
