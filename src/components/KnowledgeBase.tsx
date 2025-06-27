@@ -1,17 +1,12 @@
 import { useEffect, useState } from "react";
 import {
-  FileText,
   Plus,
-  Trash2,
-  Search,
   Edit,
   Download,
   Eye,
   CheckCircle,
   XCircle,
-  Loader,
   X,
-  Clock,
 } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
 import { useChatbots } from "../hooks/useChatbots";
@@ -22,19 +17,10 @@ import {
 import { ChatbotSelector } from "./ChatbotSelector";
 import { KnowledgeEditorModal } from "./KnowledgeEditorModal";
 import { motion, AnimatePresence } from "framer-motion";
-import { useProcessLargeDocument } from "../hooks/useProcessLargeDocument";
 import { supabase } from "../lib/supabase";
-
-interface ProcessedFile {
-  file: File;
-  id: string;
-  name: string;
-  size: number;
-  type: string;
-  content?: string;
-  status: "pending" | "processing" | "completed" | "error";
-  error?: string;
-}
+import BotKnowledgeContent from "./BotKnowledgeContent";
+import { useProcessLargeDocument } from "../hooks/useProcessLargeDocument";
+import { KnowledgeItem } from "./utils/types";
 
 export const KnowledgeBase = () => {
   const { user } = useAuth();
@@ -49,12 +35,10 @@ export const KnowledgeBase = () => {
   const [progress, setProgress] = useState<number>(0);
   const [progressLabel, setProgressLabel] = useState<string>("");
   const [showKnowledgeEditor, setShowKnowledgeEditor] = useState(false);
-  const [editingItem, setEditingItem] = useState<any>(null);
-  const [viewingItem, setViewingItem] = useState<any>(null);
+  const [editingItem, setEditingItem] = useState<KnowledgeItem | null>(null);
+  const [viewingItem, setViewingItem] = useState<KnowledgeItem | null>(null);
 
-  const { mutate, isPending, isSuccess, isError, error } =
-    useProcessLargeDocument();
-
+  const { mutate } = useProcessLargeDocument(selectedChatbot);
   const {
     data: knowledgeBase = [],
     isLoading,
@@ -62,16 +46,6 @@ export const KnowledgeBase = () => {
   } = useKnowledgeBase(selectedChatbot);
 
   const deleteKnowledgeBase = useDeleteKnowledgeBase();
-
-  const filteredKnowledge = knowledgeBase.filter((item) => {
-    const matchesSearch =
-      item.content.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (item.filename &&
-        item.filename.toLowerCase().includes(searchTerm.toLowerCase()));
-    const matchesFilter =
-      filterType === "all" || item.content_type === filterType;
-    return matchesSearch && matchesFilter;
-  });
 
   const createKnowledgeItem = (chatbotId: string) => {
     return async ({
@@ -221,32 +195,18 @@ export const KnowledgeBase = () => {
     }
   };
 
-  const toggleItemSelection = (id: string) => {
-    setSelectedItems((prev) =>
-      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
-    );
-  };
-
-  const toggleSelectAll = () => {
-    if (selectedItems.length === filteredKnowledge.length) {
-      setSelectedItems([]);
-    } else {
-      setSelectedItems(filteredKnowledge.map((item) => item.id));
-    }
-  };
-
-  const handleEdit = (item: any) => {
+  const handleEdit = (item: KnowledgeItem) => {
     setEditingItem(item);
     setShowKnowledgeEditor(true);
   };
 
-  const handleView = (item: any) => {
+  const handleView = (item: KnowledgeItem) => {
     setViewingItem(item);
   };
 
-  const handleDownload = (item: any) => {
+  const handleDownload = (item: KnowledgeItem) => {
     const element = document.createElement("a");
-    const file = new Blob([item.content], { type: "text/plain" });
+    const file = new Blob([item.content ?? ""], { type: "text/plain" });
     element.href = URL.createObjectURL(file);
     element.download = item.filename || `knowledge_${item.id}.txt`;
     document.body.appendChild(element);
@@ -256,7 +216,6 @@ export const KnowledgeBase = () => {
 
   useEffect(() => {
     if (!selectedChatbot) return;
-
     const channel = supabase
       .channel("knowledge-base-changes")
       .on(
@@ -272,7 +231,7 @@ export const KnowledgeBase = () => {
         }
       )
       .subscribe();
-
+    console.log(channel);
     return () => {
       supabase.removeChannel(channel);
     };
@@ -340,236 +299,22 @@ export const KnowledgeBase = () => {
       />
 
       {/* Bot Knowledge Content */}
-      {selectedChatbot && (
-        <div className="bg-white/80 dark:bg-gray-800/80 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-700">
-          {/* Filters */}
-          <div className="px-8 py-5 border-b border-gray-100 dark:border-gray-700 bg-gradient-to-r from-primary-50 via-white to-accent-50 dark:from-primary-900/20 dark:via-gray-900/40 dark:to-accent-900/20 rounded-t-2xl">
-            <div className="flex items-center justify-between">
-              <h3 className="text-lg font-bold text-gray-900 dark:text-white">
-                Bot Knowledge Items
-              </h3>
-              <div className="flex items-center space-x-4">
-                <div className="relative">
-                  <Search className="h-4 w-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500" />
-                  <input
-                    type="text"
-                    placeholder="Search content..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-400 dark:focus:ring-primary-600 focus:border-primary-400 dark:focus:border-primary-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition"
-                  />
-                </div>
-                <select
-                  value={filterType}
-                  onChange={(e) => setFilterType(e.target.value as any)}
-                  className="px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-400 dark:focus:ring-primary-600 focus:border-primary-400 dark:focus:border-primary-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition"
-                >
-                  <option value="all">All Types</option>
-                  <option value="text">Text</option>
-                  <option value="document">Document</option>
-                </select>
-              </div>
-            </div>
-
-            {/* Bulk Actions */}
-            {filteredKnowledge.length > 0 && (
-              <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-100 dark:border-gray-700">
-                <div className="flex items-center space-x-4">
-                  <label className="flex items-center">
-                    <input
-                      type="checkbox"
-                      checked={
-                        selectedItems.length === filteredKnowledge.length &&
-                        filteredKnowledge.length > 0
-                      }
-                      onChange={toggleSelectAll}
-                      className="rounded border-gray-300 dark:border-gray-700 text-primary-600 dark:text-primary-400 focus:ring-primary-500 dark:focus:ring-primary-600"
-                    />
-                    <span className="ml-2 text-sm text-gray-600 dark:text-gray-400">
-                      Select all ({filteredKnowledge.length})
-                    </span>
-                  </label>
-                  {selectedItems.length > 0 && (
-                    <span className="text-sm text-gray-600 dark:text-gray-400">
-                      {selectedItems.length} selected
-                    </span>
-                  )}
-                </div>
-
-                {selectedItems.length > 0 && (
-                  <button
-                    onClick={handleBulkDelete}
-                    disabled={processing}
-                    className="inline-flex items-center px-3 py-1.5 border border-red-300 dark:border-red-700 text-sm font-medium rounded-lg text-red-600 dark:text-red-400 bg-white dark:bg-gray-800 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors disabled:opacity-50"
-                  >
-                    <Trash2 className="h-4 w-4 mr-1" />
-                    Delete Selected
-                  </button>
-                )}
-              </div>
-            )}
-          </div>
-
-          {/* Content List */}
-          <div className="p-8">
-            {filteredKnowledge.length === 0 ? (
-              <div className="text-center py-8">
-                <FileText className="h-12 w-12 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
-                <h3 className="text-lg font-bold text-gray-900 dark:text-white">
-                  {searchTerm || filterType !== "all"
-                    ? "No matching items"
-                    : "No Bot Knowledge items"}
-                </h3>
-                <p className="text-gray-400 dark:text-gray-500">
-                  {searchTerm || filterType !== "all"
-                    ? "Try adjusting your search or filter criteria."
-                    : "Add content to help your chatbot answer questions."}
-                </p>
-                {!searchTerm && filterType === "all" && (
-                  <button
-                    onClick={() => {
-                      setEditingItem(null);
-                      setShowKnowledgeEditor(true);
-                    }}
-                    disabled={!selectedChatbot || processing}
-                    className="mt-4 inline-flex items-center px-4 py-2 border border-transparent rounded-lg text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                  >
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add First Item
-                  </button>
-                )}
-              </div>
-            ) : (
-              <div className="space-y-5">
-                {filteredKnowledge.map((item) => (
-                  <motion.div
-                    key={item.id}
-                    layout
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="p-5 border border-gray-100 dark:border-gray-700 rounded-xl shadow-subtle bg-white/90 dark:bg-gray-700/90"
-                  >
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="flex items-center">
-                        <input
-                          type="checkbox"
-                          checked={selectedItems.includes(item.id)}
-                          onChange={() => toggleItemSelection(item.id)}
-                          className="rounded border-gray-300 dark:border-gray-700 text-primary-600 dark:text-primary-400 focus:ring-primary-500 dark:focus:ring-primary-600 mr-3"
-                        />
-                        <FileText className="h-5 w-5 text-gray-400 dark:text-gray-500 mr-2" />
-                        <span className="text-sm font-semibold text-gray-900 dark:text-white">
-                          {item.filename || `${item.content_type} content`}
-                        </span>
-                        <span
-                          className={`ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                            item.content_type === "text"
-                              ? "bg-primary-100 dark:bg-primary-900/20 text-primary-700 dark:text-primary-400"
-                              : "bg-accent-100 dark:bg-accent-900/20 text-accent-700 dark:text-accent-400"
-                          }`}
-                        >
-                          {item.content_type}
-                        </span>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <span
-                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                            item.processed
-                              ? "bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-400"
-                              : item.status === "processing"
-                              ? "bg-yellow-100 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-400"
-                              : "bg-gray-100 dark:bg-gray-900/20 text-gray-700 dark:text-gray-400"
-                          }`}
-                        >
-                          {item.processed ? (
-                            <>
-                              <CheckCircle className="h-3 w-3 mr-1" />
-                              Processed
-                            </>
-                          ) : item.status === "processing" ? (
-                            <>
-                              <Loader className="h-3 w-3 mr-1 animate-spin" />
-                              Processing
-                            </>
-                          ) : (
-                            <>
-                              <Clock className="h-3 w-3 mr-1" />
-                              Pending
-                            </>
-                          )}
-                        </span>
-
-                        {/* Process Document Button */}
-                        {item.content_type === "document" &&
-                          !item.processed && (
-                            <button
-                              onClick={() => mutate(item.id)}
-                              disabled={isPending}
-                              className="ml-2 px-3 py-1 text-sm text-white bg-blue-600 rounded disabled:opacity-50"
-                            >
-                              {isPending
-                                ? "Processing..."
-                                : item.status === "pending"
-                                ? "Start Processing"
-                                : "Process Document"}
-                            </button>
-                          )}
-
-                        <button
-                          onClick={() => handleView(item)}
-                          className="p-1 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-600 rounded transition-colors duration-200"
-                          title="View"
-                        >
-                          <Eye className="h-4 w-4" />
-                        </button>
-                        <button
-                          onClick={() => handleEdit(item)}
-                          className="p-1 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded transition-colors duration-200"
-                          title="Edit"
-                        >
-                          <Edit className="h-4 w-4" />
-                        </button>
-                        <button
-                          onClick={() => handleDownload(item)}
-                          className="p-1 text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20 rounded transition-colors duration-200"
-                          title="Download"
-                        >
-                          <Download className="h-4 w-4" />
-                        </button>
-                        <button
-                          onClick={() => handleDelete(item.id)}
-                          disabled={processing}
-                          className="p-1 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors duration-200 disabled:opacity-50"
-                          title="Delete"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
-                      </div>
-                    </div>
-                    <p className="text-sm text-gray-600 dark:text-gray-300 line-clamp-2 mb-2">
-                      {item.content.substring(0, 200)}...
-                    </p>
-
-                    {/* Error Status Display */}
-                    {item.status === "error" && (
-                      <p className="text-xs text-red-500 mt-1">
-                        Error: {item.error_message || "Processing failed"}
-                      </p>
-                    )}
-
-                    <div className="flex items-center justify-between text-xs text-gray-400 dark:text-gray-500">
-                      <span>
-                        Added {new Date(item.created_at).toLocaleDateString()}
-                      </span>
-                      <span>{item.content.length} characters</span>
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-      )}
+      <BotKnowledgeContent
+        knowledgeBase={knowledgeBase}
+        selectedItems={selectedItems}
+        setSelectedItems={setSelectedItems}
+        searchTerm={searchTerm}
+        setSearchTerm={setSearchTerm}
+        filterType={filterType}
+        setFilterType={setFilterType}
+        handleDelete={handleDelete}
+        handleBulkDelete={handleBulkDelete}
+        handleEdit={handleEdit}
+        handleView={handleView}
+        handleDownload={handleDownload}
+        processing={processing}
+        handleProcess={(item) => mutate(item.id)}
+      />
 
       {/* Knowledge Editor Modal */}
       <KnowledgeEditorModal
@@ -591,7 +336,11 @@ export const KnowledgeBase = () => {
           setShowKnowledgeEditor(false);
           setEditingItem(null);
         }}
-        editingItem={editingItem}
+        editingItem={
+          editingItem
+            ? { ...editingItem, filename: editingItem.filename ?? undefined }
+            : editingItem
+        }
         isProcessing={processing}
         chatbotId={selectedChatbot}
       />
@@ -649,7 +398,8 @@ export const KnowledgeBase = () => {
                     </span>
                   </div>
                   <div className="text-xs text-gray-500 dark:text-gray-400">
-                    Added: {new Date(viewingItem.created_at).toLocaleString()}
+                    Added:{" "}
+                    {new Date(viewingItem.created_at ?? "").toLocaleString()}
                   </div>
                 </div>
                 <div className="bg-gray-50 dark:bg-gray-900/50 rounded-xl p-4 border border-gray-200 dark:border-gray-700 whitespace-pre-wrap text-sm text-gray-800 dark:text-gray-200 max-h-[60vh] overflow-y-auto">

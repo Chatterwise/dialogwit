@@ -14,6 +14,7 @@ import {
 import { FileUpload } from "./FileUpload";
 import { supabase } from "../lib/supabase";
 import { useToast } from "../lib/toastStore";
+import { KnowledgeItem } from "./utils/types";
 
 interface ProcessedFile {
   file: File;
@@ -26,14 +27,14 @@ interface ProcessedFile {
   error?: string;
 }
 
-interface KnowledgeItem {
-  id: string;
-  content: string;
-  content_type: "text" | "document";
-  filename: string | null;
-  processed: boolean;
-  created_at: string;
-}
+// interface KnowledgeItem {
+//   id: string;
+//   content: string;
+//   content_type: "text" | "document";
+//   filename: string | null;
+//   processed: boolean;
+//   created_at: string;
+// }
 
 interface KnowledgeEditorModalProps {
   isOpen: boolean;
@@ -68,8 +69,8 @@ export const KnowledgeEditorModal: React.FC<KnowledgeEditorModalProps> = ({
   useEffect(() => {
     if (isOpen) {
       if (editingItem) {
-        setContentType(editingItem.content_type);
-        setContent(editingItem.content);
+        setContentType(editingItem.content_type as "text" | "document");
+        setContent(editingItem.content || "");
         setFilename(editingItem.filename || "");
         setStep(2); // Skip content type selection when editing
       } else {

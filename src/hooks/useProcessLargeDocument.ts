@@ -1,7 +1,9 @@
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "../lib/supabase";
 
-export const useProcessLargeDocument = () => {
+export const useProcessLargeDocument = (chatbotId: string) => {
+  const queryClient = useQueryClient();
+
   return useMutation({
     mutationFn: async (id: string) => {
       const session = (await supabase.auth.getSession()).data.session;
@@ -20,10 +22,17 @@ export const useProcessLargeDocument = () => {
 
       if (!response.ok) {
         const text = await response.text();
+        console.log(text)
         throw new Error(text || "Failed to process document");
       }
 
       return response.text();
+    },
+    onSuccess: () => {
+      // Invalidate the knowledgeBase query for the current chatbot
+      queryClient.invalidateQueries({
+        queryKey: ["knowledgeBase", chatbotId],
+      });
     },
   });
 };
