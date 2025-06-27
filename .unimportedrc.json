@@ -1,0 +1,27 @@
+{
+  "ignorePatterns": [
+    "**/node_modules/**",
+    "**/*.tests.{js,jsx,ts,tsx}",
+    "**/*.test.{js,jsx,ts,tsx}",
+    "**/*.spec.{js,jsx,ts,tsx}",
+    "**/tests/**",
+    "**/__tests__/**",
+    "**/*.d.ts",
+    "**/*.sql",
+    "**/supabase/*"
+  ],
+  "ignoreUnimported": [
+    "src/components/ChatTemplates/index.ts",
+    "src/components/WidgetConfiguration.tsx",
+    "src/hooks/useAdvancedAnalytics.ts",
+    "src/hooks/useChatAnalytics.ts",
+    "src/hooks/useChatbot.ts"
+  ],
+  "ignoreUnused": [
+    "openai",
+    "resend",
+    "supabase"
+  ],
+  "ignoreUnresolved": [],
+  "respectGitignore": true
+}
