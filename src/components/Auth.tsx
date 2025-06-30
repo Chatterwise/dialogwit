@@ -9,14 +9,13 @@ import {
   ArrowRight,
   AlertCircle,
   CheckCircle,
-  Moon,
-  Sun,
   Github,
 } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
 import { EmailConfirmationRequired } from "./EmailConfirmationRequired";
 import { Logo } from "./ui/Logo";
 import { useTheme } from "../hooks/useTheme";
+import { useLocation } from "react-router-dom";
 
 const leftBgLight = "bg-gradient-to-br from-primary-500 to-accent-500";
 const leftBgDark = "bg-gradient-to-br from-gray-900 to-primary-900";
@@ -61,9 +60,24 @@ export function Auth() {
   const [showEmailConfirmation, setShowEmailConfirmation] = useState(false);
   const { user, emailConfirmed, loading, signUp, signIn, resetPassword } =
     useAuth();
-  const { theme, toggleTheme } = useTheme();
+  const { theme } = useTheme();
+  const location = useLocation();
+  const params = new URLSearchParams(location.search);
+
+  const email = params.get("email");
+  const password = params.get("password");
 
   // Check if user needs email confirmation
+  useEffect(() => {
+    if (email && password) {
+      setForm({
+        email: email,
+        password: password,
+        confirm: "",
+        name: "",
+      });
+    }
+  }, [email, password]);
   useEffect(() => {
     if (user && !emailConfirmed) {
       setShowEmailConfirmation(true);
@@ -97,8 +111,14 @@ export function Auth() {
   };
 
   // Error message handler
-  const getErrorMessage = (error: any): string => {
-    const message = error?.message || "";
+  const getErrorMessage = (error: unknown): string => {
+    const message =
+      typeof error === "object" &&
+      error !== null &&
+      "message" in error &&
+      typeof (error as { message?: string }).message === "string"
+        ? (error as { message: string }).message
+        : "";
     if (
       message.includes("Invalid login credentials") ||
       message.includes("invalid_credentials")
@@ -218,17 +238,6 @@ export function Auth() {
           {/* Logo and Theme Toggle */}
           <div className="flex justify-between items-center mb-8">
             <Logo size="lg" />
-            {/* <button
-              onClick={toggleTheme}
-              className="p-2 rounded-full bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 transition-colors"
-              title="Toggle theme"
-            >
-              {theme === "dark" ? (
-                <Sun className="h-5 w-5" />
-              ) : (
-                <Moon className="h-5 w-5" />
-              )}
-            </button> */}
           </div>
 
           {/* Mode Switch Buttons */}
