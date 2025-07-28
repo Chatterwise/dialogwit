@@ -21,7 +21,6 @@ import ParticlesBg from "particles-bg";
 import { SEO } from "./SEO";
 import { Helmet } from "react-helmet-async";
 import { Logo } from "./ui/Logo";
-import BoltLogo from "../resources/bolt-logo-white.png";
 import { useTheme } from "../hooks/useTheme";
 
 // Pricing card
@@ -535,26 +534,6 @@ const LandingPage: React.FC = () => {
           </div>
         </div>
       </motion.section>
-
-      {/* Hackathon Badge */}
-      <div className="flex justify-center mb-8 items-center relative z-10 min-h-[120px]">
-        <motion.a
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.7 }}
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          href="https://bolt.new"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <img
-            src={BoltLogo}
-            className="max-w-[120px] w-full h-auto mx-auto sm:w-32 md:w-48 lg:w-64"
-            alt="Bolt Logo"
-          />
-        </motion.a>
-      </div>
 
       {/* How It Works Section */}
       <section className="py-20 bg-gradient-to-br from-gray-50 to-white dark:from-gray-900 dark:to-gray-800 relative overflow-hidden">
@@ -1189,24 +1168,6 @@ const LandingPage: React.FC = () => {
                   </Link>
                 </li>
               </ul>
-            </div>
-            <div className="flex justify-center items-center relative z-10 min-h-[120px]">
-              <motion.a
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.7 }}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                href="https://bolt.new"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <img
-                  src={BoltLogo}
-                  className="max-w-[120px] w-full h-auto mx-auto sm:w-32 md:w-48 lg:w-64"
-                  alt="Bolt Logo"
-                />
-              </motion.a>
             </div>
           </div>
           <div className="border-t border-gray-800 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center">
