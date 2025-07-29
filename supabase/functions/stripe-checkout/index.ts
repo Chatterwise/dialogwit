@@ -73,6 +73,13 @@ Deno.serve(async (req)=>{
     ],
     success_url,
     cancel_url,
+    allow_promotion_codes: true,
+    // automatic_tax: { enabled: true },
+    // payment_method_types: ['card'],
+    // billing_address_collection: 'required',
+    // phone_number_collection: {
+    //   enabled: true
+    // },
     subscription_data: {
       metadata: {
         user_id: user.id

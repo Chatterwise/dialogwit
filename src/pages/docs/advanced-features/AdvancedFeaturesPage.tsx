@@ -72,7 +72,7 @@ const AdvancedFeaturesPage: React.FC = () => {
         keywords="ChatterWise advanced features, custom chatbot templates, webhooks, chatbot security, API reference"
       />
 
-      <div className="mx-auto px-10 py-12 bg-gradient-to-br from-gray-50 to-white dark:from-gray-900 dark:to-gray-800">
+      <div className="mx-auto h-lvh px-10 py-12 bg-gradient-to-br from-gray-50 to-white dark:from-gray-900 dark:to-gray-800">
         <DocBreadcrumbs
           items={[
             { name: "Advanced Features", href: "/docs/advanced-features" },

@@ -1,13 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
-import {
-  ChevronRight,
-  FileText,
-  Code,
-  MessageSquare,
-  Bot,
-  Zap,
-} from "lucide-react";
+import { Link, useLocation } from "react-router-dom";
+import { ChevronRight, FileText, Code, Bot, Zap } from "lucide-react";
 import { motion } from "framer-motion";
 import { SEO } from "../components/SEO";
 
@@ -103,18 +96,18 @@ const DocumentationPage: React.FC = () => {
           title: "Building a Customer Support Bot",
           href: "/docs/tutorials/customer-support-bot",
         },
-        {
-          title: "Creating a Lead Generation Bot",
-          href: "/docs/tutorials/lead-generation-bot",
-        },
-        {
-          title: "FAQ Chatbot Setup",
-          href: "/docs/tutorials/faq-chatbot-setup",
-        },
-        {
-          title: "Multi-language Support",
-          href: "/docs/tutorials/multi-language-support",
-        },
+        // {
+        //   title: "Creating a Lead Generation Bot",
+        //   href: "/docs/tutorials/lead-generation-bot",
+        // },
+        // {
+        //   title: "FAQ Chatbot Setup",
+        //   href: "/docs/tutorials/faq-chatbot-setup",
+        // },
+        // {
+        //   title: "Multi-language Support",
+        //   href: "/docs/tutorials/multi-language-support",
+        // },
       ],
       categoryLink: "/docs/tutorials",
     },
@@ -283,13 +276,13 @@ const DocumentationPage: React.FC = () => {
                   <Code className="h-5 w-5 mr-2 text-primary-600 dark:text-primary-400" />
                   API Reference
                 </Link>
-                <Link
+                {/* <Link
                   to="/community"
                   className="inline-flex items-center px-5 py-2.5 bg-primary-600 dark:bg-primary-700 text-white rounded-xl hover:bg-primary-700 dark:hover:bg-primary-800 transition-colors shadow-sm"
                 >
                   <MessageSquare className="h-5 w-5 mr-2" />
                   Community Forum
-                </Link>
+                </Link> */}
               </div>
             </div>
           </motion.div>
