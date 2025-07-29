@@ -5,8 +5,8 @@ All notable changes to this project will be documented in this file. See [standa
 ## [Unreleased]
 
 ### Fixed
-
-- Documentation tab broken links
+- Visual bug Integrations/ Select chatbot **[CHAT-8]**
+- Documentation tab broken links **[CHAT-3]**
 
 ### 0.0.16 (2025-06-26)
 
