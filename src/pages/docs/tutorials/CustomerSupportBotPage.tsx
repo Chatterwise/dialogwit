@@ -4,6 +4,7 @@ import { CheckCircle, AlertTriangle } from "lucide-react";
 import { SEO } from "../../../components/SEO";
 import { DocBreadcrumbs } from "../../../components/DocBreadcrumbs";
 import { Link } from "react-router-dom";
+import { ScrollToTop } from "../../../components/utils/ScrollToTop";
 
 const CustomerSupportBotPage: React.FC = () => {
   // Schema data for breadcrumbs
@@ -51,6 +52,7 @@ const CustomerSupportBotPage: React.FC = () => {
             },
           ]}
         />
+        <ScrollToTop />
 
         <motion.div
           initial={{ opacity: 0, y: 20 }}

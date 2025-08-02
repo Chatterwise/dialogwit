@@ -4,6 +4,7 @@ import { MessageSquare, Users, FileText, Globe } from "lucide-react";
 import { SEO } from "../../../components/SEO";
 import { DocBreadcrumbs } from "../../../components/DocBreadcrumbs";
 import { Link } from "react-router-dom";
+import { ScrollToTop } from "../../../components/utils/ScrollToTop";
 
 const TutorialsPage: React.FC = () => {
   // Schema data for breadcrumbs
@@ -80,6 +81,7 @@ const TutorialsPage: React.FC = () => {
         schemaData={breadcrumbSchema}
         keywords="ChatterWise tutorials, chatbot tutorials, customer support bot, lead generation bot, FAQ chatbot, multi-language chatbot"
       />
+      <ScrollToTop />
 
       <div className="mx-auto h-lvh px-10 py-12 bg-gradient-to-br from-gray-50 to-white dark:from-gray-900 dark:to-gray-800">
         <DocBreadcrumbs

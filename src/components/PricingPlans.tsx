@@ -1,10 +1,9 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import { useBilling } from "../hooks/useBilling";
 import { useStripe } from "../hooks/useStripe";
 import { stripeConfig } from "../stripe-config";
-import { useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   Check,
@@ -15,15 +14,7 @@ import {
   ArrowLeft,
 } from "lucide-react";
 import { useTheme } from "../hooks/useTheme";
-
-// ScrollToTop component (for auto-scroll to top on navigation)
-const ScrollToTop = () => {
-  const { pathname } = useLocation();
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, [pathname]);
-  return null;
-};
+import { ScrollToTop } from "./utils/ScrollToTop";
 
 // GoBackButton component
 const GoBackButton = () => {
