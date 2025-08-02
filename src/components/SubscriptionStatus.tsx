@@ -10,12 +10,12 @@ import {
   CheckCircle,
   ArrowRight,
   FileText,
-  Bot,
 } from "lucide-react";
 import { useBilling } from "../hooks/useBilling";
 import { useStripe } from "../hooks/useStripe";
 import { stripeConfig } from "../stripe-config";
 import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 
 const SubscriptionStatus: React.FC = () => {
   const { subscription, usage, isLoading } = useBilling();
@@ -24,6 +24,7 @@ const SubscriptionStatus: React.FC = () => {
     // createPortalSession,
     isLoading: stripeLoading,
   } = useStripe();
+  const navigate = useNavigate();
 
   const getPlanIcon = (planName: string) => {
     switch (planName) {
@@ -48,6 +49,7 @@ const SubscriptionStatus: React.FC = () => {
     }
   };
 
+  const handlePricingNavigation = () => navigate("/pricing");
   const getPlanDetails = (planName: string) => {
     return stripeConfig.products.find((p) =>
       p.name.toLowerCase().includes(planName.toLowerCase())
@@ -193,17 +195,12 @@ const SubscriptionStatus: React.FC = () => {
                     Manage Billing
                   </button>
                 )}
-
                 <button
-                  onClick={handleUpgrade}
-                  disabled={
-                    stripeLoading ||
-                    currentPlan?.name === "Chatterwise Business"
-                  }
+                  onClick={handlePricingNavigation}
                   className="px-4 py-2 bg-primary-600 dark:bg-primary-700 text-white rounded-lg font-medium hover:bg-primary-700 dark:hover:bg-primary-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
                 >
                   <Zap className="w-4 h-4 mr-2" />
-                  {stripeLoading ? "Processing..." : "Upgrade Plan"}
+                  Upgrade Plan
                 </button>
               </div>
             </div>
@@ -305,58 +302,6 @@ const SubscriptionStatus: React.FC = () => {
                 % used
               </div>
             </div>
-
-            {/* Chatbots Usage */}
-            {/* <div className="bg-white dark:bg-gray-900/50 rounded-xl border border-gray-100 dark:border-gray-700 p-4">
-              <div className="flex items-center mb-3">
-                <Bot className="w-5 h-5 text-primary-500 dark:text-primary-400 mr-2" />
-                <h5 className="font-medium text-gray-900 dark:text-white">
-                  Chatbots
-                </h5>
-              </div>
-
-              <div className="flex justify-between items-center mb-2">
-                <span className="text-sm text-gray-700 dark:text-gray-300">
-                  Created / Limit
-                </span>
-                <span className="text-sm text-gray-500 dark:text-gray-400">
-                  {usage.chatbots_created || 0} /{" "}
-                  {currentPlan.limits.max_chatbots}
-                </span>
-              </div>
-
-              <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 mb-2">
-                <div
-                  className={`${getProgressColor(
-                    getUsagePercentage(
-                      usage.chatbots_created || 0,
-                      currentPlan.limits.max_chatbots
-                    )
-                  )} h-2 rounded-full transition-all duration-300`}
-                  style={{
-                    width: `${getUsagePercentage(
-                      usage.chatbots_created || 0,
-                      currentPlan.limits.max_chatbots
-                    )}%`,
-                  }}
-                ></div>
-              </div>
-
-              <div
-                className={`text-xs mt-1 px-2 py-1 rounded-full inline-block ${getUsageColor(
-                  getUsagePercentage(
-                    usage.chatbots_created || 0,
-                    currentPlan.limits.max_chatbots
-                  )
-                )}`}
-              >
-                {getUsagePercentage(
-                  usage.chatbots_created || 0,
-                  currentPlan.limits.max_chatbots
-                ).toFixed(1)}
-                % used
-              </div>
-            </div> */}
           </div>
 
           <div className="mt-6 pt-6 border-t border-gray-100 dark:border-gray-700 flex justify-between items-center">

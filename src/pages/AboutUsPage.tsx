@@ -1,6 +1,6 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { motion } from "framer-motion";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import {
   Target,
   Heart,
@@ -10,17 +10,7 @@ import {
   Rocket,
   Users,
 } from "lucide-react";
-
-// ScrollToTop component (for auto-scroll to top on navigation)
-const ScrollToTop = () => {
-  const { pathname } = useLocation();
-
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, [pathname]);
-
-  return null;
-};
+import { ScrollToTop } from "../components/utils/ScrollToTop";
 
 // GoBackButton component
 const GoBackButton = () => {

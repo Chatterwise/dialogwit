@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { motion } from "framer-motion";
 import {
   Zap,
@@ -14,18 +14,8 @@ import {
   Sparkles,
   Cpu,
 } from "lucide-react";
-import { useLocation, useNavigate } from "react-router-dom";
-
-// ScrollToTop component (for auto-scroll to top on navigation)
-const ScrollToTop = () => {
-  const { pathname } = useLocation();
-
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, [pathname]);
-
-  return null;
-};
+import { useNavigate } from "react-router-dom";
+import { ScrollToTop } from "../components/utils/ScrollToTop";
 
 // GoBackButton component
 const GoBackButton = () => {

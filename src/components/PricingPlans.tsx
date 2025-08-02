@@ -1,11 +1,10 @@
-import React, { useEffect } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import { useBilling } from "../hooks/useBilling";
 import { useStripe } from "../hooks/useStripe";
 import { stripeConfig } from "../stripe-config";
-import { useLocation } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import {
   Check,
   Zap,
@@ -14,15 +13,8 @@ import {
   Sparkles,
   ArrowLeft,
 } from "lucide-react";
-
-// ScrollToTop component (for auto-scroll to top on navigation)
-const ScrollToTop = () => {
-  const { pathname } = useLocation();
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, [pathname]);
-  return null;
-};
+import { useTheme } from "../hooks/useTheme";
+import { ScrollToTop } from "./utils/ScrollToTop";
 
 // GoBackButton component
 const GoBackButton = () => {
@@ -66,10 +58,10 @@ const FaqItem = ({
 };
 
 // State for FAQ
-import { useState } from "react";
-
 const PricingPlans: React.FC = () => {
   const { user } = useAuth();
+  const { theme } = useTheme();
+
   const { subscription, isLoading: billingLoading } = useBilling();
   const { createCheckoutSession, isLoading: stripeLoading } = useStripe();
   const navigate = useNavigate();
@@ -217,24 +209,6 @@ const PricingPlans: React.FC = () => {
                           {formatNumber(plan.limits.tokens_per_month)}
                         </span>
                       </div>
-                      <div className="flex justify-between">
-                        <span>Documents:</span>
-                        <span className="font-medium">
-                          {plan.limits.max_documents}
-                        </span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Chatbots:</span>
-                        <span className="font-medium">
-                          {plan.limits.max_chatbots}
-                        </span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>API calls/min:</span>
-                        <span className="font-medium">
-                          {plan.limits.api_requests_per_minute}
-                        </span>
-                      </div>
                     </div>
                   </div>
 
@@ -318,7 +292,7 @@ const PricingPlans: React.FC = () => {
       </div>
 
       {/* Global CTA */}
-      <div className="w-full bg-gradient-to-r from-primary-600 to-accent-500 dark:from-primary-700 dark:to-accent-600 py-8 sticky bottom-0 z-20">
+      {/* <div className="w-full bg-gradient-to-r from-primary-600 to-accent-500 dark:from-primary-700 dark:to-accent-600 py-8 sticky bottom-0 z-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-center">
           <button
             onClick={() =>
@@ -331,7 +305,7 @@ const PricingPlans: React.FC = () => {
             {!user ? "Sign Up / Login" : "Get Started Free"}
           </button>
         </div>
-      </div>
+      </div> */}
     </div>
   );
 };

@@ -17,14 +17,19 @@ import { useAuth } from "../hooks/useAuth";
 import { useChatbots } from "../hooks/useChatbots";
 import { useChatAnalytics } from "../hooks/useChatMessages";
 import { supabase } from "../lib/supabase";
-import TokenUsageWidget from "./TokenUsageWidget";
+// import TokenUsageWidget from "./TokenUsageWidget";
 import { motion } from "framer-motion";
 import { AnalyticsChart } from "./AnalyticsChart";
 import { useBilling } from "../hooks/useBilling";
 import { ProfessionalChat } from "./ChatTemplates/ProfessionalChat";
 
 // Animated card component
-const AnimatedCard = ({ children, delay = 0 }) => (
+interface AnimatedCardProps {
+  children: React.ReactNode;
+  delay?: number;
+}
+
+const AnimatedCard = ({ children, delay = 0 }: AnimatedCardProps) => (
   <motion.div
     initial={{ opacity: 0, y: 20 }}
     animate={{ opacity: 1, y: 0 }}
@@ -36,7 +41,23 @@ const AnimatedCard = ({ children, delay = 0 }) => (
 );
 
 // Stat card component
-const StatCard = ({ icon: Icon, title, value, color, note, delay = 0 }) => (
+interface StatCardProps {
+  icon: React.ComponentType<{ className?: string }>;
+  title: string;
+  value: string | number;
+  color: string;
+  note: string;
+  delay?: number;
+}
+
+const StatCard = ({
+  icon: Icon,
+  title,
+  value,
+  color,
+  note,
+  delay = 0,
+}: StatCardProps) => (
   <AnimatedCard delay={delay}>
     <div className="p-6">
       <div className="flex items-center">
@@ -58,13 +79,21 @@ const StatCard = ({ icon: Icon, title, value, color, note, delay = 0 }) => (
 );
 
 // Activity item component
+interface ActivityItemProps {
+  icon: React.ComponentType<{ className?: string }>;
+  title: string;
+  description: string;
+  timestamp: string;
+  delay?: number;
+}
+
 const ActivityItem = ({
   icon: Icon,
   title,
   description,
   timestamp,
   delay = 0,
-}) => (
+}: ActivityItemProps) => (
   <motion.div
     initial={{ opacity: 0, x: -10 }}
     animate={{ opacity: 1, x: 0 }}
@@ -87,7 +116,7 @@ const ActivityItem = ({
 );
 
 // Quick action card component
-const QuickActionCard = ({ icon: Icon, title, description, to, delay = 0 }) => (
+const QuickActionCard = ({ icon: Icon, title, description, to, delay = 0 }: { icon: React.ComponentType<{ className?: string }>; title: string; description: string; to: string; delay?: number; }) => (
   <motion.div
     initial={{ opacity: 0, y: 20 }}
     animate={{ opacity: 1, y: 0 }}
@@ -111,7 +140,7 @@ const QuickActionCard = ({ icon: Icon, title, description, to, delay = 0 }) => (
 );
 
 // Feature highlight component
-const FeatureHighlight = ({ icon: Icon, title, description, delay = 0 }) => (
+const FeatureHighlight = ({ icon: Icon, title, description, delay = 0 }: { icon: React.ComponentType<{ className?: string }>; title: string; description: string; delay?: number; }) => (
   <motion.div
     initial={{ opacity: 0, y: 20 }}
     animate={{ opacity: 1, y: 0 }}

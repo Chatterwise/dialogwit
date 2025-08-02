@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { motion } from "framer-motion";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import {
   Mail,
   Send,
@@ -9,6 +9,7 @@ import {
   Linkedin,
   Github,
 } from "lucide-react";
+import { ScrollToTop } from "../components/utils/ScrollToTop";
 
 const ContactPage: React.FC = () => {
   const [formSubmitted, setFormSubmitted] = useState(false);
@@ -19,17 +20,6 @@ const ContactPage: React.FC = () => {
     setTimeout(() => {
       setFormSubmitted(true);
     }, 1000);
-  };
-
-  // ScrollToTop component (for auto-scroll to top on navigation)
-  const ScrollToTop = () => {
-    const { pathname } = useLocation();
-
-    useEffect(() => {
-      window.scrollTo(0, 0);
-    }, [pathname]);
-
-    return null;
   };
 
   // GoBackButton component
