@@ -8,6 +8,7 @@ All notable changes to this project will be documented in this file. See [standa
 - Visual bug Integrations/ Select chatbot **[CHAT-8]**
 - Documentation tab broken links **[CHAT-3]**
 - Upgrade plan now takes users to the pricing page where they can upgrade properly  **[CHAT-18]**
+- On Sign-up behaviour **[CHAT-13]**
 
 ### 0.0.16 (2025-06-26)
 

@@ -12,10 +12,10 @@ import {
   Github,
 } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
-import { EmailConfirmationRequired } from "./EmailConfirmationRequired";
 import { Logo } from "./ui/Logo";
 import { useTheme } from "../hooks/useTheme";
 import { useLocation } from "react-router-dom";
+import { EmailGate } from "./EmailGate";
 
 const leftBgLight = "bg-gradient-to-br from-primary-500 to-accent-500";
 const leftBgDark = "bg-gradient-to-br from-gray-900 to-primary-900";
@@ -86,14 +86,20 @@ export function Auth() {
     }
   }, [user, emailConfirmed]);
 
-  // Show email confirmation screen if needed
-  if (showEmailConfirmation && user?.email) {
-    return <EmailConfirmationRequired email={user.email} />;
-  }
+  const needsConfirm = showEmailConfirmation || (user && !emailConfirmed);
 
-  // Don't render auth form if user is authenticated and email is confirmed
-  if (user && emailConfirmed) {
-    return null; // Let the main app handle routing
+  if (needsConfirm) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-white dark:bg-gray-900">
+        <EmailGate
+          email={user?.email || form.email} // fall-back to typed address
+          onResend={async () => {
+            /* call your resend-confirmation endpoint here */
+            await signUp(form.email, form.password, form.name);
+          }}
+        />
+      </div>
+    );
   }
 
   // Validation
