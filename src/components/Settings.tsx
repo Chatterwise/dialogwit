@@ -1,14 +1,5 @@
 import { useState } from "react";
-import {
-  User,
-  Bell,
-  Shield,
-  Trash2,
-  Save,
-  Eye,
-  EyeOff,
-  Mail,
-} from "lucide-react";
+import { User, Bell, Shield, Trash2, Save, Eye, EyeOff } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
 import { EmailSettings } from "./EmailSettings";
 import { ProfileSettings } from "./ProfileSettings";
@@ -42,7 +33,7 @@ export const Settings = () => {
   const tabs = [
     { id: "profile", name: "Profile", icon: User },
     { id: "notifications", name: "Notifications", icon: Bell },
-    { id: "email", name: "Email Settings", icon: Mail },
+    // { id: "email", name: "Email Settings", icon: Mail },
     { id: "security", name: "Security", icon: Shield },
     { id: "danger", name: "Danger Zone", icon: Trash2 },
   ];
