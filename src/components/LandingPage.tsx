@@ -460,9 +460,9 @@ const LandingPage: React.FC = () => {
                 transition={{ duration: 0.5, delay: 0.3 }}
                 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 dark:text-white leading-tight"
               >
-                Build AI Chatbots with{" "}
+                Transform your documents into customer-facing chatbots{" "}
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-600 to-accent-500 dark:from-primary-400 dark:to-accent-400">
-                  Your Knowledge
+                  in minutes{" "}
                 </span>
               </motion.h1>
               <motion.p
@@ -578,7 +578,7 @@ const LandingPage: React.FC = () => {
               },
               {
                 step: 2,
-                title: "Train Your Chatbot",
+                title: "We train your chatbot in seconds",
                 description:
                   "Our AI automatically processes your content and creates a smart, context-aware chatbot.",
                 icon: Cpu,
