@@ -9,7 +9,7 @@ All notable changes to this project will be documented in this file. See [standa
 - Documentation tab broken links **[CHAT-3]**
 - Upgrade plan now takes users to the pricing page where they can upgrade properly  **[CHAT-18]**
 - On Sign-up behaviour **[CHAT-13]**
-
+- Landing page communication improvements **[CHAT-19]**
 ### Added
 
 - Prod stripe **[CHAT-2]**
