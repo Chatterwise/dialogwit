@@ -1,20 +1,16 @@
-
 import { useState } from "react";
 import { supabase } from "../lib/supabase";
 
 export const useStripe = () => {
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
 
-  const createCheckoutSession = async (priceId, mode = "subscription") => {
+  const createCheckoutSession = async (priceId: string, mode = "subscription") => {
     setIsLoading(true);
     setError(null);
 
     try {
-      const {
-        data: { session }
-      } = await supabase.auth.getSession();
-
+      const { data: { session } } = await supabase.auth.getSession();
       if (!session) throw new Error("You must be logged in to create a checkout session");
 
       const response = await fetch(
@@ -36,31 +32,62 @@ export const useStripe = () => {
       );
 
       if (!response.ok) {
-        let errorMessage = "Failed to create checkout session";
-        try {
-          const errorData = await response.json();
-          errorMessage = errorData.error || errorMessage;
-        } catch (e) {
-          const text = await response.text();
-          errorMessage = text || errorMessage;
-        }
-        throw new Error(errorMessage);
+        const errorText = await response.text();
+        throw new Error(errorText || "Failed to create checkout session");
       }
 
       const { url } = await response.json();
-      if (url) {
-        window.location.href = url;
-      } else {
-        throw new Error("No checkout URL received");
-      }
+      if (!url) throw new Error("No checkout URL received");
+
+      window.location.href = url;
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "An unexpected error occurred";
-      setError(errorMessage);
+      const message = err instanceof Error ? err.message : "Unexpected error";
+      setError(message);
       console.error("Stripe checkout error:", err);
     } finally {
       setIsLoading(false);
     }
   };
 
-  return { createCheckoutSession, isLoading, error };
+  const cancelSubscription = async () => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error("You must be logged in");
+
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/stripe-cancel-subscription`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
+            "Content-Type": "application/json"
+          }
+        }
+      );
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(errorText || "Failed to cancel subscription");
+      }
+
+      const result = await response.json();
+      console.log("Subscription cancelled:", result);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Unexpected error";
+      setError(message);
+      console.error("Cancel subscription error:", err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return {
+    createCheckoutSession,
+    cancelSubscription,
+    isLoading,
+    error
+  };
 };
