@@ -200,7 +200,7 @@ const SubscriptionStatus: React.FC = () => {
                   className="px-4 py-2 bg-primary-600 dark:bg-primary-700 text-white rounded-lg font-medium hover:bg-primary-700 dark:hover:bg-primary-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
                 >
                   <Zap className="w-4 h-4 mr-2" />
-                  Upgrade Plan
+                  Manage Plan
                 </button>
               </div>
             </div>
