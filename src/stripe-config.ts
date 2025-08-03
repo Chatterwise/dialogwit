@@ -1,8 +1,8 @@
 export const stripeConfig = {
   products: [
     {
-      priceId: "price_1RbdmZPTUKauYAQ6PffMIExC",
-      productId: "prod_SWhAsYuw9GW7O0",
+      priceId: "price_1RqKi8A45RYvGvTv9y9KxiAC",//"price_1RbdmZPTUKauYAQ6PffMIExC",
+      productId: "prod_SlsTJiHTY3Zn8Q",//"prod_SWhAsYuw9GW7O0",
       name: "Chatterwise Free",
       description:
         "Get started with building AI-powered chatbots at no cost. Ideal for experimenting and testing.",
@@ -27,8 +27,8 @@ export const stripeConfig = {
       popular: false,
     },
     {
-      priceId: "price_1RbdoNPTUKauYAQ616vAg6AT",
-      productId: "prod_SWhCbpoJi4LtBz",
+      priceId: "price_1RqKiBA45RYvGvTvPdcDD6oW",//"price_1RbdoNPTUKauYAQ616vAg6AT",
+      productId: "prod_SlsTe42lvztQOX",//"prod_SWhCbpoJi4LtBz",
       name: "Chatterwise Starter",
       description:
         "Perfect for indie developers or small teams. Includes GPT-3.5 and increased document uploads.",
@@ -54,8 +54,8 @@ export const stripeConfig = {
       popular: true,
     },
     {
-      priceId: "price_1RbdpgPTUKauYAQ6eS9EySHg",
-      productId: "prod_SWhEWyc9pjQIZe",
+      priceId: "price_1RqKiDA45RYvGvTvOQjdblYC",//"price_1RbdpgPTUKauYAQ6eS9EySHg",
+      productId: "prod_SlsT0nbJVgu1ym",//prod_SWhEWyc9pjQIZe",
       name: "Chatterwise Growth",
       description:
         "For scaling teams and products. Includes access to GPT-4, high token limits, and robust document processing.",
@@ -82,8 +82,8 @@ export const stripeConfig = {
       popular: false,
     },
     {
-      priceId: "price_1RbdrmPTUKauYAQ6F7hdYqmU",
-      productId: "prod_SWhGsPyug4GuP1",
+      priceId: "price_1RqKiGA45RYvGvTv8RfZCW3V",//"price_1RbdrmPTUKauYAQ6F7hdYqmU",
+      productId: "prod_SlsTyKCMAL8Wbb",//"prod_SWhGsPyug4GuP1",
       name: "Chatterwise Business",
       description:
         "Enterprise-grade chatbot infrastructure. Includes multi-million token limits, GPT-4 access, extended support, and custom KB scaling.",

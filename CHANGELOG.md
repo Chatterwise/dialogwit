@@ -10,6 +10,10 @@ All notable changes to this project will be documented in this file. See [standa
 - Upgrade plan now takes users to the pricing page where they can upgrade properly  **[CHAT-18]**
 - On Sign-up behaviour **[CHAT-13]**
 
+### Added
+
+- Prod stripe **[CHAT-2]**
+
 ### 0.0.16 (2025-06-26)
 
 ### Added
