@@ -1,7 +1,7 @@
 {
-  "name": "ai-chatbot-builder",
+  "name": "chatterwise",
   "private": true,
-  "version": "0.0.17",
+  "version": "1.0.1",
   "type": "module",
   "scripts": {
     "dev": "vite",
