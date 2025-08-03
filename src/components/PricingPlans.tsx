@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { useTheme } from "../hooks/useTheme";
 import { ScrollToTop } from "./utils/ScrollToTop";
+import { ActionModal } from "./ActionModal";
 
 // GoBackButton component
 const GoBackButton = () => {
@@ -60,15 +61,28 @@ const FaqItem = ({
 // State for FAQ
 const PricingPlans: React.FC = () => {
   const { user } = useAuth();
-  const { theme } = useTheme();
+  useTheme();
 
   const { subscription, isLoading: billingLoading } = useBilling();
-  const { createCheckoutSession, isLoading: stripeLoading } = useStripe();
+  const {
+    createCheckoutSession,
+    cancelSubscription: cancelStripeSubscription,
+    isLoading: stripeLoading,
+  } = useStripe();
   const navigate = useNavigate();
+  const [showCancelModal, setShowCancelModal] = useState(false);
 
   const handleSubscribe = async (priceId: string) => {
     try {
       await createCheckoutSession(priceId);
+    } catch (error) {
+      console.error("Failed to create checkout session:", error);
+    }
+  };
+
+  const cancelSubscription = async () => {
+    try {
+      await cancelStripeSubscription();
     } catch (error) {
       console.error("Failed to create checkout session:", error);
     }
@@ -217,16 +231,20 @@ const PricingPlans: React.FC = () => {
                     onClick={() => {
                       if (!user) {
                         navigate("/auth");
-                      } else if (!isCurrentPlan && !isFreePlan) {
-                        handleSubscribe(plan.priceId);
+                      } else if (!isCurrentPlan) {
+                        if (isFreePlan) {
+                          setShowCancelModal(true); // show modal instead of cancelSubscription()
+                        } else {
+                          handleSubscribe(plan.priceId);
+                        }
                       }
                     }}
                     disabled={
                       billingLoading ||
                       stripeLoading ||
-                      (user &&
-                        (isCurrentPlan ||
-                          (isFreePlan && subscription?.plan_name)))
+                      isCurrentPlan ||
+                      (isFreePlan &&
+                        subscription?.plan_name?.toLowerCase() === "free")
                     }
                     className={`w-full py-3 px-4 rounded-xl font-medium transition-all duration-200 ${
                       plan.popular
@@ -254,6 +272,24 @@ const PricingPlans: React.FC = () => {
                     )}
                   </button>
                 </div>
+                <ActionModal
+                  isOpen={showCancelModal}
+                  onClose={() => setShowCancelModal(false)}
+                  action={{
+                    title: "Downgrade to Free Plan",
+                    description:
+                      "This will cancel your current subscription immediately and move you to the Free plan. You will lose access to premium features.",
+                    onConfirm: async () => {
+                      await cancelSubscription(); // This calls your hook
+                      window.location.reload(); // Optional: force UI update
+                    },
+                    actionLabel: "Downgrade",
+                    actionColor: "red",
+                    requireType: true,
+                    confirmationWord: "FREE",
+                    note: "You can resubscribe to any plan at any time.",
+                  }}
+                />
               </motion.div>
             );
           })}
@@ -290,22 +326,6 @@ const PricingPlans: React.FC = () => {
           </div>
         </motion.div>
       </div>
-
-      {/* Global CTA */}
-      {/* <div className="w-full bg-gradient-to-r from-primary-600 to-accent-500 dark:from-primary-700 dark:to-accent-600 py-8 sticky bottom-0 z-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-center">
-          <button
-            onClick={() =>
-              !user
-                ? navigate("/auth")
-                : handleSubscribe(stripeConfig.products[0].priceId)
-            }
-            className="bg-white text-primary-600 px-8 py-4 rounded-xl text-lg font-semibold shadow-lg hover:bg-white/90 transition-all"
-          >
-            {!user ? "Sign Up / Login" : "Get Started Free"}
-          </button>
-        </div>
-      </div> */}
     </div>
   );
 };
