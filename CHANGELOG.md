@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file. See [standa
 
 ## [Unreleased]
 
+### 1.0.2 (2025-08-05)
+
 - Removed security tab from settings **[CHAT-21]**
 - Enable the chatterwise bot on the landing page and dashboard; demo bot on the landing also trainned and is working **[CHAT-9]**
 
