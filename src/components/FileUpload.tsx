@@ -288,10 +288,10 @@ export const FileUpload: React.FC<FileUploadProps> = ({
               isDragOver ? "text-primary-600 animate-pulse" : "text-gray-400"
             }`}
           />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">
+          <h3 className="text-lg font-medium text-gray-900 dark:text-gray-400 mb-2">
             {isDragOver ? "Drop files here" : "Upload Bot Knowledge Files"}
           </h3>
-          <p className="text-sm text-gray-600 mb-6">
+          <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
             Drag and drop files or folders here, or click to browse
           </p>
         </div>
@@ -310,7 +310,7 @@ export const FileUpload: React.FC<FileUploadProps> = ({
           <Upload className="h-4 w-4 mr-2" />
           Choose Files
         </label>
-        <div className="mt-4 text-xs text-gray-500">
+        <div className="mt-4 text-xs text-gray-600 dark:text-gray-400">
           <p>Supported formats: PDF, Word, Excel, PowerPoint, Images, Text</p>
           <p>
             Maximum file size: {maxSizePerFile}MB • Maximum files: {maxFiles}
@@ -329,7 +329,7 @@ export const FileUpload: React.FC<FileUploadProps> = ({
       {/* File List */}
       {files.length > 0 && (
         <div className="space-y-3">
-          <h4 className="text-sm font-medium text-gray-900">
+          <h4 className="text-sm font-medium text-gray-900 dark:text-gray-400">
             Uploaded Files ({files.length})
           </h4>
           <div className="space-y-2">
