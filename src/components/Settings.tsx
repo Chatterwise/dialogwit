@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { User, Bell, Shield, Trash2, Save, Eye, EyeOff } from "lucide-react";
+import { User, Bell, Trash2, Save } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
 import { EmailSettings } from "./EmailSettings";
 import { ProfileSettings } from "./ProfileSettings";
@@ -16,7 +16,7 @@ export const Settings = () => {
   const [activeTab, setActiveTab] = useState<
     "profile" | "notifications" | "security" | "danger" | "email"
   >("profile");
-  const [showApiKey, setShowApiKey] = useState(false);
+  // const [showApiKey, setShowApiKey] = useState(false);
   const [settings, setSettings] = useState({
     emailNotifications: true,
     dailyDigest: false,
@@ -34,7 +34,7 @@ export const Settings = () => {
     { id: "profile", name: "Profile", icon: User },
     { id: "notifications", name: "Notifications", icon: Bell },
     // { id: "email", name: "Email Settings", icon: Mail },
-    { id: "security", name: "Security", icon: Shield },
+    // { id: "security", name: "Security", icon: Shield },
     { id: "danger", name: "Danger Zone", icon: Trash2 },
   ];
 
@@ -92,7 +92,7 @@ export const Settings = () => {
                       tab.id as
                         | "profile"
                         | "notifications"
-                        | "security"
+                        // | "security"
                         | "danger"
                         | "email"
                     )
@@ -219,8 +219,8 @@ export const Settings = () => {
                 <EmailSettings />
               </div>
             )}
-
-            {activeTab === "security" && (
+            
+            {/* {activeTab === "security" && (
               <div className="p-8">
                 <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-8">
                   Security Settings
@@ -309,7 +309,7 @@ export const Settings = () => {
                   </div>
                 </div>
               </div>
-            )}
+            )} */}
 
             {activeTab === "danger" && (
               <div className="p-8">

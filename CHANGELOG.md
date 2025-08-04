@@ -4,9 +4,12 @@ All notable changes to this project will be documented in this file. See [standa
 
 ## [Unreleased]
 
+* Removed security tab from settings **[CHAT-21]**
+
 ### 1.0.1 (2025-08-03)
 
 ### Fixed
+
 - Visual bug Integrations/ Select chatbot **[CHAT-8]**
 - Documentation tab broken links **[CHAT-3]**
 - Upgrade plan now takes users to the pricing page where they can upgrade properly  **[CHAT-18]**
