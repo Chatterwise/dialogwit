@@ -43,6 +43,7 @@ import BotKnowledgeContent from "./BotKnowledgeContent";
 import { useProcessLargeDocument } from "../hooks/useProcessLargeDocument";
 import { tabs } from "./utils/ChatbotDetailUtils";
 import { KnowledgeItem } from "./utils/types";
+import { useLocation } from "react-router-dom";
 
 export const ChatbotDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -54,7 +55,7 @@ export const ChatbotDetail = () => {
     id || ""
   );
   const deleteChatbot = useDeleteChatbot();
-
+  const location = useLocation();
   const [activeTab, setActiveTab] = useState<
     "overview" | "chat" | "knowledge" | "analytics"
   >("overview");
@@ -72,6 +73,7 @@ export const ChatbotDetail = () => {
   const [viewingItem, setViewingItem] = useState<KnowledgeItem | null>(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const publicChatUrl = `${window.location.origin}/chat/${id}`;
+
   const {
     data: knowledgeBase = [],
     isLoading: isKnowledgeLoading,
@@ -186,6 +188,24 @@ export const ChatbotDetail = () => {
       supabase.removeChannel(channel);
     };
   }, [id, refetchKnowledgeBase]);
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const tabParam = params.get("tab");
+    if (
+      tabParam &&
+      ["overview", "chat", "knowledge", "analytics"].includes(tabParam)
+    ) {
+      setActiveTab(tabParam as typeof activeTab);
+    }
+  }, [location.search]);
+
+  const handleTabChange = (tabId: typeof activeTab) => {
+    setActiveTab(tabId);
+    const params = new URLSearchParams(location.search);
+    params.set("tab", tabId);
+    navigate({ search: params.toString() }, { replace: true });
+  };
 
   const handleSaveKnowledge = async (data: {
     content: string;
@@ -498,7 +518,7 @@ export const ChatbotDetail = () => {
               <button
                 key={tab.id}
                 onClick={() =>
-                  setActiveTab(
+                  handleTabChange(
                     tab.id as "overview" | "chat" | "knowledge" | "analytics"
                   )
                 }

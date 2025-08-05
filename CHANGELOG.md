@@ -4,6 +4,9 @@ All notable changes to this project will be documented in this file. See [standa
 
 ## [Unreleased]
 
+### Changed
+
+- bot creation and trainning flow **[NO-TICKET]**
 ### 1.0.2 (2025-08-05)
 
 - Removed security tab from settings **[CHAT-21]**

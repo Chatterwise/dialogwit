@@ -91,28 +91,6 @@ export const ChatbotList = () => {
         </Link>
       </div>
 
-      {/* Plan Limit Warning */}
-      {!canCreateChatbot && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-xl p-4"
-        >
-          <div className="flex items-start">
-            <Bot className="h-5 w-5 text-yellow-600 dark:text-yellow-400 mt-1 mr-3" />
-            <div>
-              <h3 className="text-sm font-medium text-yellow-800 dark:text-yellow-200">
-                Chatbot Limit Reached
-              </h3>
-              <p className="text-sm text-yellow-700 dark:text-yellow-300 mt-1">
-                You've reached the maximum number of chatbots allowed on your
-                current plan.
-              </p>
-            </div>
-          </div>
-        </motion.div>
-      )}
-
       {/* Chatbots Grid */}
       {!userId || isLoading || isFetching ? (
         <div className="text-center py-16">
@@ -237,11 +215,20 @@ export const ChatbotList = () => {
                   ) : (
                     <button
                       onClick={() =>
-                        handleDeleteClick(chatbot.id, chatbot.name)
+                        chatbot.id === "b2c75f33-f68b-48d1-89f9-c96945c1b107"
+                          ? alert("This chatbot cannot be deleted.")
+                          : handleDeleteClick(chatbot.id, chatbot.name)
                       }
-                      disabled={deletingId === chatbot.id}
+                      disabled={
+                        deletingId === chatbot.id ||
+                        chatbot.id === "b2c75f33-f68b-48d1-89f9-c96945c1b107"
+                      }
                       className="flex items-center justify-center px-3 py-2 border border-red-300 dark:border-red-900 text-red-600 dark:text-red-400 rounded-xl hover:bg-red-50 dark:hover:bg-red-900/20 transition disabled:opacity-50"
-                      title={`Delete ${chatbot.name}`}
+                      title={
+                        chatbot.id === "b2c75f33-f68b-48d1-89f9-c96945c1b107"
+                          ? "This chatbot cannot be deleted"
+                          : `Delete ${chatbot.name}`
+                      }
                     >
                       {deletingId === chatbot.id ? (
                         <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-red-600"></div>

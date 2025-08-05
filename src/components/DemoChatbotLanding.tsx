@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { Bot, ArrowRight } from "lucide-react";
 
-const BOT_ID = "7c854511-c928-4982-9103-70f75dde3bd1";
+const BOT_ID = "b2c75f33-f68b-48d1-89f9-c96945c1b107";
 const API_URL = "https://bpzfivbuhgjpkngcjpzc.supabase.co/functions/v1";
 const API_KEY =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJwemZpdmJ1aGdqcGtuZ2NqcHpjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAwOTI3MzIsImV4cCI6MjA2NTY2ODczMn0.fBkQQJiLLfSwW3yH3rJ1HOLj-fs27tEfBJtOBpWtdx4";
