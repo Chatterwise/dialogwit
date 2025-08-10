@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file. See [standa
 
 ## [Unreleased]
 
+### 1.0.5 (2025-08-10)
+
+* Reposition add knowledge button in KnowledgeBase.tsx.
+
 ### 1.0.3 (2025-08-05)
 
 ### Changed
