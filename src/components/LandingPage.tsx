@@ -979,7 +979,7 @@ const LandingPage: React.FC = () => {
                   isOpen={isChatOpen}
                   onToggle={setIsChatOpen}
                   theme={theme}
-                />{" "}
+                />
               </motion.div>
             )}
           </AnimatePresence>
