@@ -1,0 +1,15 @@
+{
+  "release-type": "node",
+  "include-component-in-tag": false,
+  "bump-minor-pre-major": false,
+  "bump-patch-for-minor-pre-major": true,
+  "changelog-types": [
+    { "type": "feat", "section": "Features" },
+    { "type": "fix", "section": "Bug Fixes" },
+    { "type": "perf", "section": "Performance" },
+    { "type": "refactor", "section": "Refactors", "hidden": false },
+    { "type": "docs", "section": "Docs", "hidden": false },
+    { "type": "chore", "section": "Chores", "hidden": false },
+    { "type": "ci", "section": "CI", "hidden": false }
+  ]
+}
