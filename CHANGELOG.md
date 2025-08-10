@@ -4,9 +4,9 @@ All notable changes to this project will be documented in this file. See [standa
 
 ## [Unreleased]
 
-### 1.0.5 (2025-08-10)
-
-* Reposition add knowledge button in KnowledgeBase.tsx.
+- Reposition add knowledge button in KnowledgeBase.tsx. **[CHAT-7]**
+- Added ScrollToTop to the ../docs/getting-started/introduction, ../docs/getting-started/first-chatbot, ../docs/getting-started/knowledge-base, /training-chatbot, All /docs/integrations pages, all /docs/advanced-features pages **[CHAT-25]**
+- Removed non drafted entries from tutorials page. **[CHAT-25]**
 
 ### 1.0.3 (2025-08-05)
 
@@ -25,7 +25,7 @@ All notable changes to this project will be documented in this file. See [standa
 
 - Visual bug Integrations/ Select chatbot **[CHAT-8]**
 - Documentation tab broken links **[CHAT-3]**
-- Upgrade plan now takes users to the pricing page where they can upgrade properly  **[CHAT-18]**
+- Upgrade plan now takes users to the pricing page where they can upgrade properly **[CHAT-18]**
 - On Sign-up behaviour **[CHAT-13]**
 - Landing page communication improvements **[CHAT-19]**
 - Renaming subscription btn and adding modal for cancelation **[CHAT-22]**

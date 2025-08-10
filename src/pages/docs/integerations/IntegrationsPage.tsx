@@ -4,6 +4,7 @@ import { Globe, MessageSquare, Code, Puzzle, Webhook } from "lucide-react";
 import { SEO } from "../../../components/SEO";
 import { DocBreadcrumbs } from "../../../components/DocBreadcrumbs";
 import { Link } from "react-router-dom";
+import { ScrollToTop } from "../../../components/utils/ScrollToTop";
 
 const IntegrationsPage: React.FC = () => {
   // Schema data for breadcrumbs
@@ -64,6 +65,8 @@ const IntegrationsPage: React.FC = () => {
 
   return (
     <>
+      {/* Ensure that the page scrolls to the top when the page is loaded */}
+      <ScrollToTop />
       <SEO
         title="Integrations | ChatterWise Documentation"
         description="Learn how to integrate your ChatterWise chatbot with various platforms including websites, Slack, Discord, and WordPress."

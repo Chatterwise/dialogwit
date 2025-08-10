@@ -4,6 +4,7 @@ import { Key, AlertTriangle, CheckCircle } from "lucide-react";
 import { SEO } from "../../../components/SEO";
 import { DocBreadcrumbs } from "../../../components/DocBreadcrumbs";
 import { Link } from "react-router-dom";
+import { ScrollToTop } from "../../../components/utils/ScrollToTop";
 
 const SecurityBestPracticesPage: React.FC = () => {
   // Schema data for breadcrumbs
@@ -32,6 +33,8 @@ const SecurityBestPracticesPage: React.FC = () => {
 
   return (
     <>
+      {/* Ensure that the page scrolls to the top when the page is loaded */}
+      <ScrollToTop />
       <SEO
         title="Security Best Practices | ChatterWise Documentation"
         description="Learn how to secure your ChatterWise chatbot implementation with our comprehensive security best practices guide. Protect your data and users with these essential security measures."

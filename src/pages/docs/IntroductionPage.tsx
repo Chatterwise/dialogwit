@@ -4,6 +4,7 @@ import { Bot, Zap, Database, MessageSquare } from "lucide-react";
 import { Link } from "react-router-dom";
 import { DocBreadcrumbs } from "../../components/DocBreadcrumbs";
 import { SEO } from "../../components/SEO";
+import { ScrollToTop } from "../../components/utils/ScrollToTop";
 
 const IntroductionPage: React.FC = () => {
   // Schema data for breadcrumbs
@@ -32,6 +33,8 @@ const IntroductionPage: React.FC = () => {
 
   return (
     <>
+      {/* Ensure that the page scrolls to the top when the page is loaded */}
+      <ScrollToTop />
       <SEO
         title="Introduction to ChatterWise | Documentation"
         description="Learn about ChatterWise, the AI-powered chatbot platform that helps you build intelligent, context-aware chatbots in minutes."

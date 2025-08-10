@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { DocBreadcrumbs } from "../../components/DocBreadcrumbs";
 import { SEO } from "../../components/SEO";
+import { ScrollToTop } from "../../components/utils/ScrollToTop";
 
 const FirstChatbotPage: React.FC = () => {
   // Schema data for breadcrumbs
@@ -31,6 +32,8 @@ const FirstChatbotPage: React.FC = () => {
 
   return (
     <>
+      {/* Ensure that the page scrolls to the top when the page is loaded */}
+      <ScrollToTop />
       <SEO
         title="Creating Your First Chatbot | ChatterWise Documentation"
         description="Learn how to create your first AI-powered chatbot with ChatterWise. Follow this step-by-step guide to build, train, and deploy your chatbot in minutes."

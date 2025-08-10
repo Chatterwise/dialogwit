@@ -5,6 +5,7 @@ import { SEO } from "../../../components/SEO";
 import { DocBreadcrumbs } from "../../../components/DocBreadcrumbs";
 import { Link } from "react-router-dom";
 import { useState } from "react";
+import { ScrollToTop } from "../../../components/utils/ScrollToTop";
 
 const WordPressIntegrationPage: React.FC = () => {
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
@@ -65,6 +66,8 @@ add_action('wp_footer', 'add_chatterwise_chatbot');
 
   return (
     <>
+      {/* Ensure that the page scrolls to the top when the page is loaded */}
+      <ScrollToTop />
       <SEO
         title="WordPress Integration | ChatterWise Documentation"
         description="Learn how to integrate your ChatterWise chatbot with WordPress. Step-by-step guide to add an AI chatbot to your WordPress site using our plugin or custom code."

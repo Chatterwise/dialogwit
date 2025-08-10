@@ -371,7 +371,7 @@ export const KnowledgeBase = () => {
                 </button>
               </div>
               <div className="flex-1 overflow-y-auto p-8">
-                <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center justify-between mb-4 gap-2">
                   <div className="flex items-center space-x-2">
                     <span
                       className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${

@@ -5,6 +5,7 @@ import { Link } from "react-router-dom";
 import { useState } from "react";
 import { DocBreadcrumbs } from "../../../components/DocBreadcrumbs";
 import { SEO } from "../../../components/SEO";
+import { ScrollToTop } from "../../../components/utils/ScrollToTop";
 
 const SlackIntegrationPage: React.FC = () => {
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
@@ -49,6 +50,8 @@ const SlackIntegrationPage: React.FC = () => {
 
   return (
     <>
+      {/* Ensure that the page scrolls to the top when the page is loaded */}
+      <ScrollToTop />
       <SEO
         title="Slack Integration | ChatterWise Documentation"
         description="Learn how to integrate your ChatterWise chatbot with Slack. Step-by-step guide to deploy your AI chatbot as a Slack app for team communication."
