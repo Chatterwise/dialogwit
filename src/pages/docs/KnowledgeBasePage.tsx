@@ -4,6 +4,7 @@ import { AlertTriangle, CheckCircle } from "lucide-react";
 import { Link } from "react-router-dom";
 import { DocBreadcrumbs } from "../../components/DocBreadcrumbs";
 import { SEO } from "../../components/SEO";
+import { ScrollToTop } from "../../components/utils/ScrollToTop";
 
 const KnowledgeBasePage: React.FC = () => {
   // Schema data for breadcrumbs
@@ -32,6 +33,8 @@ const KnowledgeBasePage: React.FC = () => {
 
   return (
     <>
+      {/* Ensure that the page scrolls to the top when the page is loaded */}
+      <ScrollToTop />
       <SEO
         title="Understanding Bot Knowledge | ChatterWise Documentation"
         description="Learn how to effectively manage your chatbot's knowledge base to improve response accuracy and relevance."

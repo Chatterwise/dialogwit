@@ -5,6 +5,7 @@ import { SEO } from "../../../components/SEO";
 import { DocBreadcrumbs } from "../../../components/DocBreadcrumbs";
 import { Link } from "react-router-dom";
 import { useState } from "react";
+import { ScrollToTop } from "../../../components/utils/ScrollToTop";
 
 const WebhooksPage: React.FC = () => {
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
@@ -98,6 +99,8 @@ app.post('/webhook', (req, res) => {
 
   return (
     <>
+      {/* Ensure that the page scrolls to the top when the page is loaded */}
+      <ScrollToTop />
       <SEO
         title="Webhooks | ChatterWise Documentation"
         description="Learn how to use webhooks to integrate ChatterWise with your existing systems. Receive real-time notifications for chatbot events and automate workflows."

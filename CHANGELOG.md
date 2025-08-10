@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file. See [standa
 
 ## [Unreleased]
 
+### 1.0.4 (2025-08-10)
+
+* Added ScrollToTop to the  ../docs/getting-started/introduction, ../docs/getting-started/first-chatbot, ../docs/getting-started/knowledge-base, /training-chatbot, All /docs/integrations pages, all /docs/advanced-features pages
+* Removed non drafted entries from tutorials page.
+
 ### 1.0.3 (2025-08-05)
 
 ### Changed
