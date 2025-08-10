@@ -8,6 +8,11 @@ All notable changes to this project will be documented in this file. See [standa
 - Added ScrollToTop to the ../docs/getting-started/introduction, ../docs/getting-started/first-chatbot, ../docs/getting-started/knowledge-base, /training-chatbot, All /docs/integrations pages, all /docs/advanced-features pages **[CHAT-25]**
 - Removed non drafted entries from tutorials page. **[CHAT-25]**
 
+### Fixed
+
+- Chatbot status is not updating properly **[CHAT-26]**
+
+
 ### 1.0.3 (2025-08-05)
 
 ### Changed
