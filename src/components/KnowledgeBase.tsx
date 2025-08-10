@@ -240,28 +240,13 @@ export const KnowledgeBase = () => {
   return (
     <div className="space-y-8 min-h-screen p-4">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-extrabold text-gray-900 dark:text-white font-display tracking-tight mb-1">
-            Bot Knowledge
-          </h1>
-          <p className="text-gray-500 dark:text-gray-400">
-            Manage the content that powers your chatbots.
-          </p>
-        </div>
-        <div className="flex space-x-3">
-          <button
-            onClick={() => {
-              setEditingItem(null);
-              setShowKnowledgeEditor(true);
-            }}
-            disabled={!selectedChatbot || processing}
-            className="inline-flex items-center px-5 py-2.5 border border-transparent text-sm font-semibold rounded-xl shadow-card text-white bg-primary-500 hover:bg-primary-600 dark:bg-primary-600 dark:hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            Add Knowledge
-          </button>
-        </div>
+      <div>
+        <h1 className="text-3xl font-extrabold text-gray-900 dark:text-white font-display tracking-tight mb-1">
+          Bot Knowledge
+        </h1>
+        <p className="text-gray-500 dark:text-gray-400">
+          Manage the content that powers your chatbots.
+        </p>
       </div>
 
       {/* Progress Bar */}
@@ -297,6 +282,21 @@ export const KnowledgeBase = () => {
         selectedChatbot={selectedChatbot}
         setSelectedChatbot={setSelectedChatbot}
       />
+
+      {/* Add Knowledge Button */}
+      <div className="flex justify-end">
+        <button
+          onClick={() => {
+            setEditingItem(null);
+            setShowKnowledgeEditor(true);
+          }}
+          disabled={!selectedChatbot || processing}
+          className="inline-flex items-center px-5 py-2.5 border border-transparent text-sm font-semibold rounded-xl shadow-card text-white bg-primary-500 hover:bg-primary-600 dark:bg-primary-600 dark:hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+        >
+          <Plus className="h-4 w-4 mr-2" />
+          Add Knowledge
+        </button>
+      </div>
 
       {/* Bot Knowledge Content */}
       <BotKnowledgeContent
