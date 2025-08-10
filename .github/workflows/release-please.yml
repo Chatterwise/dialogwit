@@ -1,0 +1,30 @@
+name: Release Please
+
+on:
+  push:
+    branches: [main] # when you merge develop -> main, this fires
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  release-please:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: google-github-actions/release-please-action@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          release-type: node # updates package.json + CHANGELOG.md
+          package-name: app # any label for the release title
+          bump-minor-pre-major: false
+          bump-patch-for-minor-pre-major: true
+          changelog-types: |
+            [
+              {"type":"feat","section":"Features"},
+              {"type":"fix","section":"Bug Fixes"},
+              {"type":"perf","section":"Performance"},
+              {"type":"refactor","section":"Refactors","hidden":false},
+              {"type":"docs","section":"Docs","hidden":false},
+              {"type":"chore","section":"Chores","hidden":false}
+            ]
