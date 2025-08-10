@@ -13,6 +13,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import { useTheme } from "../../hooks/useTheme";
 import { motion } from "framer-motion";
+import { useUserProfile } from "../../hooks/useUserProfile";
 
 export const Header = () => {
   const { user, signOut } = useAuth();
@@ -21,6 +22,15 @@ export const Header = () => {
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showCreateMenu, setShowCreateMenu] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
+  const { data: profile } = useUserProfile(user?.id || "");
+
+  const APP_VERSION: string = __APP_VERSION__;
+
+  const avatarUrl =
+    profile?.avatar_url ??
+    (user?.user_metadata?.avatar_url as string | undefined) ??
+    (user?.user_metadata?.picture as string | undefined) ??
+    null;
 
   const handleSignOut = async () => {
     try {
@@ -123,11 +133,24 @@ export const Header = () => {
               onClick={() => setShowUserMenu(!showUserMenu)}
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
-              className="w-10 h-10 flex-shrink-0 rounded-full bg-gradient-to-br from-primary-500 to-primary-600 shadow-inner flex items-center justify-center hover:from-primary-600 hover:to-primary-700 transition-all"
+              className="w-10 h-10 flex-shrink-0 rounded-full overflow-hidden border border-gray-200 dark:border-gray-700 shadow-inner bg-white dark:bg-gray-800"
+              aria-label="User menu"
             >
-              <span className="text-base font-bold text-white">
-                {user?.email?.charAt(0).toUpperCase() || "U"}
-              </span>
+              {avatarUrl ? (
+                <img
+                  src={avatarUrl}
+                  alt={user?.email ?? "User avatar"}
+                  className="w-full h-full object-cover"
+                  loading="lazy"
+                  referrerPolicy="no-referrer"
+                />
+              ) : (
+                <div className="w-full h-full bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center">
+                  <span className="text-base font-bold text-white">
+                    {user?.email?.charAt(0).toUpperCase() || "U"}
+                  </span>
+                </div>
+              )}
             </motion.button>
 
             {/* User dropdown menu */}
@@ -135,7 +158,6 @@ export const Header = () => {
               <div
                 className="absolute right-0 mt-2 w-60 rounded-2xl shadow-2xl bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-700 z-30 py-2 transition-all"
                 tabIndex={-1}
-                aria-label="User menu"
               >
                 {/* Email */}
                 <div className="px-5 py-3 border-b border-gray-100 dark:border-gray-800">
@@ -172,7 +194,7 @@ export const Header = () => {
                 {/* Version */}
                 <div className="px-5 py-2 border-t border-gray-100 dark:border-gray-800">
                   <span className="text-xs text-gray-400 dark:text-gray-500">
-                    Version:{__APP_VERSION__}
+                    Version:{APP_VERSION}
                   </span>
                 </div>
               </div>

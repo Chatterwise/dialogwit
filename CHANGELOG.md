@@ -13,6 +13,9 @@ All notable changes to this project will be documented in this file. See [standa
 - Chatbot status is not updating properly **[CHAT-26]**
 - Added a markdown parcer of the main chatbot of the app **[CHAT-24]**
 
+### Added
+- Profile picture on the header **[CHAT-27]**
+
 ### 1.0.3 (2025-08-05)
 
 ### Changed

@@ -2,13 +2,15 @@ import React, { useState, useEffect } from "react";
 import { Save, Loader, Upload, CheckCircle, AlertTriangle } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
 import { useUserProfile, useUpdateUserProfile } from "../hooks/useUserProfile";
-import { supabase } from "../lib/supabase"; // Make sure this is imported
+import { saveAvatar } from "../lib/saveAvatar";
 
 export const ProfileSettings = () => {
   const { user } = useAuth();
-  const { data: profile, isLoading: profileLoading } = useUserProfile(
-    user?.id || ""
-  );
+  const {
+    data: profile,
+    isLoading: profileLoading,
+    refetch: refetchProfile,
+  } = useUserProfile(user?.id || "");
   const updateProfile = useUpdateUserProfile();
 
   const [formData, setFormData] = useState({
@@ -75,9 +77,7 @@ export const ProfileSettings = () => {
       let avatarUrl = formData.avatar_url;
 
       if (avatarFile) {
-        const { data, error } = await uploadAvatar(avatarFile, user.id);
-        if (error) throw new Error(error.message);
-        if (data) avatarUrl = data.publicUrl;
+        avatarUrl = await saveAvatar(avatarFile);
       }
 
       // Then update profile
@@ -88,6 +88,10 @@ export const ProfileSettings = () => {
           avatar_url: avatarUrl,
         },
       });
+
+      setFormData((prev) => ({ ...prev, avatar_url: avatarUrl }));
+      setAvatarPreview(null);
+      await refetchProfile?.(); // ✅ ensures Header & this screen re-render with fresh url
 
       setSaveSuccess(true);
 
@@ -100,33 +104,6 @@ export const ProfileSettings = () => {
       setError("Failed to update profile. Please try again.");
     }
   };
-
-const uploadAvatar = async (file: File, userId: string) => {
-  const ext = file.type.split("/")[1] || "png";
-  const fileName = `avatar-${userId}-${Date.now()}.${ext}`;
-  const filePath = `avatars/${fileName}`;
-
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
-  if (!session) return { data: null, error: new Error("Not authenticated") };
-
-  const { error } = await supabase.storage
-    .from("user-content-avatar")
-    .upload(filePath, file, {
-      cacheControl: "3600",
-      contentType: file.type || "image/png",
-    });
-
-  if (error) return { data: null, error };
-
-  const { data: publicUrlData } = supabase.storage
-    .from("user-content-avatar")
-    .getPublicUrl(filePath);
-
-  return { data: publicUrlData, error: null };
-};
-
 
   if (profileLoading) {
     return (
