@@ -4,9 +4,19 @@ All notable changes to this project will be documented in this file. See [standa
 
 ## [Unreleased]
 
+### Fixed
+
 - Reposition add knowledge button in KnowledgeBase.tsx. **[CHAT-7]**
 - Added ScrollToTop to the ../docs/getting-started/introduction, ../docs/getting-started/first-chatbot, ../docs/getting-started/knowledge-base, /training-chatbot, All /docs/integrations pages, all /docs/advanced-features pages **[CHAT-25]**
 - Removed non drafted entries from tutorials page. **[CHAT-25]**
+- Profile Picture upload issue  **[CHAT-20]**
+- Chatbot status is not updating properly **[CHAT-26]**
+- Added a markdown parcer of the main chatbot of the app **[CHAT-24]**
+- Settings on header not auto closing when focus is lost **[CHAT-28]**
+
+### Added
+
+- Profile picture on the header **[CHAT-27]**
 
 ### 1.0.3 (2025-08-05)
 

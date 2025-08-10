@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "../lib/supabase";
 import { Database } from "../lib/databaseTypes";
 import { useToast } from "../lib/toastStore";
+import { useEffect } from "react";
 
 type Chatbot = Database["public"]["Tables"]["chatbots"]["Row"];
 type ChatbotInsert = Database["public"]["Tables"]["chatbots"]["Insert"];
@@ -16,23 +17,49 @@ type RoleTemplate = {
 };
 
 export const useChatbots = (userId?: string) => {
-  return useQuery({
+  const queryClient = useQueryClient();
+
+  const q = useQuery({
     queryKey: ["chatbots", userId],
-    enabled: typeof userId === "string" && userId.length > 0,
+    enabled: !!userId,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("chatbots")
         .select("*, bot_role_templates(name, icon_name)")
         .eq("user_id", userId)
-        //.neq("status", "deleted") // ← filter out deleted
         .order("created_at", { ascending: false });
 
       if (error) throw error;
       return data as Chatbot[];
     },
   });
-};
 
+  useEffect(() => {
+    if (!userId) return;
+
+    const channel = supabase
+      .channel(`chatbots-${userId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",                
+          schema: "public",
+          table: "chatbots",
+          filter: `user_id=eq.${userId}`,
+        },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ["chatbots", userId] });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [userId, queryClient]);
+
+  return q;
+};
 export const useCreateChatbot = () => {
   const queryClient = useQueryClient();
   const toast = useToast();
@@ -125,23 +152,43 @@ export const useDeleteChatbot = () => {
 
 
 export const useChatbot = (id: string) => {
-  return useQuery({
+  const queryClient = useQueryClient();
+
+  const q = useQuery({
     queryKey: ["chatbot", id],
+    enabled: !!id,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("chatbots")
         .select("*")
         .eq("id", id)
-        //.neq("status", "deleted") // ← filter out deleted
         .single();
-
       if (error) throw error;
       return data as Chatbot;
     },
-    enabled: !!id,
   });
-};
 
+  useEffect(() => {
+    if (!id) return;
+
+    const channel = supabase
+      .channel(`chatbot-${id}`)
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "chatbots", filter: `id=eq.${id}` },
+        (payload) => {
+          queryClient.setQueryData<Chatbot>(["chatbot", id], payload.new as Chatbot);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [id, queryClient]);
+
+  return q;
+};
 export const useRestoreChatbot = () => {
   const queryClient = useQueryClient();
   const toast = useToast();
@@ -150,7 +197,7 @@ export const useRestoreChatbot = () => {
     mutationFn: async (id: string) => {
       const { error } = await supabase
         .from("chatbots")
-        .update({ status: "ready" }) // or previous status if you track it
+        .update({ status: "ready" })
         .eq("id", id);
 
       if (error) throw error;

@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { LogoMini } from "../../ui/Logo";
 import { useTypewriter } from "./useTypewriter";
+import { MarkdownMessage } from "../../MarkdownMessage";
 
 interface Message {
   id: string;
@@ -210,6 +211,9 @@ export const EnterpriseChatTemplate = ({
     !!botStreamMsg
   );
 
+  const isTyping =
+    !!botStreamMsg && botStreamText !== (botStreamMsg?.text ?? "");
+
   if (!isOpen) return null;
 
   return (
@@ -297,9 +301,6 @@ export const EnterpriseChatTemplate = ({
           <>
             <div className="flex-1 overflow-y-auto px-5 py-5 bg-transparent">
               {messages.map((msg, i) => {
-                const isBotStreaming =
-                  i === lastBotMsgIdx && msg.sender === "bot" && !msg.isLoading;
-
                 return (
                   <div
                     key={msg.id}
@@ -328,16 +329,29 @@ export const EnterpriseChatTemplate = ({
                             ? "rounded-xl px-4 py-2 bg-gradient-to-tr from-blue-700 to-blue-500 text-white shadow-lg border border-blue-700 flex items-center min-h-10"
                             : "rounded-xl px-4 py-2 bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-neutral-900 dark:text-neutral-100 shadow flex items-center min-h-10"
                         }
-                        style={{ fontSize: 13, minHeight: 40, maxWidth: 320 }}
+                        style={{ fontSize: 13, minHeight: 40, maxWidth: 420 }}
                       >
                         {msg.isLoading ? (
                           <span className="flex items-center gap-2">
                             <Loader className="animate-spin w-4 h-4" />
                             <span>Thinking…</span>
                           </span>
+                        ) : msg.sender === "bot" ? (
+                          isTyping && i === lastBotMsgIdx ? (
+                            // While animating the LAST bot message, show raw text so ``` fences don't break
+                            <pre className="whitespace-pre-wrap font-mono text-[13px] leading-5">
+                              {botStreamText}
+                            </pre>
+                          ) : (
+                            // When animation is done (or it's not the last bot msg), render Markdown
+                            <div className="prose prose-sm dark:prose-invert max-w-none">
+                              <MarkdownMessage text={msg.text} />
+                            </div>
+                          )
                         ) : (
+                          // User messages stay plain text
                           <span className="whitespace-pre-wrap">
-                            {isBotStreaming ? botStreamText : msg.text}
+                            {msg.text}
                           </span>
                         )}
                       </div>
