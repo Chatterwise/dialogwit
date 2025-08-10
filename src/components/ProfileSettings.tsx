@@ -101,26 +101,32 @@ export const ProfileSettings = () => {
     }
   };
 
-  const uploadAvatar = async (file: File, userId: string) => {
-    const fileName = `avatar-${userId}-${Date.now()}`;
-    const filePath = `avatars/${fileName}`;
+const uploadAvatar = async (file: File, userId: string) => {
+  const ext = file.type.split("/")[1] || "png";
+  const fileName = `avatar-${userId}-${Date.now()}.${ext}`;
+  const filePath = `avatars/${fileName}`;
 
-    const { error } = await supabase.storage
-      .from("user-content-avatar")
-      .upload(filePath, file, {
-        cacheControl: "3600",
-        upsert: true,
-      });
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+  if (!session) return { data: null, error: new Error("Not authenticated") };
 
-    if (error) return { data: null, error };
+  const { error } = await supabase.storage
+    .from("user-content-avatar")
+    .upload(filePath, file, {
+      cacheControl: "3600",
+      contentType: file.type || "image/png",
+    });
 
-    // Get public URL
-    const { data: publicUrlData } = supabase.storage
-      .from("user-content-avatar")
-      .getPublicUrl(filePath);
+  if (error) return { data: null, error };
 
-    return { data: publicUrlData, error: null };
-  };
+  const { data: publicUrlData } = supabase.storage
+    .from("user-content-avatar")
+    .getPublicUrl(filePath);
+
+  return { data: publicUrlData, error: null };
+};
+
 
   if (profileLoading) {
     return (
