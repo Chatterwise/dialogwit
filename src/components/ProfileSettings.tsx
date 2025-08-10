@@ -102,12 +102,10 @@ export const ProfileSettings = () => {
   };
 
 const uploadAvatar = async (file: File, userId: string) => {
-  // strongly recommend adding an extension + contentType
   const ext = file.type.split("/")[1] || "png";
   const fileName = `avatar-${userId}-${Date.now()}.${ext}`;
   const filePath = `avatars/${fileName}`;
 
-  // make sure user is logged in
   const {
     data: { session },
   } = await supabase.auth.getSession();
@@ -117,19 +115,18 @@ const uploadAvatar = async (file: File, userId: string) => {
     .from("user-content-avatar")
     .upload(filePath, file, {
       cacheControl: "3600",
-      // upsert: true, // <= remove this unless you really need overwrite behavior
       contentType: file.type || "image/png",
     });
 
   if (error) return { data: null, error };
 
-  // Public bucket: you can expose via getPublicUrl
   const { data: publicUrlData } = supabase.storage
     .from("user-content-avatar")
     .getPublicUrl(filePath);
 
   return { data: publicUrlData, error: null };
 };
+
 
   if (profileLoading) {
     return (
