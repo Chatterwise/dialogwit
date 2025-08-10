@@ -3,6 +3,10 @@
   "include-component-in-tag": false,
   "bump-minor-pre-major": false,
   "bump-patch-for-minor-pre-major": true,
+  "packages": {
+    ".": {}
+  },
+  "config-file": "release-please-config.json",
   "changelog-types": [
     { "type": "feat", "section": "Features" },
     { "type": "fix", "section": "Bug Fixes" },
