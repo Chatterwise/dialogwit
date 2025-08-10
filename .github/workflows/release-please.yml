@@ -1,6 +1,4 @@
-# .github/workflows/release-please.yml
 name: Release Please
-
 on:
   push:
     branches: [main]
@@ -16,6 +14,5 @@ jobs:
       - uses: googleapis/release-please-action@v4
         with:
           token: ${{ secrets.RELEASE_PLEASE_TOKEN }}
-          release-type: node
-          include-component-in-tag: false
           config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json
