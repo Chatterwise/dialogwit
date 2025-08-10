@@ -1,0 +1,5 @@
+public/*
+.github/*
+vite.config.ts
+tsconfig.node.json
+tsconfig.json
