@@ -12,8 +12,10 @@ All notable changes to this project will be documented in this file. See [standa
 - Profile Picture upload issue  **[CHAT-20]**
 - Chatbot status is not updating properly **[CHAT-26]**
 - Added a markdown parcer of the main chatbot of the app **[CHAT-24]**
+- Settings on header not auto closing when focus is lost **[CHAT-28]**
 
 ### Added
+
 - Profile picture on the header **[CHAT-27]**
 
 ### 1.0.3 (2025-08-05)

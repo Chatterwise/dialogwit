@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import {
   Sun,
   Moon,
@@ -24,6 +24,9 @@ export const Header = () => {
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const { data: profile } = useUserProfile(user?.id || "");
 
+  const userMenuRef = useRef<HTMLDivElement>(null);
+  const createMenuRef = useRef<HTMLDivElement>(null);
+
   const APP_VERSION: string = __APP_VERSION__;
 
   const avatarUrl =
@@ -31,6 +34,42 @@ export const Header = () => {
     (user?.user_metadata?.avatar_url as string | undefined) ??
     (user?.user_metadata?.picture as string | undefined) ??
     null;
+
+  useEffect(() => {
+    const handleOutside = (e: PointerEvent) => {
+      const target = e.target as Node;
+
+      if (
+        showUserMenu &&
+        userMenuRef.current &&
+        !userMenuRef.current.contains(target)
+      ) {
+        setShowUserMenu(false);
+      }
+      if (
+        showCreateMenu &&
+        createMenuRef.current &&
+        !createMenuRef.current.contains(target)
+      ) {
+        setShowCreateMenu(false);
+      }
+    };
+
+    const handleEsc = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setShowUserMenu(false);
+        setShowCreateMenu(false);
+        setShowMobileMenu(false);
+      }
+    };
+
+    document.addEventListener("pointerdown", handleOutside);
+    document.addEventListener("keydown", handleEsc);
+    return () => {
+      document.removeEventListener("pointerdown", handleOutside);
+      document.removeEventListener("keydown", handleEsc);
+    };
+  }, [showUserMenu, showCreateMenu]);
 
   const handleSignOut = async () => {
     try {
@@ -40,6 +79,8 @@ export const Header = () => {
       console.error("Sign out error:", error);
     }
   };
+
+  const isDark = theme === "dark";
 
   return (
     <header className="sticky top-0 z-20 w-full bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-800 shadow-sm dark:shadow-md transition-colors">
@@ -55,13 +96,18 @@ export const Header = () => {
             <Menu className="h-6 w-6" />
           )}
         </button>
+
         <div></div>
+
         {/* Actions: Create, Notification, Theme Toggle, Avatar */}
         <div className="flex items-center space-x-3">
-          {/* Create Button */}
-          <div className="relative">
+          {/* Create (wrapper has ref) */}
+          <div className="relative" ref={createMenuRef}>
             <motion.button
-              onClick={() => setShowCreateMenu(!showCreateMenu)}
+              onClick={() => {
+                setShowCreateMenu((s) => !s);
+                setShowUserMenu(false); // close the other menu
+              }}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               className="hidden md:flex items-center px-3 py-2 rounded-xl bg-primary-600 text-white hover:bg-primary-700 transition-colors"
@@ -78,21 +124,30 @@ export const Header = () => {
                   <Link
                     to="/chatbots/new"
                     className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                    onClick={() => setShowCreateMenu(false)}
+                    onClick={() => {
+                      setShowCreateMenu(false);
+                      setShowUserMenu(false);
+                    }}
                   >
                     New Chatbot
                   </Link>
                   <Link
                     to="/bot-knowledge"
                     className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                    onClick={() => setShowCreateMenu(false)}
+                    onClick={() => {
+                      setShowCreateMenu(false);
+                      setShowUserMenu(false);
+                    }}
                   >
                     Add Knowledge
                   </Link>
                   <Link
                     to="/integrations"
                     className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                    onClick={() => setShowCreateMenu(false)}
+                    onClick={() => {
+                      setShowCreateMenu(false);
+                      setShowUserMenu(false);
+                    }}
                   >
                     New Integration
                   </Link>
@@ -120,17 +175,20 @@ export const Header = () => {
             className="p-2 rounded-xl bg-white dark:bg-gray-800 shadow-sm hover:shadow-md dark:hover:bg-gray-700 transition-all border border-gray-100 dark:border-gray-700"
             title="Toggle dark/light mode"
           >
-            {theme === "dark" ? (
+            {isDark ? (
               <Sun className="w-5 h-5 text-yellow-400" />
             ) : (
               <Moon className="w-5 h-5 text-gray-600" />
             )}
           </motion.button>
 
-          {/* Avatar & Dropdown */}
-          <div className="relative">
+          {/* Avatar & Dropdown (wrapper has ref) */}
+          <div className="relative" ref={userMenuRef}>
             <motion.button
-              onClick={() => setShowUserMenu(!showUserMenu)}
+              onClick={() => {
+                setShowUserMenu((s) => !s);
+                setShowCreateMenu(false); // close the other menu
+              }}
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
               className="w-10 h-10 flex-shrink-0 rounded-full overflow-hidden border border-gray-200 dark:border-gray-700 shadow-inner bg-white dark:bg-gray-800"
@@ -171,7 +229,10 @@ export const Header = () => {
                   <Link
                     to="/settings"
                     className="block px-5 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-primary-50 dark:hover:bg-primary-900/30 rounded-lg transition-colors"
-                    onClick={() => setShowUserMenu(false)}
+                    onClick={() => {
+                      setShowUserMenu(false);
+                      setShowCreateMenu(false);
+                    }}
                   >
                     Settings
                   </Link>
