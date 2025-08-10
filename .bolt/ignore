@@ -4,3 +4,8 @@ vite.config.ts
 tsconfig.node.json
 tsconfig.json
 README.md
+postcss.config.js
+package.json
+package-lock.json
+netlify.toml
+index.html
