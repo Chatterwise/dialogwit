@@ -4,6 +4,17 @@
 
 A complete chatbot integration solution that allows users to easily add AI-powered chatbots to any web application. Supports both React (headless approach) and universal script tag integration.
 
+## Commit message rules
+
+- **Default** (patch): chore: …, docs: …, refactor: …, ci: …, etc.
+
+- **Minor**: start the commit with feat:
+`  e.g. feat: add export to CSV
+`
+- **Major**: add a breaking marker or footer
+`  e.g. feat!: remove legacy API or include a footer:
+`
+
 ## 🚀 Features
 
 ### For React Developers
