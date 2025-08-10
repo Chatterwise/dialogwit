@@ -4,9 +4,12 @@ All notable changes to this project will be documented in this file. See [standa
 
 ## [Unreleased]
 
+### Fixed
+
 - Reposition add knowledge button in KnowledgeBase.tsx. **[CHAT-7]**
 - Added ScrollToTop to the ../docs/getting-started/introduction, ../docs/getting-started/first-chatbot, ../docs/getting-started/knowledge-base, /training-chatbot, All /docs/integrations pages, all /docs/advanced-features pages **[CHAT-25]**
 - Removed non drafted entries from tutorials page. **[CHAT-25]**
+- Profile Picture upload issue  **[CHAT-20]**
 
 ### 1.0.3 (2025-08-05)
 
