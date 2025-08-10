@@ -36,39 +36,39 @@ const TutorialsPage: React.FC = () => {
       difficulty: "Intermediate",
       timeEstimate: "30 minutes",
     },
-    {
-      title: "Creating a Lead Generation Bot",
-      description:
-        "Build a chatbot that engages visitors, qualifies leads, and captures contact information for your sales team.",
-      icon: Users,
-      href: "/docs/tutorials/lead-generation-bot",
-      color:
-        "bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400",
-      difficulty: "Intermediate",
-      timeEstimate: "25 minutes",
-    },
-    {
-      title: "FAQ Chatbot Setup",
-      description:
-        "Create a simple but effective FAQ chatbot to answer common questions about your products or services.",
-      icon: FileText,
-      href: "/docs/tutorials/faq-chatbot-setup",
-      color:
-        "bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400",
-      difficulty: "Beginner",
-      timeEstimate: "15 minutes",
-    },
-    {
-      title: "Multi-language Support",
-      description:
-        "Configure your chatbot to support multiple languages for international users.",
-      icon: Globe,
-      href: "/docs/tutorials/multi-language-support",
-      color:
-        "bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400",
-      difficulty: "Advanced",
-      timeEstimate: "45 minutes",
-    },
+    // {
+    //   title: "Creating a Lead Generation Bot",
+    //   description:
+    //     "Build a chatbot that engages visitors, qualifies leads, and captures contact information for your sales team.",
+    //   icon: Users,
+    //   href: "/docs/tutorials/lead-generation-bot",
+    //   color:
+    //     "bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400",
+    //   difficulty: "Intermediate",
+    //   timeEstimate: "25 minutes",
+    // },
+    // {
+    //   title: "FAQ Chatbot Setup",
+    //   description:
+    //     "Create a simple but effective FAQ chatbot to answer common questions about your products or services.",
+    //   icon: FileText,
+    //   href: "/docs/tutorials/faq-chatbot-setup",
+    //   color:
+    //     "bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400",
+    //   difficulty: "Beginner",
+    //   timeEstimate: "15 minutes",
+    // },
+    // {
+    //   title: "Multi-language Support",
+    //   description:
+    //     "Configure your chatbot to support multiple languages for international users.",
+    //   icon: Globe,
+    //   href: "/docs/tutorials/multi-language-support",
+    //   color:
+    //     "bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400",
+    //   difficulty: "Advanced",
+    //   timeEstimate: "45 minutes",
+    // },
   ];
 
   return (

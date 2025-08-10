@@ -4,6 +4,7 @@ import { Palette, Webhook, Shield, Code } from "lucide-react";
 import { SEO } from "../../../components/SEO";
 import { DocBreadcrumbs } from "../../../components/DocBreadcrumbs";
 import { Link } from "react-router-dom";
+import { ScrollToTop } from "../../../components/utils/ScrollToTop";
 
 const AdvancedFeaturesPage: React.FC = () => {
   // Schema data for breadcrumbs
@@ -63,6 +64,8 @@ const AdvancedFeaturesPage: React.FC = () => {
 
   return (
     <>
+      {/* Ensure that the page scrolls to the top when the page is loaded */}
+      <ScrollToTop />
       <SEO
         title="Advanced Features | ChatterWise Documentation"
         description="Explore advanced features of ChatterWise including custom templates, webhooks, security best practices, and API reference."

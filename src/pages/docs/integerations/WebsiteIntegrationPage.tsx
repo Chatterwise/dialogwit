@@ -5,6 +5,7 @@ import { Link } from "react-router-dom";
 import { useState } from "react";
 import { DocBreadcrumbs } from "../../../components/DocBreadcrumbs";
 import { SEO } from "../../../components/SEO";
+import { ScrollToTop } from "../../../components/utils/ScrollToTop";
 
 const WebsiteIntegrationPage: React.FC = () => {
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
@@ -83,6 +84,8 @@ function ChatComponent() {
 
   return (
     <>
+      {/* Ensure that the page scrolls to the top when the page is loaded */}
+      <ScrollToTop />
       <SEO
         title="Website Integration | ChatterWise Documentation"
         description="Learn how to integrate your ChatterWise chatbot into your website using our JavaScript widget or React components."

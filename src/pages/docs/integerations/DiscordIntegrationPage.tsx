@@ -5,6 +5,7 @@ import { Link } from "react-router-dom";
 import { useState } from "react";
 import { DocBreadcrumbs } from "../../../components/DocBreadcrumbs";
 import { SEO } from "../../../components/SEO";
+import { ScrollToTop } from "../../../components/utils/ScrollToTop";
 
 const DiscordIntegrationPage: React.FC = () => {
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
@@ -50,6 +51,8 @@ const DiscordIntegrationPage: React.FC = () => {
 
   return (
     <>
+      {/* Ensure that the page scrolls to the top when the page is loaded */}
+      <ScrollToTop />
       <SEO
         title="Discord Integration | ChatterWise Documentation"
         description="Learn how to integrate your ChatterWise chatbot with Discord. Step-by-step guide to deploy your AI chatbot as a Discord bot for community servers."

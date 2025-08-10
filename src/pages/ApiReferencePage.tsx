@@ -9,6 +9,7 @@ import {
   ExternalLink,
 } from "lucide-react";
 import { motion } from "framer-motion";
+import { ScrollToTop } from "../components/utils/ScrollToTop";
 
 const ApiReferencePage: React.FC = () => {
   const [activeEndpoint, setActiveEndpoint] = useState<string | null>(
@@ -272,7 +273,9 @@ const ApiReferencePage: React.FC = () => {
     .find((endpoint) => endpoint.id === activeEndpoint);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white dark:from-gray-900 dark:to-gray-800">
+    <>
+      <ScrollToTop />
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white dark:from-gray-900 dark:to-gray-800">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Header */}
         <motion.div
@@ -491,6 +494,7 @@ const ApiReferencePage: React.FC = () => {
         </div>
       </div>
     </div>
+    </>
   );
 };
 
