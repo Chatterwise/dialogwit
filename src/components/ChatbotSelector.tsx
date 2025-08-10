@@ -4,7 +4,7 @@ import { format } from "date-fns";
 type Chatbot = {
   id: string;
   name: string;
-  bot_avatar?: string;
+  bot_avatar?: string | null;
   created_at: string | Date;
   status: string;
   knowledge_base_processed: boolean;

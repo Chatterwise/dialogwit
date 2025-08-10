@@ -11,6 +11,11 @@ All notable changes to this project will be documented in this file. See [standa
 - Removed non drafted entries from tutorials page. **[CHAT-25]**
 - Profile Picture upload issue  **[CHAT-20]**
 
+### Fixed
+
+- Chatbot status is not updating properly **[CHAT-26]**
+
+
 ### 1.0.3 (2025-08-05)
 
 ### Changed
