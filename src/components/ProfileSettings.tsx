@@ -106,7 +106,7 @@ export const ProfileSettings = () => {
     const filePath = `avatars/${fileName}`;
 
     const { error } = await supabase.storage
-      .from("user-content")
+      .from("user-content-avatar")
       .upload(filePath, file, {
         cacheControl: "3600",
         upsert: true,
@@ -116,7 +116,7 @@ export const ProfileSettings = () => {
 
     // Get public URL
     const { data: publicUrlData } = supabase.storage
-      .from("user-content")
+      .from("user-content-avatar")
       .getPublicUrl(filePath);
 
     return { data: publicUrlData, error: null };
