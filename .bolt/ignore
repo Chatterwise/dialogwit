@@ -9,3 +9,9 @@ package.json
 package-lock.json
 netlify.toml
 index.html
+eslint.config.js
+CHANGELOG.md
+.unimportedrc.json
+.gitignore
+.env
+src/*
