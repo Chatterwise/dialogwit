@@ -3,10 +3,7 @@
   "include-component-in-tag": false,
   "bump-minor-pre-major": false,
   "bump-patch-for-minor-pre-major": true,
-  "packages": {
-    ".": {}
-  },
-  "config-file": "release-please-config.json",
+  "skip-package-lock": true,
   "changelog-types": [
     { "type": "feat", "section": "Features" },
     { "type": "fix", "section": "Bug Fixes" },
@@ -15,5 +12,8 @@
     { "type": "docs", "section": "Docs", "hidden": false },
     { "type": "chore", "section": "Chores", "hidden": false },
     { "type": "ci", "section": "CI", "hidden": false }
-  ]
+  ],
+  "packages": {
+    ".": {}
+  }
 }
