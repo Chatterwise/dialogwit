@@ -22,6 +22,9 @@ interface Message {
 }
 
 export const PublicChat = () => {
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
   const { chatbotId } = useParams<{ chatbotId: string }>();
   const { data: chatbot, isLoading: chatbotLoading } = useChatbot(
     chatbotId || ""
@@ -33,20 +36,22 @@ export const PublicChat = () => {
   const [isMinimized, setIsMinimized] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
+  // const scrollToBottom = () => {
+  //   messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  // };
 
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
+  // useEffect(() => {
+  //   scrollToBottom();
+  // }, [messages]);
 
   useEffect(() => {
     if (chatbot) {
       setMessages([
         {
           id: "1",
-          text: `Hello! I'm ${chatbot.name}. ${chatbot.description} How can I help you today?`,
+          text: chatbot.welcome_message
+          ? chatbot.welcome_message
+          : `Hello! I'm ${chatbot.name}. ${chatbot.description} How can I help you today?`,
           sender: "bot",
           timestamp: new Date(),
         },

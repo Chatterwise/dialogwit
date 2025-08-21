@@ -34,7 +34,7 @@ export const ChatbotBuilder = () => {
         description: formData.description,
         user_id: user.id,
         bot_role_template_id: formData.bot_role_template_id,
-        welcome_message: selectedTemplate?.welcome_message ?? "Hello!",
+        // welcome_message: selectedTemplate?.welcome_message ?? "Hello!",
         placeholder: selectedTemplate?.placeholder ?? "Ask me anything...",
         bot_avatar: selectedTemplate?.bot_avatar ?? null,
         status: "processing",

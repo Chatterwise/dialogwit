@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file. See [standa
 
 ## [Unreleased]
 
+- Supabase welcome_message Chatbot table field now defaults to null. **[CHAT-33]**
+- Removed chatbot on create default from ChatbotBuilder.tsx. **[CHAT-33]**
+- Fixed odd scrolling in PublicChat.tsx, added a logic for chatbot to default to use welcome_message property or default Hello! I'm ${chatbot.name}. ${chatbot.description} How can I help you today? **[CHAT-33]**
+
 ### 1.1.0 (2025-08-21)
 
 ### Fixed
@@ -33,6 +37,7 @@ All notable changes to this project will be documented in this file. See [standa
 - Shared types: `src/types/knowledge.ts` with `ProcessedFile`, `KnowledgeItem`, `UploadStatus`, etc. **[CHAT-35]**
 
 ### Changed
+
 - **Do not mark items as completed on submit**: items remain `processing` until DB marks `processed=true` or `status='error'`.
 - **FileUpload**:
   - Strong TS types (no `any`), safe ID generation, per-selection limits, size/type validation, dedupe by `name+size`.
