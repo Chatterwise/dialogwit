@@ -13,8 +13,23 @@ import {
 import { motion } from "framer-motion";
 import { useToast } from "../lib/toastStore";
 import { BotKnowledgeContentProps, KnowledgeItem } from "./utils/types";
+import React from "react";
+import { supabase } from "../lib/supabase";
 
-const BotKnowledgeContent = ({
+type LocalStatus = "processing" | "completed" | "error";
+
+// Extend base item with optional runtime fields the UI may receive/display.
+type KnowledgeItemWithRuntime = KnowledgeItem & {
+  progress?: number | null;
+  error_message?: string | null;
+};
+
+const toBase = (i: KnowledgeItemWithRuntime): KnowledgeItem => ({
+  ...i,
+  content: i.content ?? undefined,
+});
+
+export default function BotKnowledgeContent({
   knowledgeBase = [],
   selectedItems = [],
   setSelectedItems,
@@ -29,8 +44,47 @@ const BotKnowledgeContent = ({
   handleDownload,
   handleProcess,
   processing,
-}: BotKnowledgeContentProps) => {
-  const filteredKnowledge = knowledgeBase.filter((item) => {
+}: BotKnowledgeContentProps) {
+  const toast = useToast();
+
+  // Local, optimistic progress/state for nicer UX during batch
+  const [batchActive, setBatchActive] = React.useState(false);
+  const [batchTotals, setBatchTotals] = React.useState({
+    total: 0,
+    completed: 0,
+    failed: 0,
+  });
+  const [progressMap, setProgressMap] = React.useState<Record<string, number>>(
+    {}
+  );
+  const [statusMap, setStatusMap] = React.useState<Record<string, LocalStatus>>(
+    {}
+  );
+
+  // Track live watchers (realtime channels + polling timers) to clean up.
+  const channelsRef = React.useRef<
+    Record<string, ReturnType<typeof supabase.channel> | null>
+  >({});
+  const pollersRef = React.useRef<Record<string, number>>({});
+
+  React.useEffect(() => {
+    return () => {
+      // cleanup on unmount
+      for (const id in channelsRef.current) {
+        const ch = channelsRef.current[id];
+        if (ch) supabase.removeChannel(ch);
+      }
+      channelsRef.current = {};
+      for (const id in pollersRef.current) {
+        clearInterval(pollersRef.current[id]);
+      }
+      pollersRef.current = {};
+    };
+  }, []);
+
+  const filteredKnowledge = (
+    knowledgeBase as KnowledgeItemWithRuntime[]
+  ).filter((item) => {
     const matchesSearch =
       item.content?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (item.filename &&
@@ -39,7 +93,6 @@ const BotKnowledgeContent = ({
       filterType === "all" || item.content_type === filterType;
     return matchesSearch && matchesFilter;
   });
-  const toast = useToast();
 
   const toggleItemSelection = (id: string) => {
     setSelectedItems((prev) =>
@@ -55,15 +108,109 @@ const BotKnowledgeContent = ({
     );
   };
 
-  const getStatusBadge = (item: KnowledgeItem) => {
-    if (item.processed) {
+  const setLocalStatus = (id: string, status: LocalStatus) =>
+    setStatusMap((prev) => ({ ...prev, [id]: status }));
+
+  const setLocalProgress = (id: string, pct: number) =>
+    setProgressMap((prev) => ({
+      ...prev,
+      [id]: Math.max(0, Math.min(100, pct)),
+    }));
+
+  const stopWatching = (id: string) => {
+    const ch = channelsRef.current[id];
+    if (ch) supabase.removeChannel(ch);
+    channelsRef.current[id] = null;
+    const t = pollersRef.current[id];
+    if (t) clearInterval(t);
+    delete pollersRef.current[id];
+  };
+
+  const watchItemRealtime = (id: string) => {
+    if (channelsRef.current[id]) return; // already watching
+    const channel = supabase
+      .channel(`kb:${id}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "knowledge_base",
+          filter: `id=eq.${id}`,
+        },
+        (payload) => {
+          const row = payload.new as KnowledgeItemWithRuntime;
+          if (typeof row.progress === "number")
+            setLocalProgress(id, row.progress);
+          if (row.status === "error") {
+            setLocalStatus(id, "error");
+            stopWatching(id);
+          } else if (row.processed) {
+            setLocalStatus(id, "completed");
+            setLocalProgress(id, 100);
+            stopWatching(id);
+          } else {
+            // keep processing
+            setLocalStatus(id, "processing");
+          }
+        }
+      )
+      .subscribe((status) => {
+        // Fallback to polling if channel fails or times out
+        if (status !== "SUBSCRIBED") startPolling(id);
+      });
+
+    channelsRef.current[id] = channel;
+  };
+
+  const startPolling = (id: string) => {
+    if (pollersRef.current[id]) return;
+    const interval = 2000;
+    const t = window.setInterval(async () => {
+      const { data, error } = await supabase
+        .from("knowledge_base")
+        .select("status, processed, progress, error_message")
+        .eq("id", id)
+        .maybeSingle();
+
+      if (error) return; // keep trying
+      if (!data) return;
+
+      const row = data as KnowledgeItemWithRuntime;
+      if (typeof row.progress === "number") setLocalProgress(id, row.progress);
+
+      if (row.status === "error") {
+        setLocalStatus(id, "error");
+        clearInterval(t);
+        delete pollersRef.current[id];
+      } else if (row.processed) {
+        setLocalStatus(id, "completed");
+        setLocalProgress(id, 100);
+        clearInterval(t);
+        delete pollersRef.current[id];
+      } else {
+        setLocalStatus(id, "processing");
+      }
+    }, interval);
+
+    pollersRef.current[id] = t;
+  };
+
+  const getStatusBadge = (item: KnowledgeItemWithRuntime) => {
+    // Prefer remote DB flags if present; fall back to local batch state
+    const local = statusMap[item.id];
+
+    const isProcessed = item.processed || local === "completed";
+    const isProcessing = item.status === "processing" || local === "processing";
+
+    if (isProcessed) {
       return (
         <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-400">
           <CheckCircle className="h-3 w-3 mr-1" />
           Processed
         </span>
       );
-    } else if (item.status === "processing") {
+    } else if (isProcessing) {
       return (
         <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-400">
           <LoaderIcon className="h-3 w-3 mr-1 animate-spin" />
@@ -80,13 +227,92 @@ const BotKnowledgeContent = ({
     }
   };
 
-  const handleProcessItem = (item: KnowledgeItem) => {
-    if (handleProcess) {
-      toast.info(`Processing "${item.filename || item.id}"...`);
+  // Single-item: do NOT mark completed on resolve. We queue, then watch for DB updates.
+  const processOne = async (item: KnowledgeItemWithRuntime) => {
+    if (!handleProcess) return;
 
-      handleProcess(item);
+    setLocalStatus(item.id, "processing");
+    setLocalProgress(item.id, 0);
+
+    // smooth optimistic progress up to 90% while we wait for server updates
+    let pct = 0;
+    const step = 6 + Math.floor(Math.random() * 6);
+    const tickMs = 450;
+    const timer = window.setInterval(() => {
+      pct = Math.min(pct + step, 90);
+      setLocalProgress(item.id, pct);
+    }, tickMs);
+
+    try {
+      await handleProcess(toBase(item)); // kick off server job (likely returns quickly)
+      window.clearInterval(timer);
+      // Stay in "processing" and attach watchers
+      watchItemRealtime(item.id);
+      startPolling(item.id); // fallback
+      return { ok: true as const };
+    } catch {
+      window.clearInterval(timer);
+      setLocalStatus(item.id, "error");
+      setLocalProgress(item.id, Math.max(5, pct));
+      return { ok: false as const };
     }
   };
+
+  const handleProcessItem = async (item: KnowledgeItemWithRuntime) => {
+    if (!handleProcess) return;
+    toast.info(`Processing "${item.filename || item.id}"...`);
+    await processOne(item);
+  };
+
+  // Batch process selected (sequential for clarity; can be parallelized)
+  const handleProcessSelected = async () => {
+    if (!handleProcess) return;
+
+    const items = filteredKnowledge.filter(
+      (it) => selectedItems.includes(it.id) && !it.processed
+    );
+    if (items.length === 0) {
+      toast.info(
+        "Nothing to process (already processed or no items selected)."
+      );
+      return;
+    }
+
+    toast.info(`Processing ${items.length} item(s)...`);
+    setBatchActive(true);
+    setBatchTotals({ total: items.length, completed: 0, failed: 0 });
+
+    let done = 0;
+    let failed = 0;
+
+    for (const item of items) {
+      const res = await processOne(item);
+      if (res?.ok) {
+        // completion will be reflected by realtime/poll later
+        done += 1;
+      } else {
+        failed += 1;
+      }
+      setBatchTotals({ total: items.length, completed: done, failed });
+    }
+
+    setBatchActive(false);
+    if (failed === 0) {
+      toast.success("Batch submitted. Watching for completion…");
+    } else if (done === 0) {
+      toast.error("All items failed to submit.");
+    } else {
+      toast.info(`${done} submitted, ${failed} failed to submit.`);
+    }
+  };
+
+  const batchPct =
+    batchTotals.total > 0
+      ? Math.round(
+          ((batchTotals.completed + batchTotals.failed) / batchTotals.total) *
+            100
+        )
+      : 0;
 
   return (
     <div className="bg-white/80 dark:bg-gray-800/80 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-700">
@@ -121,41 +347,76 @@ const BotKnowledgeContent = ({
         </div>
 
         {filteredKnowledge.length > 0 && (
-          <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-100 dark:border-gray-700">
-            <div className="flex items-center space-x-4">
-              <label className="flex items-center">
-                <input
-                  type="checkbox"
-                  checked={
-                    selectedItems.length === filteredKnowledge.length &&
-                    filteredKnowledge.length > 0
-                  }
-                  onChange={toggleSelectAll}
-                  className="rounded border-gray-300 dark:border-gray-700 text-primary-600 dark:text-primary-400 focus:ring-primary-500 dark:focus:ring-primary-600"
-                />
-                <span className="ml-2 text-sm text-gray-600 dark:text-gray-400">
-                  Select all ({filteredKnowledge.length})
-                </span>
-              </label>
-              {selectedItems.length > 0 && (
-                <span className="text-sm text-gray-600 dark:text-gray-400">
-                  {selectedItems.length} selected
-                </span>
-              )}
+          <div className="flex flex-col gap-3 mt-4 pt-4 border-t border-gray-100 dark:border-gray-700">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-4">
+                <label className="flex items-center">
+                  <input
+                    type="checkbox"
+                    checked={
+                      selectedItems.length === filteredKnowledge.length &&
+                      filteredKnowledge.length > 0
+                    }
+                    onChange={toggleSelectAll}
+                    className="rounded border-gray-300 dark:border-gray-700 text-primary-600 dark:text-primary-400 focus:ring-primary-500 dark:focus:ring-primary-600"
+                  />
+                  <span className="ml-2 text-sm text-gray-600 dark:text-gray-400">
+                    Select all ({filteredKnowledge.length})
+                  </span>
+                </label>
+                {selectedItems.length > 0 && (
+                  <span className="text-sm text-gray-600 dark:text-gray-400">
+                    {selectedItems.length} selected
+                  </span>
+                )}
+              </div>
+
+              <div className="flex items-center gap-2">
+                {selectedItems.length > 0 && (
+                  <>
+                    <button
+                      onClick={handleProcessSelected}
+                      disabled={processing || batchActive}
+                      className="inline-flex items-center px-3 py-1.5 border border-purple-300 dark:border-purple-700 text-sm font-medium rounded-lg text-purple-700 dark:text-purple-300 bg-white dark:bg-gray-800 hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-colors disabled:opacity-50"
+                    >
+                      <Play className="h-4 w-4 mr-1" />
+                      Process Selected
+                    </button>
+                    <button
+                      onClick={() => {
+                        handleBulkDelete();
+                        toast.success("Selected items deleted");
+                      }}
+                      disabled={processing || batchActive}
+                      className="inline-flex items-center px-3 py-1.5 border border-red-300 dark:border-red-700 text-sm font-medium rounded-lg text-red-600 dark:text-red-400 bg-white dark:bg-gray-800 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors disabled:opacity-50"
+                    >
+                      <Trash2 className="h-4 w-4 mr-1" />
+                      Delete Selected
+                    </button>
+                  </>
+                )}
+              </div>
             </div>
 
-            {selectedItems.length > 0 && (
-              <button
-                onClick={() => {
-                  handleBulkDelete();
-                  toast.success("Selected items deleted");
-                }}
-                disabled={processing}
-                className="inline-flex items-center px-3 py-1.5 border border-red-300 dark:border-red-700 text-sm font-medium rounded-lg text-red-600 dark:text-red-400 bg-white dark:bg-gray-800 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors disabled:opacity-50"
-              >
-                <Trash2 className="h-4 w-4 mr-1" />
-                Delete Selected
-              </button>
+            {batchActive && (
+              <div className="w-full">
+                <div className="flex items-center justify-between text-xs text-gray-600 dark:text-gray-400 mb-1">
+                  <span>
+                    Submitted {batchTotals.completed + batchTotals.failed}/
+                    {batchTotals.total}
+                  </span>
+                  <span>
+                    {batchTotals.completed} ok • {batchTotals.failed} failed to
+                    submit
+                  </span>
+                </div>
+                <div className="w-full h-2 bg-purple-100 dark:bg-purple-900/20 rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-purple-600 dark:bg-purple-400 transition-all duration-300"
+                    style={{ width: `${batchPct}%` }}
+                  />
+                </div>
+              </div>
             )}
           </div>
         )}
@@ -178,117 +439,137 @@ const BotKnowledgeContent = ({
           </div>
         ) : (
           <div className="space-y-5">
-            {filteredKnowledge.map((item) => (
-              <motion.div
-                key={item.id}
-                layout
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="p-5 border border-gray-100 dark:border-gray-700 rounded-xl shadow-subtle bg-white/90 dark:bg-gray-700/90"
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center">
-                    <input
-                      type="checkbox"
-                      checked={selectedItems.includes(item.id)}
-                      onChange={() => toggleItemSelection(item.id)}
-                      className="rounded border-gray-300 dark:border-gray-700 text-primary-600 dark:text-primary-400 focus:ring-primary-500 dark:focus:ring-primary-600 mr-3"
-                    />
-                    <FileText className="h-5 w-5 text-gray-400 dark:text-gray-500 mr-2" />
-                    <span className="text-sm font1-semibold text-gray-900 dark:text-white">
-                      {item.filename || `${item.content_type} content`}
-                    </span>
-                    <span
-                      className={`ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                        item.content_type === "text"
-                          ? "bg-primary-100 dark:bg-primary-900/20 text-primary-700 dark:text-primary-400"
-                          : "bg-accent-100 dark:bg-accent-900/20 text-accent-700 dark:text-accent-400"
-                      }`}
-                    >
-                      {item.content_type}
-                    </span>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    {getStatusBadge(item)}
-                    {handleProcess && !item.processed && (
-                      <button
-                        onClick={() => handleProcessItem(item)}
-                        disabled={processing}
-                        className="p-1 text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded transition-colors duration-200 disabled:opacity-50 flex items-center"
-                        title="Process"
+            {filteredKnowledge.map((item: KnowledgeItemWithRuntime) => {
+              const localStatus = statusMap[item.id];
+              const localProgress = progressMap[item.id];
+
+              const isProcessing =
+                item.status === "processing" || localStatus === "processing";
+              const isCompleted = item.processed || localStatus === "completed";
+              const hasError =
+                localStatus === "error" || item.status === "error";
+
+              const progress =
+                typeof localProgress === "number"
+                  ? localProgress
+                  : typeof item.progress === "number"
+                  ? item.progress
+                  : isProcessing
+                  ? 25
+                  : 0;
+
+              return (
+                <motion.div
+                  key={item.id}
+                  layout
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="p-5 border border-gray-100 dark:border-gray-700 rounded-xl shadow-subtle bg-white/90 dark:bg-gray-700/90"
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center">
+                      <input
+                        type="checkbox"
+                        checked={selectedItems.includes(item.id)}
+                        onChange={() => toggleItemSelection(item.id)}
+                        className="rounded border-gray-300 dark:border-gray-700 text-primary-600 dark:text-primary-400 focus:ring-primary-500 dark:focus:ring-primary-600 mr-3"
+                      />
+                      <FileText className="h-5 w-5 text-gray-400 dark:text-gray-500 mr-2" />
+                      <span className="text-sm font-semibold text-gray-900 dark:text-white">
+                        {item.filename || `${item.content_type} content`}
+                      </span>
+                      <span
+                        className={`ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                          item.content_type === "text"
+                            ? "bg-primary-100 dark:bg-primary-900/20 text-primary-700 dark:text-primary-400"
+                            : "bg-accent-100 dark:bg-accent-900/20 text-accent-700 dark:text-accent-400"
+                        }`}
                       >
-                        <Play className="h-4 w-4 mr-1" />
-                        <span className="text-xs">Process</span>
+                        {item.content_type}
+                      </span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      {getStatusBadge(item)}
+                      {handleProcess && !isCompleted && (
+                        <button
+                          onClick={() => handleProcessItem(item)}
+                          disabled={processing || batchActive}
+                          className="p-1 text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded transition-colors duration-200 disabled:opacity-50 flex items-center"
+                          title="Process"
+                        >
+                          <Play className="h-4 w-4 mr-1" />
+                          <span className="text-xs">Process</span>
+                        </button>
+                      )}
+                      <button
+                        onClick={() => handleView(toBase(item))}
+                        className="p-1 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-600 rounded transition-colors duration-200"
+                        title="View"
+                      >
+                        <Eye className="h-4 w-4" />
                       </button>
-                    )}
-                    <button
-                      onClick={() => handleView(item)}
-                      className="p-1 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-600 rounded transition-colors duration-200"
-                      title="View"
-                    >
-                      <Eye className="h-4 w-4" />
-                    </button>
-                    <button
-                      onClick={() => handleEdit(item)}
-                      className="p-1 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded transition-colors duration-200"
-                      title="Edit"
-                    >
-                      <Edit className="h-4 w-4" />
-                    </button>
-                    <button
-                      onClick={() => handleDownload(item)}
-                      className="p-1 text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20 rounded transition-colors duration-200"
-                      title="Download"
-                    >
-                      <Download className="h-4 w-4" />
-                    </button>
-                    <button
-                      onClick={() => {
-                        handleDelete(item.id);
-                        toast.success(`${item.filename || item.id} deleted`);
-                      }}
-                      disabled={processing}
-                      className="p-1 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors duration-200 disabled:opacity-50"
-                      title="Delete"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
+                      <button
+                        onClick={() => handleEdit(toBase(item))}
+                        className="p-1 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded transition-colors duration-200"
+                        title="Edit"
+                      >
+                        <Edit className="h-4 w-4" />
+                      </button>
+                      <button
+                        onClick={() => handleDownload(toBase(item))}
+                        className="p-1 text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20 rounded transition-colors duration-200"
+                        title="Download"
+                      >
+                        <Download className="h-4 w-4" />
+                      </button>
+                      <button
+                        onClick={() => {
+                          handleDelete(item.id);
+                          toast.success(`${item.filename || item.id} deleted`);
+                        }}
+                        disabled={processing || batchActive}
+                        className="p-1 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors duration-200 disabled:opacity-50"
+                        title="Delete"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
                   </div>
-                </div>
-                <p className="text-sm text-gray-600 dark:text-gray-300 line-clamp-2 mb-2">
-                  {item.content?.substring(0, 200)}...
-                </p>
-                {item.status === "error" && (
-                  <p className="text-xs text-red-500 mt-1">
-                    Error: {item.error_message || "Processing failed"}
+
+                  <p className="text-sm text-gray-600 dark:text-gray-300 line-clamp-2 mb-2">
+                    {item.content?.substring(0, 200)}...
                   </p>
-                )}
-                {item.status === "processing" && (
-                  <div className="w-full mt-2 h-1 bg-purple-100 dark:bg-purple-900/20 rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-purple-500 dark:bg-purple-400 transition-all duration-300"
-                      style={{
-                        width: `${item.progress || 25}%`,
-                      }}
-                    />
+
+                  {hasError && (
+                    <p className="text-xs text-red-500 mt-1">
+                      Error: {item.error_message || "Processing failed"}
+                    </p>
+                  )}
+
+                  {isProcessing && (
+                    <div className="w-full mt-2 h-1 bg-purple-100 dark:bg-purple-900/20 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-purple-500 dark:bg-purple-400 transition-all duration-300"
+                        style={{ width: `${progress}%` }}
+                      />
+                    </div>
+                  )}
+
+                  <div className="flex items-center justify-between text-xs text-gray-400 dark:text-gray-500 mt-2">
+                    <span>
+                      Added{" "}
+                      {item.created_at
+                        ? new Date(item.created_at).toLocaleDateString()
+                        : "unknown date"}
+                    </span>
+                    <span>{item.content?.length || 0} characters</span>
                   </div>
-                )}
-                <div className="flex items-center justify-between text-xs text-gray-400 dark:text-gray-500">
-                  <span>
-                    Added{" "}
-                    {item.created_at
-                      ? new Date(item.created_at).toLocaleDateString()
-                      : "unknown date"}
-                  </span>
-                  <span>{item.content?.length || 0} characters</span>
-                </div>
-              </motion.div>
-            ))}
+                </motion.div>
+              );
+            })}
           </div>
         )}
       </div>
     </div>
   );
-};
-
-export default BotKnowledgeContent;
+}
