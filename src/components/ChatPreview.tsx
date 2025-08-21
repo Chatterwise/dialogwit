@@ -1,8 +1,8 @@
-// ChatPreview.tsx — Neo-skeuomorphic UI with light/dark mode
 import React, { useState, useEffect, useRef } from "react";
 import { Send, Bot, User, Loader } from "lucide-react";
 import { useSendMessage } from "../hooks/useChatMessages";
 import { useAuth } from "../hooks/useAuth";
+import { supabase } from "../lib/supabase";
 
 interface Message {
   id: string;
@@ -12,15 +12,29 @@ interface Message {
   isLoading?: boolean;
 }
 
+type ChatbotSettings = {
+  name?: string | null;
+  welcome_message?: string | null;
+  placeholder?: string | null;
+  bot_avatar?: string | null;
+};
+
 export const ChatPreview = ({ botId }: { botId?: string }) => {
+  const [botSettings, setBotSettings] = useState<ChatbotSettings | null>(null);
+
+  // Default initial message while we fetch settings (fast fallback)
+  const DEFAULT_WELCOME =
+    "Hello! I'm your AI assistant. How can I help you today?";
+
   const [messages, setMessages] = useState<Message[]>([
     {
-      id: "1",
-      text: "Hello! I'm your AI assistant. How can I help you today?",
+      id: "initial",
+      text: DEFAULT_WELCOME,
       sender: "bot",
       timestamp: new Date(),
     },
   ]);
+
   const { user } = useAuth();
   const [inputValue, setInputValue] = useState("");
   const sendMessage = useSendMessage();
@@ -33,6 +47,55 @@ export const ChatPreview = ({ botId }: { botId?: string }) => {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  // Fetch chatbot settings (welcome_message, placeholder, name, avatar)
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadBotSettings() {
+      if (!botId) {
+        setBotSettings(null);
+        // Keep default welcome if there’s no saved bot
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from("chatbots")
+        .select("name, welcome_message, placeholder, bot_avatar")
+        .eq("id", botId)
+        .single();
+
+      if (cancelled) return;
+
+      if (error) {
+        console.warn("Failed to load chatbot settings:", error);
+        setBotSettings(null);
+        // Keep whatever message we had
+        return;
+      }
+
+      setBotSettings(data as ChatbotSettings);
+
+      // Reset the conversation to the bot's welcome message on bot change
+      const welcome =
+        (data?.welcome_message && data.welcome_message.trim()) ||
+        DEFAULT_WELCOME;
+
+      setMessages([
+        {
+          id: "initial",
+          text: welcome,
+          sender: "bot",
+          timestamp: new Date(),
+        },
+      ]);
+    }
+
+    loadBotSettings();
+    return () => {
+      cancelled = true;
+    };
+  }, [botId]);
 
   const handleSend = async () => {
     if (!inputValue.trim() || !botId || sendMessage.isPending) return;
@@ -61,7 +124,7 @@ export const ChatPreview = ({ botId }: { botId?: string }) => {
 
       await sendMessage.mutateAsync({
         chatbotId: botId,
-        message: inputValue,
+        message: userMessage.text,
         userId: user?.id || "NO_USER",
         onChunk: (chunk) => {
           finalText += chunk;
@@ -107,14 +170,29 @@ export const ChatPreview = ({ botId }: { botId?: string }) => {
     }
   };
 
+  const inputPlaceholder =
+    (botSettings?.placeholder && botSettings.placeholder.trim()) ||
+    "Type your message...";
+
   return (
     <div className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-lg rounded-2xl shadow-xl border border-gray-100 dark:border-gray-800 h-96 flex flex-col">
       <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-800 bg-gradient-to-r from-primary-50 via-white to-accent-50 dark:from-gray-800 dark:via-gray-900 dark:to-gray-800 rounded-t-2xl">
         <div className="flex items-center justify-between">
           <div className="flex items-center">
-            <Bot className="h-6 w-6 text-primary-600 dark:text-primary-400 mr-3" />
+            {botSettings?.bot_avatar ? (
+              // Avatar image if configured
+              <img
+                src={botSettings.bot_avatar}
+                alt={botSettings.name ?? "Bot"}
+                className="h-6 w-6 rounded-full mr-3 object-cover"
+              />
+            ) : (
+              <Bot className="h-6 w-6 text-primary-600 dark:text-primary-400 mr-3" />
+            )}
             <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100">
-              Chat Preview
+              {botSettings?.name
+                ? `Chat Preview — ${botSettings.name}`
+                : "Chat Preview"}
             </h3>
           </div>
           <div className="flex items-center">
@@ -142,9 +220,16 @@ export const ChatPreview = ({ botId }: { botId?: string }) => {
               }`}
             >
               <div className="flex items-start">
-                {message.sender === "bot" && (
-                  <Bot className="h-4 w-4 mr-2 mt-0.5 text-primary-600 dark:text-primary-400 flex-shrink-0" />
-                )}
+                {message.sender === "bot" &&
+                  (botSettings?.bot_avatar ? (
+                    <img
+                      src={botSettings.bot_avatar}
+                      alt={botSettings.name ?? "Bot"}
+                      className="h-4 w-4 mr-2 mt-0.5 rounded-full object-cover flex-shrink-0"
+                    />
+                  ) : (
+                    <Bot className="h-4 w-4 mr-2 mt-0.5 text-primary-600 dark:text-primary-400 flex-shrink-0" />
+                  ))}
                 <div className="flex-1">
                   <p className="text-sm whitespace-pre-wrap">
                     {message.text}
@@ -182,7 +267,7 @@ export const ChatPreview = ({ botId }: { botId?: string }) => {
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             onKeyPress={handleKeyPress}
-            placeholder="Type your message..."
+            placeholder={inputPlaceholder}
             className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-primary-400 transition"
             disabled={sendMessage.isPending || !botId}
           />

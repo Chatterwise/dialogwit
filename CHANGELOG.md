@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file. See [standa
 
 ## [Unreleased]
 
+### 1.1.0 (2025-08-21)
+
 ### Fixed
 
 - Reposition add knowledge button in KnowledgeBase.tsx. **[CHAT-7]**
@@ -13,10 +15,40 @@ All notable changes to this project will be documented in this file. See [standa
 - Chatbot status is not updating properly **[CHAT-26]**
 - Added a markdown parcer of the main chatbot of the app **[CHAT-24]**
 - Settings on header not auto closing when focus is lost **[CHAT-28]**
+- Eliminated all `any` casts; strict typing across upload, processing, and list rendering. **[CHAT-35]**
+- Prevents premature “Processed” state; failures are shown immediately without manual refresh. **[CHAT-35]**
 
 ### Added
 
 - Profile picture on the header **[CHAT-27]**
+- RAG settings per chatbot Server now reads `rag_settings` from DB for each `chatbot_id` and only falls back to defaults when a field is missing. Supports: `enable_citations`, `max_retrieved_chunks`, `similarity_threshold`, `enable_streaming`, `model`, `temperature`, `max_tokens`, `chunk_char_limit`, `min_word_count`, `stopwords`. **[CHAT-35]**
+- Batch processing UI in `BotKnowledgeContent`:
+  - “Process Selected” button with sequential submission.
+  - Global batch progress bar and counts (submitted/failed-to-submit).
+  - Per-item progress with optimistic animation while waiting for backend. **[CHAT-35]**
+- Live status updates:
+  - Subscribes to Supabase Realtime (`postgres_changes`) on `knowledge_base` rows.
+  - Automatic **polling fallback** (2s) when Realtime is unavailable. **[CHAT-35]**
+- Multi-file & folder uploads in `FileUpload` (drag & drop folders via `webkitGetAsEntry`). **[CHAT-35]**
+- Shared types: `src/types/knowledge.ts` with `ProcessedFile`, `KnowledgeItem`, `UploadStatus`, etc. **[CHAT-35]**
+
+### Changed
+- **Do not mark items as completed on submit**: items remain `processing` until DB marks `processed=true` or `status='error'`.
+- **FileUpload**:
+  - Strong TS types (no `any`), safe ID generation, per-selection limits, size/type validation, dedupe by `name+size`.
+  - Returns **only the newly chosen batch** to parent (`onFilesSelected`).
+- **BotKnowledgeContent**:
+  - No `any`; uses `KnowledgeItemWithRuntime` (optional `progress`, `error_message`) for UI state.
+  - Helper `toBase()` converts `content: string | null` → `string | undefined` when calling external handlers.
+  - Clear badges for `Pending` / `Processing` / `Processed`; inline error text on failures.
+- **KnowledgeEditorModal**:
+  - Prepared for multi-file flow; saves uploaded docs into storage + `knowledge_base` with `status='pending'`.
+- **ChatPreview**:
+  - Initial bot message now uses the chatbot settings (welcome message/placeholder) when available.
+
+### Removed
+
+- **“Text content” authoring path** from the add-knowledge flow (document upload only).
 
 ### 1.0.3 (2025-08-05)
 

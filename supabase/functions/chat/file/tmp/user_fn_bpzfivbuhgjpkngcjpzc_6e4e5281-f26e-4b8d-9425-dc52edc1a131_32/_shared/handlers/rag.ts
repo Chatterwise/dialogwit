@@ -2,14 +2,14 @@ import { generateEmbedding, generateChatCompletion, streamChatCompletion, OpenAI
 import { searchSimilarChunks, fallbackTextSearch } from '../utils/database.ts';
 export const DEFAULT_OPTIONS = {
   enableCitations: false,
-  maxRetrievedChunks: 6,
-  similarityThreshold: 0.5,
+  maxRetrievedChunks: 20,
+  similarityThreshold: 0.4,
   enableStreaming: false,
   model: 'gpt-4o',
   temperature: 0.7,
-  maxTokens: 800,
-  chunkCharLimit: 200,
-  minWordCount: 3,
+  maxTokens: 10000,
+  chunkCharLimit: 1000,
+  minWordCount: 1,
   stopwords: [
     'hi',
     'hello',
@@ -43,7 +43,8 @@ export async function generateRAGResponse(message, botId, supabaseClient, option
   let retrievedChunks = [];
   let context = '';
   try {
-    const embeddingResponse = await generateEmbedding(message);
+    const clarifiedMessage = await clarifyQuery(message);
+    const embeddingResponse = await generateEmbedding(clarifiedMessage);
     const queryEmbedding = embeddingResponse.data[0].embedding;
     retrievedChunks = await searchSimilarChunks(supabaseClient, queryEmbedding, botId, {
       matchThreshold: similarityThreshold,
@@ -138,14 +139,17 @@ export async function generateStreamingRAGResponse({ message, chatbotId, userId,
   let retrievedChunks = [];
   let context = '';
   try {
-    const embeddingResponse = await generateEmbedding(message);
+    const clarifiedMessage = await clarifyQuery(message);
+    const embeddingResponse = await generateEmbedding(clarifiedMessage);
     const queryEmbedding = embeddingResponse.data[0].embedding;
     retrievedChunks = await searchSimilarChunks(supabaseClient, queryEmbedding, chatbotId, {
       matchThreshold: similarityThreshold,
       matchCount: maxRetrievedChunks
     });
     if (retrievedChunks.length > 0) {
-      context = retrievedChunks.map((chunk, i)=>`[${i + 1}] ${chunk.content.slice(0, chunkCharLimit)}`).join('\n\n');
+      context = retrievedChunks.map((chunk, i)=>{
+        return `Source: ${chunk.source_url ?? 'unknown'}\nChunk [${i + 1}]: ${chunk.content.slice(0, chunkCharLimit)}`;
+      }).join('\n\n');
     }
   } catch (error) {
     if (error instanceof OpenAIError) throw error;
@@ -225,11 +229,48 @@ async function saveStreamedMessage(supabaseClient, chatbotId, message, response,
 }
 function buildSystemPrompt(botName, context, enableCitations, customInstructions) {
   if (!context) {
-    return `You are ${botName}, an AI assistant using a strict internal knowledge base.\n\nNo relevant information found for the current query.\nReply: "Sorry, I don't have an answer based on the available knowledge."`;
+    return `You are ${botName}, an AI assistant using a strict internal knowledge base.
+
+No relevant information was found for the current query.
+
+Reply: "That information doesn't seem to be in my current knowledge. You can reach out to our team at support@chatterwise.io for further assistance."`;
   }
-  return `You are ${botName}, an AI assistant.\n\nKnowledge Base:\n${context}\n\nInstructions:\n- Use only the provided knowledge base.\n- If no answer is found in context, say: "I don’t have the information to answer that right now based on my sources."\n${enableCitations ? '- Mention that your answers come from the knowledge base.' : ''}\n${customInstructions ? `- Additional Role Instructions:\n${customInstructions}` : ''}`;
+  return `You are ${botName}, an expert assistant.
+
+Only use the knowledge base below to answer the user. If the answer is not found, say: "That information doesn't seem to be in my current knowledge. You can reach out to our team at support@chatterwise.io for further assistance."
+
+Knowledge Base:
+${context}
+
+Instructions:
+- Always explain your reasoning.
+- Always stay within the provided information.
+${enableCitations ? '- Provide citations where possible.' : ''}
+${customInstructions ? `- Additional Instructions:\n${customInstructions}` : ''}`;
 }
 function estimatePromptTokens(messages) {
   const total = messages.map((m)=>m.content).join(' ');
   return Math.ceil(total.length / 4) + messages.length * 10;
+}
+async function clarifyQuery(message) {
+  try {
+    const clarified = await generateChatCompletion([
+      {
+        role: 'system',
+        content: 'Rephrase the question into a clear and formal document-style query for better search results.'
+      },
+      {
+        role: 'user',
+        content: message
+      }
+    ], {
+      model: 'gpt-4o',
+      temperature: 0.3,
+      max_tokens: 10000
+    });
+    return clarified.choices?.[0]?.message?.content?.trim() || message;
+  } catch (err) {
+    console.warn('⚠️ Clarify query failed, falling back to original:', err);
+    return message;
+  }
 }
