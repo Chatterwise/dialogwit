@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file. See [standa
 
 ## [Unreleased]
 
+### 1.1.0 (2025-08-21)
+
 ### Fixed
 
 - Reposition add knowledge button in KnowledgeBase.tsx. **[CHAT-7]**
