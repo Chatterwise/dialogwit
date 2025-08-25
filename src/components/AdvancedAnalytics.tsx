@@ -59,7 +59,6 @@ export const AdvancedAnalytics = () => {
       setIsExporting(false);
     }
   };
-  console.log(analytics);
   const convertToCSV = (data: any[]) => {
     if (!data.length) return "";
     const headers = Object.keys(data[0]).join(",");

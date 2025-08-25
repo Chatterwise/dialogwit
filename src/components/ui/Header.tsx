@@ -157,7 +157,7 @@ export const Header = () => {
           </div>
 
           {/* Notification Button */}
-          <motion.button
+          {/* <motion.button
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
             className="p-2 rounded-xl bg-white dark:bg-gray-800 shadow-sm hover:shadow-md dark:hover:bg-gray-700 transition-all border border-gray-100 dark:border-gray-700 relative"
@@ -165,7 +165,7 @@ export const Header = () => {
           >
             <Bell className="w-5 h-5 text-gray-600 dark:text-gray-300" />
             <span className="absolute top-0 right-0 block h-2 w-2 rounded-full bg-red-500 ring-2 ring-white dark:ring-gray-800"></span>
-          </motion.button>
+          </motion.button> */}
 
           {/* Theme Toggle */}
           <motion.button

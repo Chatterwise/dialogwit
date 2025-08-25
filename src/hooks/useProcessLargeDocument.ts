@@ -22,7 +22,6 @@ export const useProcessLargeDocument = (chatbotId: string) => {
 
       if (!response.ok) {
         const text = await response.text();
-        console.log(text)
         throw new Error(text || "Failed to process document");
       }
 

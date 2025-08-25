@@ -231,7 +231,6 @@ export const KnowledgeBase = () => {
         }
       )
       .subscribe();
-    console.log(channel);
     return () => {
       supabase.removeChannel(channel);
     };

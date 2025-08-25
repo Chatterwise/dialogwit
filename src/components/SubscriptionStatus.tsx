@@ -19,6 +19,8 @@ import { useNavigate } from "react-router-dom";
 
 const SubscriptionStatus: React.FC = () => {
   const { subscription, usage, isLoading } = useBilling();
+
+  console.log(usage);
   const {
     createCheckoutSession,
     // createPortalSession,
