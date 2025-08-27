@@ -24,6 +24,9 @@ interface Message {
 }
 
 export const PublicChat = () => {
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
   const { chatbotId } = useParams<{ chatbotId: string }>();
   const { data: chatbot, isLoading: chatbotLoading } = useChatbot(
     chatbotId || ""
