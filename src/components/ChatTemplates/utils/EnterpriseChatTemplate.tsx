@@ -25,6 +25,7 @@ interface BotMetadata {
   welcome_message: string;
   placeholder: string;
   bot_avatar?: string;
+  status?: "ready" | "paused" | "deleted" | string;
 }
 interface EnterpriseChatTemplateProps {
   botId: string;
@@ -37,12 +38,21 @@ interface EnterpriseChatTemplateProps {
 }
 
 function normalizeStreamingText(input: string): string {
-  // 1) unify newlines  2) strip trailing spaces before newline
-  // 3) collapse 3+ blank lines → exactly 2  4) trim leading newlines at start
   let s = input.replace(/\r\n/g, "\n").replace(/[ \t]+\n/g, "\n");
   s = s.replace(/\n{3,}/g, "\n\n");
-  s = s.replace(/^\n{2,}/, "\n"); // avoid massive top padding while streaming
+  s = s.replace(/^\n{2,}/, "\n");
   return s;
+}
+
+function statusDisplay(status?: string) {
+  const s = String(status || "ready").toLowerCase();
+  if (s === "ready")
+    return { label: "Ready", dot: "bg-green-500", text: "text-neutral-500" };
+  if (s === "paused")
+    return { label: "Paused", dot: "bg-amber-500", text: "text-amber-600" };
+  if (s === "deleted")
+    return { label: "Unavailable", dot: "bg-red-500", text: "text-red-600" };
+  return { label: "Unknown", dot: "bg-neutral-400", text: "text-neutral-500" };
 }
 
 export const EnterpriseChatTemplate = ({
@@ -63,10 +73,12 @@ export const EnterpriseChatTemplate = ({
     name: "",
     welcome_message: "",
     placeholder: "",
+    status: "",
   });
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const isDark = theme === "dark";
+  const botReady = (botMetadata.status ?? "ready").toLowerCase() === "ready";
 
   useEffect(() => {
     (async () => {
@@ -76,6 +88,7 @@ export const EnterpriseChatTemplate = ({
             "Content-Type": "application/json",
             ...(apiKey ? { Authorization: `Bearer ${apiKey}` } : {}),
           },
+          cache: "no-store",
         });
         const data = await res.json();
         setBotMetadata({
@@ -85,10 +98,12 @@ export const EnterpriseChatTemplate = ({
             "Hi there! I’m your Chatterwise assistant.\n\nI can answer questions about Chatterwise features, walk you through getting started, and guide you through integrations with other platforms.",
           placeholder: data?.placeholder || "Type your message...",
           bot_avatar: data?.bot_avatar || undefined,
+          status: data?.status || "ready",
         });
       } catch {
         setBotMetadata((meta) => ({
           ...meta,
+          status: meta.status || "paused",
           welcome_message:
             meta.welcome_message ||
             "👋 Welcome to Chatterwise! Ask me anything about features, setup, and integrations.",
@@ -115,7 +130,7 @@ export const EnterpriseChatTemplate = ({
   }, [messages]);
 
   const sendMessage = async () => {
-    if (!inputValue.trim() || isSending) return;
+    if (!inputValue.trim() || isSending || !botReady) return;
 
     const userMessage: Message = {
       id: Date.now().toString(),
@@ -202,6 +217,8 @@ export const EnterpriseChatTemplate = ({
 
   if (!isOpen) return null;
 
+  const s = statusDisplay(botMetadata.status);
+
   return (
     <div
       className={`fixed bottom-6 right-6 z-50 w-full max-w-sm ${className}`}
@@ -239,9 +256,14 @@ export const EnterpriseChatTemplate = ({
               <div className="font-semibold text-base leading-none">
                 {botMetadata.name || "Enterprise Bot"}
               </div>
-              <div className="text-xs text-neutral-500 mt-1">
-                Online{" "}
-                <span className="ml-1 inline-block w-2 h-2 bg-green-500 rounded-full align-middle" />
+              <div className={`text-xs mt-1 flex items-center gap-2 ${s.text}`}>
+                <span
+                  className={`inline-block w-2 h-2 rounded-full ${s.dot}`}
+                />
+                <span>{s.label}</span>
+                {!botReady && (
+                  <span className="opacity-70">— replies disabled</span>
+                )}
               </div>
             </div>
           </div>
@@ -260,12 +282,14 @@ export const EnterpriseChatTemplate = ({
                 setInputValue("");
               }}
               className="p-1 rounded hover:bg-neutral-200/30 dark:hover:bg-neutral-800/50"
+              aria-label="Reset conversation"
             >
               <RotateCcw className="w-4 h-4" />
             </button>
             <button
               onClick={() => setIsMinimized(!isMinimized)}
               className="p-1 rounded hover:bg-neutral-200/30 dark:hover:bg-neutral-800/50"
+              aria-label={isMinimized ? "Maximize" : "Minimize"}
             >
               {isMinimized ? (
                 <Maximize2 className="w-4 h-4" />
@@ -276,6 +300,7 @@ export const EnterpriseChatTemplate = ({
             <button
               onClick={() => onToggle?.(false)}
               className="p-1 rounded hover:bg-red-50 dark:hover:bg-red-900/40"
+              aria-label="Close"
             >
               <X className="w-4 h-4" />
             </button>
@@ -314,14 +339,26 @@ export const EnterpriseChatTemplate = ({
                             ? "rounded-xl px-4 py-2 bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-neutral-900 dark:text-neutral-100 shadow flex items-start min-h-10"
                             : "rounded-xl px-4 py-2 bg-gradient-to-tr from-blue-700 to-blue-500 text-white shadow-lg border border-blue-700 flex items-center min-h-10"
                         }
-                        style={{ fontSize: 13, minHeight: 40, maxWidth: 420 }}
+                        style={{
+                          fontSize: 13,
+                          minHeight: 40,
+                          maxWidth: 420,
+                          wordBreak: "break-word",
+                          overflowWrap: "anywhere",
+                        }}
                       >
                         {isBot ? (
                           msg.isLoading ? (
                             msg.text ? (
-                              <pre className="whitespace-pre-wrap text-[13px] leading-5 font-mono">
-                                {msg.text}
-                              </pre>
+                              <div
+                                className="prose prose-sm dark:prose-invert max-w-none [&_p]:my-2 [&_ul]:my-2 [&_ol]:my-2 [&_li]:my-1"
+                                style={{
+                                  maxHeight: 280,
+                                  overflow: "auto",
+                                }}
+                              >
+                                <MarkdownMessage text={msg.text} />
+                              </div>
                             ) : (
                               <span className="flex items-center gap-2">
                                 <Loader className="animate-spin w-4 h-4" />
@@ -413,19 +450,21 @@ export const EnterpriseChatTemplate = ({
                     }
                   }}
                   placeholder={
-                    botMetadata.placeholder || "Type your message..."
+                    botReady
+                      ? botMetadata.placeholder || "Type your message..."
+                      : "This bot is not accepting messages right now"
                   }
                   className={`flex-1 rounded-lg border px-4 py-2 font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:cursor-not-allowed ${
                     isDark
                       ? "bg-neutral-950 border-neutral-800 text-neutral-100 placeholder-neutral-400"
                       : "bg-white border-neutral-200 text-neutral-900 placeholder-neutral-500"
                   }`}
-                  disabled={isSending}
+                  disabled={isSending || !botReady}
                   autoFocus
                 />
                 <button
                   type="submit"
-                  disabled={!inputValue.trim() || isSending}
+                  disabled={!inputValue.trim() || isSending || !botReady}
                   className="p-2 rounded-lg bg-blue-600 hover:bg-blue-700 transition-colors text-white disabled:bg-blue-400 disabled:cursor-not-allowed"
                   aria-label="Send message"
                 >

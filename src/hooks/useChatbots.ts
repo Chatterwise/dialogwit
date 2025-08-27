@@ -26,7 +26,8 @@ export const useChatbots = (userId?: string) => {
       const { data, error } = await supabase
         .from("chatbots")
         .select("*, bot_role_templates(name, icon_name)")
-        .eq("user_id", userId)
+        .eq("user_id", userId!)
+        .neq("status", "deleted")
         .order("created_at", { ascending: false });
 
       if (error) throw error;
@@ -42,7 +43,7 @@ export const useChatbots = (userId?: string) => {
       .on(
         "postgres_changes",
         {
-          event: "*",                
+          event: "*",
           schema: "public",
           table: "chatbots",
           filter: `user_id=eq.${userId}`,
@@ -60,6 +61,7 @@ export const useChatbots = (userId?: string) => {
 
   return q;
 };
+
 export const useCreateChatbot = () => {
   const queryClient = useQueryClient();
   const toast = useToast();
@@ -76,10 +78,10 @@ export const useCreateChatbot = () => {
       return data as Chatbot;
     },
     onSuccess: (data) => {
-      // Invalidate and refetch chatbots
       queryClient.invalidateQueries({ queryKey: ["chatbots", data.user_id] });
       toast.success("Chatbot successfully created");
-    },onError: () => {
+    },
+    onError: () => {
       toast.error("Failed to create chatbot");
     },
   });
@@ -109,6 +111,7 @@ export const useUpdateChatbot = () => {
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["chatbots", data.user_id] });
+      queryClient.invalidateQueries({ queryKey: ["chatbot", data.id] });
       toast.success("Chatbot updated");
     },
     onError: () => {
@@ -118,30 +121,25 @@ export const useUpdateChatbot = () => {
 };
 
 export const useDeleteChatbot = () => {
+  // Soft-delete: set status = 'deleted' and DO NOT remove related rows
   const queryClient = useQueryClient();
   const toast = useToast();
 
   return useMutation({
     mutationFn: async (id: string) => {
-      // First, delete all usage tracking records for this chatbot
-      const { error: usageError } = await supabase
-        .from("usage_tracking")
-        .delete()
-        .eq("chatbot_id", id);
-      if (usageError) throw usageError;
-
-      // Now, delete the chatbot
-      const { error: chatbotError } = await supabase
+      const { data, error } = await supabase
         .from("chatbots")
-        .delete()
-        .eq("id", id);
-      if (chatbotError) throw chatbotError;
+        .update({ status: "deleted" })
+        .eq("id", id)
+        .select("id, user_id")
+        .single();
 
-      return { id };
+      if (error) throw error;
+      return data as Pick<Chatbot, "id" | "user_id">;
     },
-    onSuccess: (_, deletedId) => {
-      queryClient.invalidateQueries({ queryKey: ["chatbots"] });
-      queryClient.invalidateQueries({ queryKey: ["chatbot", deletedId] });
+    onSuccess: (row) => {
+      queryClient.invalidateQueries({ queryKey: ["chatbots", row.user_id] });
+      queryClient.invalidateQueries({ queryKey: ["chatbot", row.id] });
       toast.success("Chatbot and related usage data successfully deleted");
     },
     onError: () => {
@@ -149,7 +147,6 @@ export const useDeleteChatbot = () => {
     },
   });
 };
-
 
 export const useChatbot = (id: string) => {
   const queryClient = useQueryClient();
@@ -189,23 +186,26 @@ export const useChatbot = (id: string) => {
 
   return q;
 };
+
 export const useRestoreChatbot = () => {
   const queryClient = useQueryClient();
   const toast = useToast();
 
   return useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from("chatbots")
         .update({ status: "ready" })
-        .eq("id", id);
+        .eq("id", id)
+        .select("id, user_id")
+        .single();
 
       if (error) throw error;
-      return { id };
+      return data as Pick<Chatbot, "id" | "user_id">;
     },
-    onSuccess: (_, id) => {
-      queryClient.invalidateQueries({ queryKey: ["chatbots"] });
-      queryClient.invalidateQueries({ queryKey: ["chatbot", id] });
+    onSuccess: (row) => {
+      queryClient.invalidateQueries({ queryKey: ["chatbots", row.user_id] });
+      queryClient.invalidateQueries({ queryKey: ["chatbot", row.id] });
       toast.success("Chatbot successfully restored");
     },
     onError: () => {
@@ -220,7 +220,9 @@ export const useRoleTemplates = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("bot_role_templates")
-        .select("id,name,description,welcome_message,placeholder,bot_avatar,status,fallback_message,system_instructions")
+        .select(
+          "id,name,description,welcome_message,placeholder,bot_avatar,status,fallback_message,system_instructions"
+        )
         .eq("is_default", true)
         .order("name", { ascending: true });
 
@@ -229,4 +231,3 @@ export const useRoleTemplates = () => {
     },
   });
 };
-
