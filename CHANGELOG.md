@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file. See [standa
 
 ## [Unreleased]
 
+### 1.1.1 (2025-08-27)
+
+### Changed
+
+- Updated the edgefunctions to use openAI vectors and agents **[CHAT-36]**
+
 ### 1.1.0 (2025-08-21)
 
 ### Fixed
@@ -11,7 +17,7 @@ All notable changes to this project will be documented in this file. See [standa
 - Reposition add knowledge button in KnowledgeBase.tsx. **[CHAT-7]**
 - Added ScrollToTop to the ../docs/getting-started/introduction, ../docs/getting-started/first-chatbot, ../docs/getting-started/knowledge-base, /training-chatbot, All /docs/integrations pages, all /docs/advanced-features pages **[CHAT-25]**
 - Removed non drafted entries from tutorials page. **[CHAT-25]**
-- Profile Picture upload issue  **[CHAT-20]**
+- Profile Picture upload issue **[CHAT-20]**
 - Chatbot status is not updating properly **[CHAT-26]**
 - Added a markdown parcer of the main chatbot of the app **[CHAT-24]**
 - Settings on header not auto closing when focus is lost **[CHAT-28]**
@@ -33,6 +39,7 @@ All notable changes to this project will be documented in this file. See [standa
 - Shared types: `src/types/knowledge.ts` with `ProcessedFile`, `KnowledgeItem`, `UploadStatus`, etc. **[CHAT-35]**
 
 ### Changed
+
 - **Do not mark items as completed on submit**: items remain `processing` until DB marks `processed=true` or `status='error'`.
 - **FileUpload**:
   - Strong TS types (no `any`), safe ID generation, per-selection limits, size/type validation, dedupe by `name+size`.
