@@ -9,8 +9,6 @@ import {
   Clock,
   Ban,
   CheckCircle,
-  XCircle,
-  Settings,
   Download,
   Save,
   RotateCcw,

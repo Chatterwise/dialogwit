@@ -5,33 +5,32 @@ export const useProcessLargeDocument = (chatbotId: string) => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (id: string) => {
+    mutationFn: async (knowledgeBaseId: string) => {
       const session = (await supabase.auth.getSession()).data.session;
 
-      const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/process-large-documents`,
+      const r = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/sync-kb-to-openai`,
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${session?.access_token}`,
           },
-          body: JSON.stringify({ knowledge_base_id: id }),
+          body: JSON.stringify({ knowledge_base_id: knowledgeBaseId }),
         }
       );
 
-      if (!response.ok) {
-        const text = await response.text();
-        throw new Error(text || "Failed to process document");
+      if (!r.ok) {
+        const text = await r.text().catch(() => "");
+        throw new Error(text || "Failed to sync to OpenAI Vector Store");
       }
 
-      return response.text();
+      return r.json().catch(() => ({}));
     },
     onSuccess: () => {
-      // Invalidate the knowledgeBase query for the current chatbot
-      queryClient.invalidateQueries({
-        queryKey: ["knowledgeBase", chatbotId],
-      });
+      // Refresh KB + bot (vector_store_id might have been created)
+      queryClient.invalidateQueries({ queryKey: ["knowledgeBase", chatbotId] });
+      queryClient.invalidateQueries({ queryKey: ["chatbot", chatbotId] });
     },
   });
 };

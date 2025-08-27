@@ -7,6 +7,11 @@ export type Json =
   | Json[]
 
 export type Database = {
+  // Allows to automatically instantiate createClient with right options
+  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
+  __InternalSupabase: {
+    PostgrestVersion: "12.2.3 (519615d)"
+  }
   public: {
     Tables: {
       api_keys: {
@@ -261,9 +266,13 @@ export type Database = {
           bot_role_template_id: string | null
           created_at: string | null
           description: string
+          fallback_message: string | null
           id: string
           knowledge_base_processed: boolean | null
           name: string
+          openai_assistant_id: string | null
+          openai_default_thread_id: string | null
+          openai_vector_store_id: string | null
           placeholder: string | null
           status: Database["public"]["Enums"]["chatbot_status"] | null
           updated_at: string | null
@@ -275,9 +284,13 @@ export type Database = {
           bot_role_template_id?: string | null
           created_at?: string | null
           description: string
+          fallback_message?: string | null
           id?: string
           knowledge_base_processed?: boolean | null
           name: string
+          openai_assistant_id?: string | null
+          openai_default_thread_id?: string | null
+          openai_vector_store_id?: string | null
           placeholder?: string | null
           status?: Database["public"]["Enums"]["chatbot_status"] | null
           updated_at?: string | null
@@ -289,9 +302,13 @@ export type Database = {
           bot_role_template_id?: string | null
           created_at?: string | null
           description?: string
+          fallback_message?: string | null
           id?: string
           knowledge_base_processed?: boolean | null
           name?: string
+          openai_assistant_id?: string | null
+          openai_default_thread_id?: string | null
+          openai_vector_store_id?: string | null
           placeholder?: string | null
           status?: Database["public"]["Enums"]["chatbot_status"] | null
           updated_at?: string | null
@@ -418,30 +435,42 @@ export type Database = {
           content: string
           content_type: Database["public"]["Enums"]["content_type"] | null
           created_at: string | null
+          error_message: string | null
+          file_path: string | null
           filename: string | null
           force_reprocess: boolean | null
           id: string
+          openai_file_id: string | null
           processed: boolean | null
+          status: string | null
         }
         Insert: {
           chatbot_id: string
           content: string
           content_type?: Database["public"]["Enums"]["content_type"] | null
           created_at?: string | null
+          error_message?: string | null
+          file_path?: string | null
           filename?: string | null
           force_reprocess?: boolean | null
           id?: string
+          openai_file_id?: string | null
           processed?: boolean | null
+          status?: string | null
         }
         Update: {
           chatbot_id?: string
           content?: string
           content_type?: Database["public"]["Enums"]["content_type"] | null
           created_at?: string | null
+          error_message?: string | null
+          file_path?: string | null
           filename?: string | null
           force_reprocess?: boolean | null
           id?: string
+          openai_file_id?: string | null
           processed?: boolean | null
+          status?: string | null
         }
         Relationships: [
           {
@@ -1311,37 +1340,37 @@ export type Database = {
         Returns: boolean
       }
       check_email_limit: {
-        Args: { p_user_id: string; p_count?: number }
+        Args: { p_count?: number; p_user_id: string }
         Returns: Json
       }
       check_token_limit: {
         Args: {
-          p_user_id: string
-          p_metric_name: string
           p_estimated_tokens?: number
+          p_metric_name: string
+          p_user_id: string
         }
         Returns: Json
       }
       check_usage_limit: {
-        Args: { p_user_id: string; p_metric_name: string }
+        Args: { p_metric_name: string; p_user_id: string }
         Returns: Json
       }
       get_current_usage: {
-        Args: { p_user_id: string; p_metric_name: string }
+        Args: { p_metric_name: string; p_user_id: string }
         Returns: Json
       }
       get_rate_limit_config: {
-        Args: { p_user_id: string; p_endpoint?: string }
+        Args: { p_endpoint?: string; p_user_id: string }
         Returns: {
-          requests_per_minute: number
-          requests_per_hour: number
-          requests_per_day: number
           burst_limit: number
           enabled: boolean
+          requests_per_day: number
+          requests_per_hour: number
+          requests_per_minute: number
         }[]
       }
       get_token_usage_trends: {
-        Args: { p_user_id: string; p_days?: number }
+        Args: { p_days?: number; p_user_id: string }
         Returns: Json
       }
       get_user_token_usage: {
@@ -1382,14 +1411,14 @@ export type Database = {
       }
       increment_rate_limit_counter: {
         Args: {
-          p_identifier: string
           p_endpoint: string
+          p_identifier: string
           p_window_start: string
         }
         Returns: undefined
       }
       increment_usage: {
-        Args: { p_user_id: string; p_metric_name: string; p_increment?: number }
+        Args: { p_increment?: number; p_metric_name: string; p_user_id: string }
         Returns: Json
       }
       is_email_confirmed: {
@@ -1416,38 +1445,46 @@ export type Database = {
         Args: { "": string } | { "": unknown } | { "": unknown }
         Returns: string
       }
+      mark_chatbot_status: {
+        Args: { p_chatbot_id: string }
+        Returns: undefined
+      }
       mark_email_confirmed: {
         Args: { p_user_id: string }
         Returns: undefined
       }
+      recompute_chatbot_status: {
+        Args: { p_chatbot_id: string }
+        Returns: undefined
+      }
       search_chunks_by_text: {
         Args: {
+          match_count?: number
           search_query: string
           target_chatbot_id: string
-          match_count?: number
         }
         Returns: {
-          id: string
-          content: string
           chunk_index: number
-          source_url: string
+          content: string
+          id: string
           metadata: Json
+          source_url: string
         }[]
       }
       search_similar_chunks: {
         Args: {
+          match_count?: number
+          match_threshold?: number
           query_embedding: string
           target_chatbot_id: string
-          match_threshold?: number
-          match_count?: number
         }
         Returns: {
-          id: string
-          content: string
-          similarity: number
           chunk_index: number
-          source_url: string
+          content: string
+          id: string
           metadata: Json
+          similarity: number
+          source_url: string
         }[]
       }
       sparsevec_out: {
@@ -1471,17 +1508,17 @@ export type Database = {
         Returns: undefined
       }
       track_email_usage: {
-        Args: { p_user_id: string; p_count?: number }
+        Args: { p_count?: number; p_user_id: string }
         Returns: boolean
       }
       track_token_usage: {
         Args: {
-          p_user_id: string
           p_chatbot_id: string
+          p_metadata: Json
           p_metric_name: string
           p_token_count: number
           p_usage_source: string
-          p_metadata: Json
+          p_user_id: string
         }
         Returns: undefined
       }
@@ -1537,21 +1574,25 @@ export type Database = {
   }
 }
 
-type DefaultSchema = Database[Extract<keyof Database, "public">]
+type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
+
+type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
 
 export type Tables<
   DefaultSchemaTableNameOrOptions extends
     | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
-    | { schema: keyof Database },
+    | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
-    schema: keyof Database
+    schema: keyof DatabaseWithoutInternals
   }
-    ? keyof (Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
-        Database[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
+    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
     : never = never,
-> = DefaultSchemaTableNameOrOptions extends { schema: keyof Database }
-  ? (Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
-      Database[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
       Row: infer R
     }
     ? R
@@ -1569,14 +1610,16 @@ export type Tables<
 export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
-    | { schema: keyof Database },
+    | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
-    schema: keyof Database
+    schema: keyof DatabaseWithoutInternals
   }
-    ? keyof Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
     : never = never,
-> = DefaultSchemaTableNameOrOptions extends { schema: keyof Database }
-  ? Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
       Insert: infer I
     }
     ? I
@@ -1592,14 +1635,16 @@ export type TablesInsert<
 export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
-    | { schema: keyof Database },
+    | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
-    schema: keyof Database
+    schema: keyof DatabaseWithoutInternals
   }
-    ? keyof Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
     : never = never,
-> = DefaultSchemaTableNameOrOptions extends { schema: keyof Database }
-  ? Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
       Update: infer U
     }
     ? U
@@ -1615,14 +1660,16 @@ export type TablesUpdate<
 export type Enums<
   DefaultSchemaEnumNameOrOptions extends
     | keyof DefaultSchema["Enums"]
-    | { schema: keyof Database },
+    | { schema: keyof DatabaseWithoutInternals },
   EnumName extends DefaultSchemaEnumNameOrOptions extends {
-    schema: keyof Database
+    schema: keyof DatabaseWithoutInternals
   }
-    ? keyof Database[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
+    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
     : never = never,
-> = DefaultSchemaEnumNameOrOptions extends { schema: keyof Database }
-  ? Database[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
+> = DefaultSchemaEnumNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
   : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
     ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
     : never
@@ -1630,14 +1677,16 @@ export type Enums<
 export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
     | keyof DefaultSchema["CompositeTypes"]
-    | { schema: keyof Database },
+    | { schema: keyof DatabaseWithoutInternals },
   CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
-    schema: keyof Database
+    schema: keyof DatabaseWithoutInternals
   }
-    ? keyof Database[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
+    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
     : never = never,
-> = PublicCompositeTypeNameOrOptions extends { schema: keyof Database }
-  ? Database[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
+> = PublicCompositeTypeNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
   : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
     ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
     : never
