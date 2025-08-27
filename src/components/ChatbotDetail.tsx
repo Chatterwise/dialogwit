@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams, Link, useNavigate } from "react-router-dom";
+import { useParams, Link, useNavigate, useLocation } from "react-router-dom";
 import {
   Bot,
   ArrowLeft,
@@ -7,7 +7,6 @@ import {
   Settings,
   Code,
   BarChart3,
-  ExternalLink,
   Trash2,
   CheckCircle,
   Download,
@@ -24,38 +23,51 @@ import {
   TrendingUp,
   Zap,
 } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import { useChatbot, useDeleteChatbot } from "../hooks/useChatbots";
 import {
   useKnowledgeBase,
   useAddKnowledgeBase,
-  useDeleteKnowledgeBase,
   useUpdateKnowledgeBase,
+  useRemoveKnowledgeBaseFromOpenAI,
+  useBulkDeleteKnowledgeBase,
 } from "../hooks/useKnowledgeBase";
 import { useChatMessages, useChatAnalytics } from "../hooks/useChatMessages";
 import { ChatPreview } from "./ChatPreview";
 import { AnalyticsChart } from "./AnalyticsChart";
 import { ActionModal } from "./ActionModal";
-import { motion, AnimatePresence } from "framer-motion";
-import { useTrainChatbot } from "../hooks/useTraining";
 import { KnowledgeEditorModal } from "./KnowledgeEditorModal";
 import { supabase } from "../lib/supabase";
 import BotKnowledgeContent from "./BotKnowledgeContent";
 import { useProcessLargeDocument } from "../hooks/useProcessLargeDocument";
 import { tabs } from "./utils/ChatbotDetailUtils";
 import { KnowledgeItem } from "./utils/types";
-import { useLocation } from "react-router-dom";
 
 export const ChatbotDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
+
   const { data: chatbot, isLoading: chatbotLoading } = useChatbot(id || "");
   const { data: chatMessages = [], isLoading: messagesLoading } =
     useChatMessages(id || "");
   const { data: analytics, isLoading: analyticsLoading } = useChatAnalytics(
     id || ""
   );
+
+  const {
+    data: knowledgeBase = [],
+    isLoading: isKnowledgeLoading,
+    refetch: refetchKnowledgeBase,
+  } = useKnowledgeBase(id ?? "");
+
+  const addKnowledgeBase = useAddKnowledgeBase();
+  const updateKnowledgeBase = useUpdateKnowledgeBase();
+  const removeKbFromOpenAI = useRemoveKnowledgeBaseFromOpenAI();
+  const bulkRemoveKb = useBulkDeleteKnowledgeBase();
   const deleteChatbot = useDeleteChatbot();
-  const location = useLocation();
+  const { mutate } = useProcessLargeDocument(id ?? "");
+
   const [activeTab, setActiveTab] = useState<
     "overview" | "chat" | "knowledge" | "analytics"
   >("overview");
@@ -72,99 +84,6 @@ export const ChatbotDetail = () => {
   const [editingItem, setEditingItem] = useState<KnowledgeItem | null>(null);
   const [viewingItem, setViewingItem] = useState<KnowledgeItem | null>(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const publicChatUrl = `${window.location.origin}/chat/${id}`;
-
-  const {
-    data: knowledgeBase = [],
-    isLoading: isKnowledgeLoading,
-    refetch: refetchKnowledgeBase,
-  } = useKnowledgeBase(id ?? "");
-  const addKnowledgeBase = useAddKnowledgeBase();
-  const updateKnowledgeBase = useUpdateKnowledgeBase();
-  const deleteKnowledgeBase = useDeleteKnowledgeBase();
-  const { mutate } = useProcessLargeDocument(id ?? "");
-
-  const trainChatbot = useTrainChatbot();
-
-  const stats = [
-    {
-      name: "Total Messages",
-      value: analytics?.totalMessages || 0,
-      icon: MessageCircle,
-      color:
-        "text-primary-600 dark:text-primary-400 bg-primary-100 dark:bg-primary-900/20",
-      change: analytics?.totalMessages || 0 > 0 ? "+12%" : "0%",
-    },
-    {
-      name: "Today's Messages",
-      value: analytics?.todayMessages || 0,
-      icon: Clock,
-      color:
-        "text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-900/20",
-      change: analytics?.todayMessages || 0 > 0 ? "+5%" : "0%",
-    },
-    {
-      name: "Avg Response Length",
-      value: `${analytics?.avgResponseLength || 0} chars`,
-      icon: FileText,
-      color:
-        "text-purple-600 dark:text-purple-400 bg-purple-100 dark:bg-purple-900/20",
-      change: "-2%",
-    },
-    {
-      name: "Knowledge Items",
-      value: knowledgeBase.length,
-      icon: FileText,
-      color:
-        "text-accent-600 dark:text-accent-400 bg-accent-100 dark:bg-accent-900/20",
-      change: "0%",
-    },
-  ];
-  const metrics = [
-    {
-      label: "Total Messages",
-      value: analytics?.totalMessages ?? 0,
-      icon: Activity,
-    },
-    {
-      label: "This Week",
-      value: analytics?.weeklyMessages ?? 0,
-      icon: BarChart2,
-    },
-    {
-      label: "Avg Response",
-      value: `${analytics?.avgResponseLength ?? 0} chars`,
-      icon: FileText,
-    },
-    {
-      label: "Knowledge Base",
-      value: knowledgeBase.length,
-      icon: FileText,
-    },
-  ];
-
-  const trends = [
-    {
-      label: "Daily Avg",
-      value: `~${Math.round((analytics?.totalMessages ?? 0) / 7)} msgs`,
-      icon: Clock,
-    },
-    {
-      label: "Weekly Growth",
-      value: `+${Math.floor(Math.random() * 15)}%`,
-      icon: TrendingUp,
-    },
-    {
-      label: "Response Time",
-      value: `~${Math.floor(Math.random() * 400 + 200)}ms`,
-      icon: Zap,
-    },
-    {
-      label: "Satisfaction",
-      value: `${Math.floor(Math.random() * 10 + 85)}%`,
-      icon: Smile,
-    },
-  ];
 
   useEffect(() => {
     if (!id) return;
@@ -217,7 +136,6 @@ export const ChatbotDetail = () => {
     setProgress(0);
 
     async function syncAllPending(chatbotId: string) {
-      // find items not processed yet and sync them one-by-one
       const { data: pending } = await supabase
         .from("knowledge_base")
         .select("id, processed")
@@ -265,14 +183,14 @@ export const ChatbotDetail = () => {
           content: data.content,
           content_type: data.contentType,
           filename: data.filename || null,
-          processed: false, // we will sync next
+          processed: false,
           status: "pending",
         });
       }
 
       setProgress(35);
       setProgressLabel("Refreshing list...");
-      const refreshed = await refetchKnowledgeBase(); // ensure new/updated rows are visible
+      await refetchKnowledgeBase();
 
       setProgressLabel("Syncing to OpenAI...");
       setProgress(40);
@@ -312,15 +230,16 @@ export const ChatbotDetail = () => {
     }
   };
 
-  const handleDelete = async (id: string) => {
+  /** Soft-remove ONE item & unlink from OpenAI via edge function */
+  const handleDelete = async (kbId: string) => {
     try {
       setProcessing(true);
-      setProgressLabel("Deleting item...");
+      setProgressLabel("Removing from OpenAI…");
       setProgress(30);
 
-      await deleteKnowledgeBase.mutateAsync(id);
-      setProgress(70);
+      await removeKbFromOpenAI.mutateAsync(kbId);
 
+      setProgress(80);
       await refetchKnowledgeBase();
       setProgress(100);
 
@@ -328,17 +247,17 @@ export const ChatbotDetail = () => {
         new CustomEvent("toast", {
           detail: {
             type: "success",
-            message: "Knowledge item deleted successfully",
+            message: "Knowledge item removed from OpenAI and hidden.",
           },
         })
       );
     } catch (error) {
-      console.error("Error deleting knowledge item:", error);
+      console.error("Error removing knowledge item:", error);
       window.dispatchEvent(
         new CustomEvent("toast", {
           detail: {
             type: "error",
-            message: "Failed to delete knowledge item",
+            message: "Failed to remove knowledge item",
           },
         })
       );
@@ -351,38 +270,38 @@ export const ChatbotDetail = () => {
     }
   };
 
+  /** Soft-remove SELECTED items (bulk) via edge function */
   const handleBulkDelete = async () => {
     if (selectedItems.length === 0) return;
 
     try {
       setProcessing(true);
-      setProgressLabel(`Deleting ${selectedItems.length} items...`);
-      setProgress(20);
+      setProgressLabel(`Removing ${selectedItems.length} item(s) from OpenAI…`);
+      setProgress(25);
 
-      await Promise.all(
-        selectedItems.map((id) => deleteKnowledgeBase.mutateAsync(id))
-      );
-      setProgress(70);
+      const { ok, fail } = await bulkRemoveKb.mutateAsync(selectedItems);
 
+      setProgress(85);
       setSelectedItems([]);
       await refetchKnowledgeBase();
       setProgress(100);
 
+      const msg =
+        fail === 0
+          ? `${ok} item(s) removed.`
+          : `${ok} removed, ${fail} failed.`;
       window.dispatchEvent(
         new CustomEvent("toast", {
-          detail: {
-            type: "success",
-            message: `${selectedItems.length} items deleted successfully`,
-          },
+          detail: { type: fail ? "info" : "success", message: msg },
         })
       );
     } catch (error) {
-      console.error("Error bulk deleting knowledge items:", error);
+      console.error("Error bulk removing knowledge items:", error);
       window.dispatchEvent(
         new CustomEvent("toast", {
           detail: {
             type: "error",
-            message: "Failed to delete selected items",
+            message: "Failed to remove selected items",
           },
         })
       );
@@ -427,7 +346,7 @@ export const ChatbotDetail = () => {
   if (chatbotLoading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 dark:border-primary-400"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 dark:border-primary-400" />
       </div>
     );
   }
@@ -452,6 +371,87 @@ export const ChatbotDetail = () => {
       </div>
     );
   }
+
+  const stats = [
+    {
+      name: "Total Messages",
+      value: analytics?.totalMessages || 0,
+      icon: MessageCircle,
+      color:
+        "text-primary-600 dark:text-primary-400 bg-primary-100 dark:bg-primary-900/20",
+      change: analytics?.totalMessages || 0 > 0 ? "+12%" : "0%",
+    },
+    {
+      name: "Today's Messages",
+      value: analytics?.todayMessages || 0,
+      icon: Clock,
+      color:
+        "text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-900/20",
+      change: analytics?.todayMessages || 0 > 0 ? "+5%" : "0%",
+    },
+    {
+      name: "Avg Response Length",
+      value: `${analytics?.avgResponseLength || 0} chars`,
+      icon: FileText,
+      color:
+        "text-purple-600 dark:text-purple-400 bg-purple-100 dark:bg-purple-900/20",
+      change: "-2%",
+    },
+    {
+      name: "Knowledge Items",
+      value: knowledgeBase.length,
+      icon: FileText,
+      color:
+        "text-accent-600 dark:text-accent-400 bg-accent-100 dark:bg-accent-900/20",
+      change: "0%",
+    },
+  ];
+
+  const metrics = [
+    {
+      label: "Total Messages",
+      value: analytics?.totalMessages ?? 0,
+      icon: Activity,
+    },
+    {
+      label: "This Week",
+      value: analytics?.weeklyMessages ?? 0,
+      icon: BarChart2,
+    },
+    {
+      label: "Avg Response",
+      value: `${analytics?.avgResponseLength ?? 0} chars`,
+      icon: FileText,
+    },
+    {
+      label: "Knowledge Base",
+      value: knowledgeBase.length,
+      icon: FileText,
+    },
+  ];
+
+  const trends = [
+    {
+      label: "Daily Avg",
+      value: `~${Math.round((analytics?.totalMessages ?? 0) / 7)} msgs`,
+      icon: Clock,
+    },
+    {
+      label: "Weekly Growth",
+      value: `+${Math.floor(Math.random() * 15)}%`,
+      icon: TrendingUp,
+    },
+    {
+      label: "Response Time",
+      value: `~${Math.floor(Math.random() * 400 + 200)}ms`,
+      icon: Zap,
+    },
+    {
+      label: "Satisfaction",
+      value: `${Math.floor(Math.random() * 10 + 85)}%`,
+      icon: Smile,
+    },
+  ];
 
   return (
     <div className="space-y-8">
@@ -513,15 +513,6 @@ export const ChatbotDetail = () => {
 
         {/* Actions */}
         <div className="flex flex-wrap gap-2">
-          {/* <a
-            href={publicChatUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200"
-          >
-            <ExternalLink className="h-4 w-4 mr-2" />
-            Open Chat
-          </a> */}
           <Link
             to={`/chatbots/${id}/settings`}
             className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200"
@@ -688,7 +679,7 @@ export const ChatbotDetail = () => {
 
       {activeTab === "knowledge" && (
         <div className="space-y-8">
-          {/* Add Knowledge Button (always visible) */}
+          {/* Add Knowledge Button */}
           <div className="flex justify-end">
             <button
               onClick={() => {
@@ -806,7 +797,7 @@ export const ChatbotDetail = () => {
                 </button>
               </div>
               <div className="flex-1 overflow-y-auto p-8">
-                <div className="flex items-center justify-between mb=4">
+                <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center space-x-2">
                     <span
                       className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
@@ -825,9 +816,9 @@ export const ChatbotDetail = () => {
                       }`}
                     >
                       {viewingItem.processed ? (
-                        <CheckCircle className="h-3 w=3 mr-1" />
+                        <CheckCircle className="h-3 w-3 mr-1" />
                       ) : (
-                        <XCircle className="h-3 w=3 mr-1" />
+                        <XCircle className="h-3 w-3 mr-1" />
                       )}
                       {viewingItem.processed ? "Processed" : "Not Processed"}
                     </span>
@@ -839,14 +830,14 @@ export const ChatbotDetail = () => {
                       : "Unknown date"}
                   </div>
                 </div>
-                <div className="bg-gray-50 dark:bg-gray-900/50 rounded-xl p-4 border border-gray-200 dark:border-gray=700 whitespace-pre-wrap text-sm text-gray-800 dark:text-gray-200 max-h-[60vh] overflow-y-auto">
+                <div className="bg-gray-50 dark:bg-gray-900/50 rounded-xl p-4 border border-gray-200 dark:border-gray-700 whitespace-pre-wrap text-sm text-gray-800 dark:text-gray-200 max-h-[60vh] overflow-y-auto">
                   {viewingItem.content}
                 </div>
               </div>
-              <div className="px-8 py-5 border-t border-gray-100 dark:border-gray=700 flex justify-between">
+              <div className="px-8 py-5 border-t border-gray-100 dark:border-gray-700 flex justify-between">
                 <button
                   onClick={() => setViewingItem(null)}
-                  className="px-5 py-2 text-sm font-semibold text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors duration=200"
+                  className="px-5 py-2 text-sm font-semibold text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors duration-200"
                 >
                   Close
                 </button>
@@ -856,14 +847,14 @@ export const ChatbotDetail = () => {
                       handleEdit(viewingItem);
                       setViewingItem(null);
                     }}
-                    className="px-5 py-2 text-sm font-semibold text-white bg-blue-600 dark:bg-blue-700 border border-transparent rounded-xl hover:bg-blue-700 dark:hover:bg-blue-800 transition-colors duration=200"
+                    className="px-5 py-2 text-sm font-semibold text-white bg-blue-600 dark:bg-blue-700 border border-transparent rounded-xl hover:bg-blue-700 dark:hover:bg-blue-800 transition-colors duration-200"
                   >
                     <Edit className="h-4 w-4 mr-2 inline" />
                     Edit
                   </button>
                   <button
                     onClick={() => handleDownload(viewingItem)}
-                    className="px-5 py-2 text-sm font-semibold text-white bg-green-600 dark:bg-green-700 border border-transparent rounded-xl hover:bg-green-700 dark:hover:bg-green-800 transition-colors duration=200"
+                    className="px-5 py-2 text-sm font-semibold text-white bg-green-600 dark:bg-green-700 border border-transparent rounded-xl hover:bg-green-700 dark:hover:bg-green-800 transition-colors duration-200"
                   >
                     <Download className="h-4 w-4 mr-2 inline" />
                     Download
@@ -898,7 +889,7 @@ const renderCard = (
     <ul className="divide-y divide-gray-100 dark:divide-gray-800">
       {data.map(({ label, value, icon: Icon }, i) => (
         <li key={i} className="flex items-center py-3 space-x-3">
-          <div className="p-2 rounded-xl bg-primary-100 dark:bg-primary-900/20 text-primary-6 dark:text-primary-400">
+          <div className="p-2 rounded-xl bg-primary-100 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400">
             <Icon className="w-4 h-4" />
           </div>
           <div className="flex-1">

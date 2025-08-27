@@ -215,17 +215,17 @@ export const ChatbotList = () => {
                   ) : (
                     <button
                       onClick={() =>
-                        chatbot.id === "b2c75f33-f68b-48d1-89f9-c96945c1b107"
+                        chatbot.id === "6db4c04f-0ed7-4f7d-b622-bd003e22bac5"
                           ? alert("This chatbot cannot be deleted.")
                           : handleDeleteClick(chatbot.id, chatbot.name)
                       }
                       disabled={
                         deletingId === chatbot.id ||
-                        chatbot.id === "b2c75f33-f68b-48d1-89f9-c96945c1b107"
+                        chatbot.id === "6db4c04f-0ed7-4f7d-b622-bd003e22bac5"
                       }
                       className="flex items-center justify-center px-3 py-2 border border-red-300 dark:border-red-900 text-red-600 dark:text-red-400 rounded-xl hover:bg-red-50 dark:hover:bg-red-900/20 transition disabled:opacity-50"
                       title={
-                        chatbot.id === "b2c75f33-f68b-48d1-89f9-c96945c1b107"
+                        chatbot.id === "6db4c04f-0ed7-4f7d-b622-bd003e22bac5"
                           ? "This chatbot cannot be deleted"
                           : `Delete ${chatbot.name}`
                       }
