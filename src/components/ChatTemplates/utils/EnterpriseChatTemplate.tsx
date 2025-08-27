@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   Send,
   Loader,
@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { LogoMini } from "../../ui/Logo";
 import { MarkdownMessage } from "../../MarkdownMessage";
+import { readSSE } from "../../utils/sse";
 
 interface Message {
   id: string;
@@ -19,14 +20,12 @@ interface Message {
   timestamp: Date;
   isLoading?: boolean;
 }
-
 interface BotMetadata {
   name: string;
   welcome_message: string;
   placeholder: string;
   bot_avatar?: string;
 }
-
 interface EnterpriseChatTemplateProps {
   botId: string;
   apiUrl?: string;
@@ -35,6 +34,15 @@ interface EnterpriseChatTemplateProps {
   onToggle?: (isOpen: boolean) => void;
   theme?: "light" | "dark";
   className?: string;
+}
+
+function normalizeStreamingText(input: string): string {
+  // 1) unify newlines  2) strip trailing spaces before newline
+  // 3) collapse 3+ blank lines → exactly 2  4) trim leading newlines at start
+  let s = input.replace(/\r\n/g, "\n").replace(/[ \t]+\n/g, "\n");
+  s = s.replace(/\n{3,}/g, "\n\n");
+  s = s.replace(/^\n{2,}/, "\n"); // avoid massive top padding while streaming
+  return s;
 }
 
 export const EnterpriseChatTemplate = ({
@@ -48,10 +56,9 @@ export const EnterpriseChatTemplate = ({
 }: EnterpriseChatTemplateProps) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
   const [threadId, setThreadId] = useState<string | null>(null);
-
+  const [isSending, setIsSending] = useState(false);
   const [botMetadata, setBotMetadata] = useState<BotMetadata>({
     name: "",
     welcome_message: "",
@@ -61,63 +68,46 @@ export const EnterpriseChatTemplate = ({
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const isDark = theme === "dark";
 
-  // Fetch bot meta
   useEffect(() => {
-    async function fetchBotMetadata() {
+    (async () => {
       try {
-        const response = await fetch(
-          `${apiUrl}/bot-metadata?chatbot_id=${botId}`,
-          {
-            headers: {
-              "Content-Type": "application/json",
-              ...(apiKey && { Authorization: `Bearer ${apiKey}` }),
-            },
-          }
-        );
-        const data = await response.json();
-        if (data?.name) {
-          setBotMetadata({
-            name: data.name,
-            welcome_message:
-              data.welcome_message ||
-              `Hi there! I’m your Chatterwise assistant.\n\nI can answer questions about Chatterwise features, walk you through getting started, and guide you through integrations with other platforms.\n\nJust let me know what you’d like to do, or ask for a quick overview of what’s possible!`,
-            placeholder: data.placeholder || "Type your question...",
-            bot_avatar: data.bot_avatar || undefined,
-          });
-        } else {
-          setBotMetadata((meta) => ({
-            ...meta,
-            welcome_message:
-              meta.welcome_message ||
-              `👋 Welcome to Chatterwise!\n\nI can answer questions about features, getting started, and integrations. Try asking, "What can Chatterwise do?" or "How do I connect with Slack?"`,
-          }));
-        }
-      } catch (err) {
+        const res = await fetch(`${apiUrl}/bot-metadata?chatbot_id=${botId}`, {
+          headers: {
+            "Content-Type": "application/json",
+            ...(apiKey ? { Authorization: `Bearer ${apiKey}` } : {}),
+          },
+        });
+        const data = await res.json();
+        setBotMetadata({
+          name: data?.name ?? "",
+          welcome_message:
+            data?.welcome_message ||
+            "Hi there! I’m your Chatterwise assistant.\n\nI can answer questions about Chatterwise features, walk you through getting started, and guide you through integrations with other platforms.",
+          placeholder: data?.placeholder || "Type your message...",
+          bot_avatar: data?.bot_avatar || undefined,
+        });
+      } catch {
         setBotMetadata((meta) => ({
           ...meta,
           welcome_message:
             meta.welcome_message ||
-            `👋 Welcome to Chatterwise!\n\nI can answer questions about features, getting started, and integrations. Try asking, "What can Chatterwise do?" or "How do I connect with Slack?"`,
+            "👋 Welcome to Chatterwise! Ask me anything about features, setup, and integrations.",
         }));
-        console.error("Failed to fetch bot metadata", err);
       }
-    }
-    fetchBotMetadata();
+    })();
   }, [botId, apiUrl, apiKey]);
 
-  // Show welcome message when opening, or when resetting
   useEffect(() => {
-    if (isOpen) {
-      setMessages([
-        {
-          id: "1",
-          text: botMetadata.welcome_message,
-          sender: "bot",
-          timestamp: new Date(),
-        },
-      ]);
-      setInputValue("");
-    }
+    if (!isOpen) return;
+    setMessages([
+      {
+        id: "welcome",
+        text: botMetadata.welcome_message,
+        sender: "bot",
+        timestamp: new Date(),
+      },
+    ]);
+    setInputValue("");
   }, [isOpen, botMetadata.welcome_message]);
 
   useEffect(() => {
@@ -125,7 +115,7 @@ export const EnterpriseChatTemplate = ({
   }, [messages]);
 
   const sendMessage = async () => {
-    if (!inputValue.trim() || isLoading) return;
+    if (!inputValue.trim() || isSending) return;
 
     const userMessage: Message = {
       id: Date.now().toString(),
@@ -135,17 +125,19 @@ export const EnterpriseChatTemplate = ({
     };
     setMessages((prev) => [...prev, userMessage]);
     setInputValue("");
-    setIsLoading(true);
+    setIsSending(true);
 
-    // Bot loading placeholder (we'll stream into this)
-    const loadingMessage: Message = {
-      id: (Date.now() + 1).toString(),
-      text: "",
-      sender: "bot",
-      timestamp: new Date(),
-      isLoading: true,
-    };
-    setMessages((prev) => [...prev, loadingMessage]);
+    const botMsgId = `b_${Date.now() + 1}`;
+    setMessages((prev) => [
+      ...prev,
+      {
+        id: botMsgId,
+        text: "",
+        sender: "bot",
+        timestamp: new Date(),
+        isLoading: true,
+      },
+    ]);
 
     try {
       const res = await fetch(`${apiUrl}/chat-file-search`, {
@@ -153,133 +145,59 @@ export const EnterpriseChatTemplate = ({
         headers: {
           "Content-Type": "application/json",
           ...(apiKey && { Authorization: `Bearer ${apiKey}` }),
+          Accept: "text/event-stream",
         },
+        cache: "no-store",
+        keepalive: false,
         body: JSON.stringify({
           chatbot_id: botId,
           message: userMessage.text,
           ...(threadId ? { thread_id: threadId } : {}),
-          stream: true, // ask for SSE streaming
+          stream: true,
         }),
       });
 
-      const ct = res.headers.get("content-type") || "";
-
-      if (ct.includes("text/event-stream")) {
-        // parse SSE stream
-        const reader = res.body!.getReader();
-        const decoder = new TextDecoder();
-        let buffer = "";
-        let full = "";
-
-        const patchLoading = (next: string, done = false) => {
+      let full = "";
+      await readSSE(res, {
+        onReady: (tid) => tid && setThreadId(tid),
+        onDelta: (chunk) => {
+          full += chunk;
+          const normalized = normalizeStreamingText(full);
           setMessages((prev) =>
             prev.map((m) =>
-              m.id === loadingMessage.id
-                ? { ...m, text: next, isLoading: !done }
+              m.id === botMsgId
+                ? { ...m, text: normalized, isLoading: true }
                 : m
             )
           );
-        };
-
-        while (true) {
-          const { value, done } = await reader.read();
-          if (done) break;
-
-          buffer += decoder.decode(value, { stream: true });
-
-          // events are separated by blank line
-          let idx: number;
-          while ((idx = buffer.indexOf("\n\n")) !== -1) {
-            const eventChunk = buffer.slice(0, idx);
-            buffer = buffer.slice(idx + 2);
-
-            const lines = eventChunk.split("\n");
-            let event = "";
-            let dataStr = "";
-            for (const line of lines) {
-              if (line.startsWith("event:"))
-                event = line.replace("event:", "").trim();
-              if (line.startsWith("data:"))
-                dataStr += line.replace("data:", "").trim();
-            }
-
-            if (!event) continue;
-
-            if (event === "ready") {
-              try {
-                const payload = JSON.parse(dataStr || "{}");
-                if (payload.thread_id) setThreadId(payload.thread_id);
-              } catch {
-                // Intentionally ignore JSON parse errors
-              }
-            } else if (event === "delta") {
-              try {
-                const payload = JSON.parse(dataStr || "{}");
-                const piece: string = payload.text ?? "";
-                if (piece) {
-                  full += piece;
-                  patchLoading(full, false);
-                }
-              } catch {
-                // Intentionally ignore JSON parse errors
-              }
-            } else if (event === "end") {
-              patchLoading(full || "Done.", true);
-            }
-          }
-        }
-      } else {
-        // Non-streaming fallback (JSON)
-        const data = await res.json();
-        const botText: string = data.text ?? data.response ?? "";
-        const newTid: string | undefined = data.thread_id;
-
-        setMessages((prev) =>
-          prev.map((m) =>
-            m.id === loadingMessage.id
-              ? { ...m, text: botText, isLoading: false }
-              : m
-          )
-        );
-        if (newTid) setThreadId(newTid);
-      }
-    } catch (err) {
-      console.error("chat error:", err);
+        },
+        onEnd: (payload) => {
+          const finalText = (payload?.text && String(payload.text)) || full;
+          const normalized = normalizeStreamingText(finalText).trimEnd();
+          setMessages((prev) =>
+            prev.map((m) =>
+              m.id === botMsgId
+                ? { ...m, text: normalized, isLoading: false }
+                : m
+            )
+          );
+        },
+      });
+    } catch {
       setMessages((prev) =>
         prev.map((m) =>
-          m.id === loadingMessage.id
+          m.id === botMsgId
             ? {
                 ...m,
-                text: "Sorry, I encountered an error. Please try again.",
+                text: "Sorry, I hit an error. Please try again.",
                 isLoading: false,
               }
             : m
         )
       );
     } finally {
-      setIsLoading(false);
+      setIsSending(false);
     }
-  };
-
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      sendMessage();
-    }
-  };
-
-  // Reset chat handler
-  const handleReset = () => {
-    setMessages([
-      {
-        id: "1",
-        text: botMetadata.welcome_message,
-        sender: "bot",
-        timestamp: new Date(),
-      },
-    ]);
-    setThreadId(null);
-    setInputValue("");
   };
 
   if (!isOpen) return null;
@@ -300,12 +218,11 @@ export const EnterpriseChatTemplate = ({
           height: isMinimized ? 64 : 560,
         }}
       >
-        {/* Header */}
         <div
           className={`border-b px-5 py-3 flex items-center justify-between ${
             isDark
-              ? "bg-neutral-950 border-neutral-800 text-neutral-100"
-              : "bg-neutral-50 border-neutral-200 text-neutral-900"
+              ? "bg-neutral-950 border-neutral-800"
+              : "bg-neutral-50 border-neutral-200"
           }`}
         >
           <div className="flex items-center gap-3">
@@ -330,21 +247,25 @@ export const EnterpriseChatTemplate = ({
           </div>
           <div className="flex items-center gap-2">
             <button
-              onClick={handleReset}
-              className={`p-1 rounded hover:bg-neutral-200/30 transition-colors ${
-                isDark ? "dark:hover:bg-neutral-800/50" : ""
-              }`}
-              aria-label="Reset chat"
-              title="Reset chat"
+              onClick={() => {
+                setMessages([
+                  {
+                    id: "welcome",
+                    text: botMetadata.welcome_message,
+                    sender: "bot",
+                    timestamp: new Date(),
+                  },
+                ]);
+                setThreadId(null);
+                setInputValue("");
+              }}
+              className="p-1 rounded hover:bg-neutral-200/30 dark:hover:bg-neutral-800/50"
             >
               <RotateCcw className="w-4 h-4" />
             </button>
             <button
               onClick={() => setIsMinimized(!isMinimized)}
-              className={`p-1 rounded hover:bg-neutral-200/30 transition-colors ${
-                isDark ? "dark:hover:bg-neutral-800/50" : ""
-              }`}
-              aria-label={isMinimized ? "Expand chat" : "Minimize chat"}
+              className="p-1 rounded hover:bg-neutral-200/30 dark:hover:bg-neutral-800/50"
             >
               {isMinimized ? (
                 <Maximize2 className="w-4 h-4" />
@@ -354,17 +275,13 @@ export const EnterpriseChatTemplate = ({
             </button>
             <button
               onClick={() => onToggle?.(false)}
-              className={`p-1 rounded hover:bg-red-50 transition-colors ${
-                isDark ? "dark:hover:bg-red-900/40" : ""
-              }`}
-              aria-label="Close chat"
+              className="p-1 rounded hover:bg-red-50 dark:hover:bg-red-900/40"
             >
               <X className="w-4 h-4" />
             </button>
           </div>
         </div>
 
-        {/* Messages */}
         {!isMinimized && (
           <>
             <div className="flex-1 overflow-y-auto px-5 py-5 bg-transparent">
@@ -377,7 +294,6 @@ export const EnterpriseChatTemplate = ({
                       isBot ? "justify-start" : "justify-end"
                     }`}
                   >
-                    {/* Avatar (bot left, user right) */}
                     {isBot && (
                       <div className="mr-2 flex-shrink-0">
                         {botMetadata.bot_avatar ? (
@@ -402,7 +318,6 @@ export const EnterpriseChatTemplate = ({
                       >
                         {isBot ? (
                           msg.isLoading ? (
-                            // STREAMING: show the live text if we have it, else spinner
                             msg.text ? (
                               <pre className="whitespace-pre-wrap text-[13px] leading-5 font-mono">
                                 {msg.text}
@@ -414,13 +329,11 @@ export const EnterpriseChatTemplate = ({
                               </span>
                             )
                           ) : (
-                            // Final bot message rendered with Markdown
-                            <div className="prose prose-sm dark:prose-invert max-w-none">
+                            <div className="prose prose-sm dark:prose-invert max-w-none [&_p]:my-2 [&_ul]:my-2 [&_ol]:my-2 [&_li]:my-1">
                               <MarkdownMessage text={msg.text} />
                             </div>
                           )
                         ) : (
-                          // User messages stay plain text
                           <span className="whitespace-pre-wrap">
                             {msg.text}
                           </span>
@@ -453,12 +366,11 @@ export const EnterpriseChatTemplate = ({
               <div ref={messagesEndRef} />
             </div>
 
-            {/* Footer bar */}
             <div
               className={`flex items-center justify-between px-5 py-2 border-t ${
                 isDark
-                  ? "border-neutral-800 bg-neutral-950/95 text-neutral-300"
-                  : "border-neutral-200 bg-neutral-50 text-neutral-700"
+                  ? "border-neutral-800 bg-neutral-950/95"
+                  : "border-neutral-200 bg-neutral-50"
               }`}
             >
               <div className="flex items-center gap-2 text-xs font-medium">
@@ -475,7 +387,6 @@ export const EnterpriseChatTemplate = ({
               </a>
             </div>
 
-            {/* Input */}
             <div
               className={`px-5 py-4 border-t ${
                 isDark
@@ -495,7 +406,12 @@ export const EnterpriseChatTemplate = ({
                   type="text"
                   value={inputValue}
                   onChange={(e) => setInputValue(e.target.value)}
-                  onKeyPress={handleKeyPress}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && !e.shiftKey) {
+                      e.preventDefault();
+                      sendMessage();
+                    }
+                  }}
                   placeholder={
                     botMetadata.placeholder || "Type your message..."
                   }
@@ -504,16 +420,16 @@ export const EnterpriseChatTemplate = ({
                       ? "bg-neutral-950 border-neutral-800 text-neutral-100 placeholder-neutral-400"
                       : "bg-white border-neutral-200 text-neutral-900 placeholder-neutral-500"
                   }`}
-                  disabled={isLoading}
+                  disabled={isSending}
                   autoFocus
                 />
                 <button
                   type="submit"
-                  disabled={!inputValue.trim() || isLoading}
+                  disabled={!inputValue.trim() || isSending}
                   className="p-2 rounded-lg bg-blue-600 hover:bg-blue-700 transition-colors text-white disabled:bg-blue-400 disabled:cursor-not-allowed"
                   aria-label="Send message"
                 >
-                  {isLoading ? (
+                  {isSending ? (
                     <Loader className="w-4 h-4 animate-spin" />
                   ) : (
                     <Send className="w-5 h-5" />

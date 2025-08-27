@@ -513,7 +513,7 @@ export const ChatbotDetail = () => {
 
         {/* Actions */}
         <div className="flex flex-wrap gap-2">
-          <a
+          {/* <a
             href={publicChatUrl}
             target="_blank"
             rel="noopener noreferrer"
@@ -521,7 +521,7 @@ export const ChatbotDetail = () => {
           >
             <ExternalLink className="h-4 w-4 mr-2" />
             Open Chat
-          </a>
+          </a> */}
           <Link
             to={`/chatbots/${id}/settings`}
             className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200"

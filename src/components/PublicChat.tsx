@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams } from "react-router-dom";
 import {
   Send,
@@ -10,10 +10,10 @@ import {
   Maximize2,
 } from "lucide-react";
 import { useChatbot } from "../hooks/useChatbots";
-import { useAuth } from "../hooks/useAuth";
-import { useChatFileSearch } from "../hooks/useChatFileSearch";
+import { useChatStream } from "../hooks/useChatStream";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import { readSSE } from "./utils/sse";
 
 interface Message {
   id: string;
@@ -28,13 +28,12 @@ export const PublicChat = () => {
   const { data: chatbot, isLoading: chatbotLoading } = useChatbot(
     chatbotId || ""
   );
-  const ask = useChatFileSearch();
-  const { user } = useAuth();
+  const { isPending } = useChatStream();
 
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState("");
   const [isMinimized, setIsMinimized] = useState(false);
-  const [threadId, setThreadId] = useState<string | undefined>(undefined);
+  const [, setThreadId] = useState<string | undefined>(undefined);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () =>
@@ -44,29 +43,23 @@ export const PublicChat = () => {
   }, [messages]);
 
   useEffect(() => {
-    if (chatbot) {
-      const welcome =
-        (chatbot.welcome_message && chatbot.welcome_message.trim()) ||
-        `Hola, soy ${chatbot.name}. ${
-          chatbot.description ?? ""
-        } ¿En qué puedo ayudarte hoy?`;
-      setMessages([
-        {
-          id: "welcome",
-          text: welcome,
-          sender: "bot",
-          timestamp: new Date(),
-        },
-      ]);
-      setThreadId(undefined); // new bot => new thread
-    }
+    if (!chatbot) return;
+    const welcome =
+      (chatbot.welcome_message && chatbot.welcome_message.trim()) ||
+      `Hola, soy ${chatbot.name}. ${
+        chatbot.description ?? ""
+      } ¿En qué puedo ayudarte hoy?`;
+    setMessages([
+      { id: "welcome", text: welcome, sender: "bot", timestamp: new Date() },
+    ]);
+    setThreadId(undefined);
   }, [chatbot]);
 
   const handleSend = async () => {
-    if (!inputValue.trim() || !chatbotId || ask.isPending) return;
+    if (!inputValue.trim() || !chatbotId) return;
 
     const userMessage: Message = {
-      id: `u_${Date.now()}`,
+      id: Date.now().toString(),
       text: inputValue,
       sender: "user",
       timestamp: new Date(),
@@ -74,52 +67,67 @@ export const PublicChat = () => {
     setMessages((prev) => [...prev, userMessage]);
     setInputValue("");
 
-    const loadingMessage: Message = {
-      id: `b_${Date.now() + 1}`,
-      text: "",
-      sender: "bot",
-      timestamp: new Date(),
-      isLoading: true,
-    };
-    setMessages((prev) => [...prev, loadingMessage]);
+    const botMsgId = `b_${Date.now() + 1}`;
+    setMessages((prev) => [
+      ...prev,
+      {
+        id: botMsgId,
+        text: "",
+        sender: "bot",
+        timestamp: new Date(),
+        isLoading: true,
+      },
+    ]);
 
     try {
-      // pass thread_id for reuse (faster)
-      const res = await ask.mutateAsync({
-        chatbot_id: chatbotId,
-        message: userMessage.text,
-        thread_id: threadId,
-        user_id: user?.id ?? "PUBLIC",
+      const base = import.meta.env.VITE_SUPABASE_URL as string;
+      const anon = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
+
+      const res = await fetch(`${base}/functions/v1/chat-file-search`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          apikey: anon,
+          Accept: "text/event-stream",
+        },
+        cache: "no-store",
+        body: JSON.stringify({
+          chatbot_id: chatbotId,
+          message: userMessage.text,
+          stream: true,
+        }),
       });
 
-      setThreadId(res.thread_id ?? threadId); // keep the one from server
-
-      setMessages((prev) =>
-        prev.map((m) =>
-          m.id === loadingMessage.id
-            ? { ...m, text: res.text, isLoading: false }
-            : m
-        )
-      );
+      let full = "";
+      await readSSE(res, {
+        onDelta: (chunk) => {
+          full += chunk;
+          setMessages((prev) =>
+            prev.map((m) =>
+              m.id === botMsgId ? { ...m, text: full, isLoading: true } : m
+            )
+          );
+        },
+        onEnd: () => {
+          setMessages((prev) =>
+            prev.map((m) =>
+              m.id === botMsgId ? { ...m, isLoading: false } : m
+            )
+          );
+        },
+      });
     } catch {
       setMessages((prev) =>
         prev.map((m) =>
-          m.id === loadingMessage.id
+          m.id === botMsgId
             ? {
                 ...m,
-                text: "Sorry, I encountered an error. Please try again in a moment.",
+                text: "Sorry, I hit an error. Please try again.",
                 isLoading: false,
               }
             : m
         )
       );
-    }
-  };
-
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      handleSend();
     }
   };
 
@@ -133,7 +141,6 @@ export const PublicChat = () => {
       </div>
     );
   }
-
   if (!chatbot) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -147,7 +154,6 @@ export const PublicChat = () => {
       </div>
     );
   }
-
   if (chatbot.status !== "ready") {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -164,7 +170,6 @@ export const PublicChat = () => {
 
   return (
     <div className="min-h-screen pb-12">
-      {/* Header */}
       <div className="bg-white/90 shadow-sm border-b">
         <div className="max-w-4xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
@@ -192,7 +197,6 @@ export const PublicChat = () => {
         </div>
       </div>
 
-      {/* Chat */}
       <div className="max-w-4xl mx-auto px-4 py-6">
         <div
           className={`bg-white rounded-2xl shadow-xl border transition-all duration-300 ${
@@ -229,12 +233,17 @@ export const PublicChat = () => {
                         )}
                         <div className="flex-1">
                           {m.isLoading ? (
-                            <div className="flex items-center space-x-2">
-                              <Loader className="h-4 w-4 animate-spin" />
-                              <span className="text-sm">Thinking...</span>
-                            </div>
+                            m.text ? (
+                              <pre className="text-sm whitespace-pre-wrap">
+                                {m.text}
+                              </pre>
+                            ) : (
+                              <div className="flex items-center space-x-2">
+                                <Loader className="h-4 w-4 animate-spin" />
+                                <span className="text-sm">Thinking...</span>
+                              </div>
+                            )
                           ) : m.sender === "bot" ? (
-                            // Render markdown for bot replies
                             <div className="prose prose-sm max-w-none">
                               <ReactMarkdown
                                 remarkPlugins={[remarkGfm]}
@@ -301,17 +310,22 @@ export const PublicChat = () => {
                     type="text"
                     value={inputValue}
                     onChange={(e) => setInputValue(e.target.value)}
-                    onKeyPress={handleKeyPress}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && !e.shiftKey) {
+                        e.preventDefault();
+                        handleSend();
+                      }
+                    }}
                     placeholder="Type your message..."
                     className="flex-1 px-4 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-400"
-                    disabled={ask.isPending}
+                    disabled={isPending}
                   />
                   <button
                     onClick={handleSend}
-                    disabled={!inputValue.trim() || ask.isPending}
+                    disabled={!inputValue.trim() || isPending}
                     className="px-5 py-2 bg-primary-600 text-white rounded-xl hover:bg-primary-700 disabled:opacity-50"
                   >
-                    {ask.isPending ? (
+                    {isPending ? (
                       <Loader className="h-4 w-4 animate-spin" />
                     ) : (
                       <Send className="h-4 w-4" />
