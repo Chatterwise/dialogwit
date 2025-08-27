@@ -26,7 +26,7 @@ import { Logo } from "./ui/Logo";
 const mainNavigation = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { name: "Chatbots", href: "/chatbots", icon: Bot },
-  { name: "Bot Knowledge", href: "/bot-knowledge", icon: BookOpen },
+  // { name: "Bot Knowledge", href: "/bot-knowledge", icon: BookOpen },
   { name: "Analytics", href: "/analytics", icon: BarChart3 },
   { name: "Templates", href: "/templates", icon: Palette },
   { name: "Integrations", href: "/integrations", icon: Puzzle },
