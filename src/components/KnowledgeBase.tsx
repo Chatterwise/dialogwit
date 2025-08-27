@@ -47,70 +47,107 @@ export const KnowledgeBase = () => {
 
   const deleteKnowledgeBase = useDeleteKnowledgeBase();
 
-  const createKnowledgeItem = (chatbotId: string) => {
-    return async ({
-      content,
-      contentType,
-      filename,
-    }: {
-      content: string;
-      contentType: "text" | "document";
-      filename: string;
-    }) => {
-      if (!chatbotId) throw new Error("Chatbot ID is missing.");
+const createKnowledgeItem = (chatbotId: string) => {
+  return async ({
+    content,
+    contentType,
+    filename,
+  }: {
+    content: string;
+    contentType: "text" | "document";
+    filename: string;
+  }) => {
+    if (!chatbotId) throw new Error("Chatbot ID is missing.");
 
-      if (contentType === "document") {
-        const fileInput = document.querySelector(
-          'input[type="file"]'
-        ) as HTMLInputElement;
+    if (contentType === "document") {
+      // Find the file chosen in your modal
+      const fileInput = document.querySelector(
+        'input[type="file"]'
+      ) as HTMLInputElement;
+      if (!fileInput?.files?.length) {
+        throw new Error("No file selected for upload.");
+      }
+      const file = fileInput.files[0];
 
-        if (!fileInput?.files?.length) {
-          throw new Error("No file selected for upload.");
+      // IMPORTANT: Use the bucket the Edge Function expects
+      const filePath = `kb/${chatbotId}/${crypto.randomUUID()}-${filename}`;
+
+      // 1) Upload to Storage
+      const { error: uploadError } = await supabase.storage
+        .from("knowledge-files")
+        .upload(filePath, file, { upsert: true });
+
+      if (uploadError) throw new Error(`Upload failed: ${uploadError.message}`);
+
+      // 2) Insert KB row (processed=false so we know to sync)
+      const { data: kb, error: insertError } = await supabase
+        .from("knowledge_base")
+        .insert({
+          chatbot_id: chatbotId,
+          content_type: "document",
+          file_path: filePath,
+          filename,
+          content: "", // stored in file, so empty here
+          processed: false, // let the sync function set it to true
+          status: "pending",
+        })
+        .select("id")
+        .single();
+
+      if (insertError) throw new Error(`Insert failed: ${insertError.message}`);
+
+      // 3) Mirror to OpenAI Vector Store
+      const session = (await supabase.auth.getSession()).data.session;
+      const r = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/sync-kb-to-openai`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${session?.access_token}`,
+          },
+          body: JSON.stringify({ knowledge_base_id: kb.id }),
         }
+      );
+      if (!r.ok) throw new Error(await r.text());
 
-        const file = fileInput.files[0];
-        const filePath = `kb/${chatbotId}/${filename}`;
-
-        // Upload to Supabase Storage
-        const { error: uploadError } = await supabase.storage
-          .from("documents")
-          .upload(filePath, file, { upsert: true });
-
-        if (uploadError) {
-          throw new Error(`Upload failed: ${uploadError.message}`);
-        }
-
-        // Insert placeholder for processing
-        const { error: insertError } = await supabase
-          .from("knowledge_base")
-          .insert({
-            chatbot_id: chatbotId,
-            content_type: "document",
-            file_path: filePath,
-            filename,
-            content: "",
-            processed: false,
-          });
-
-        if (insertError) {
-          throw new Error(`Insert failed: ${insertError.message}`);
-        }
-      } else {
-        // Insert text content directly
-        const { error } = await supabase.from("knowledge_base").insert({
+      return kb.id;
+    } else {
+      // TEXT knowledge: store content, processed=false, then sync (the function will synthesize a .txt)
+      const { data: kb, error } = await supabase
+        .from("knowledge_base")
+        .insert({
           chatbot_id: chatbotId,
           content_type: "text",
           content,
-          filename,
-          processed: true,
-        });
+          filename: filename || "content.txt",
+          processed: false, // let sync flip to true
+          status: "pending",
+        })
+        .select("id")
+        .single();
 
-        if (error) {
-          throw new Error(`Insert failed: ${error.message}`);
+      if (error) throw new Error(`Insert failed: ${error.message}`);
+
+      const session = (await supabase.auth.getSession()).data.session;
+      const r = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/sync-kb-to-openai`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${session?.access_token}`,
+          },
+          body: JSON.stringify({ knowledge_base_id: kb.id }),
         }
-      }
-    };
+      );
+      if (!r.ok) throw new Error(await r.text());
+
+      return kb.id;
+    }
   };
+};
+
 
   const handleDelete = async (id: string) => {
     try {
@@ -231,7 +268,6 @@ export const KnowledgeBase = () => {
         }
       )
       .subscribe();
-    console.log(channel);
     return () => {
       supabase.removeChannel(channel);
     };

@@ -572,7 +572,7 @@ export function Dashboard() {
               style={{ minWidth: 350, maxWidth: 400 }}
             >
               <EnterpriseChat
-                botId="b2c75f33-f68b-48d1-89f9-c96945c1b107"
+                botId="7b041777-cff4-4d74-929d-15efed4bc462"
                 apiUrl="https://bpzfivbuhgjpkngcjpzc.supabase.co/functions/v1"
                 apiKey="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJwemZpdmJ1aGdqcGtuZ2NqcHpjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAwOTI3MzIsImV4cCI6MjA2NTY2ODczMn0.fBkQQJiLLfSwW3yH3rJ1HOLj-fs27tEfBJtOBpWtdx4"
                 isOpen={isChatOpen}

@@ -216,6 +216,35 @@ export const ChatbotDetail = () => {
     setProcessing(true);
     setProgress(0);
 
+    async function syncAllPending(chatbotId: string) {
+      // find items not processed yet and sync them one-by-one
+      const { data: pending } = await supabase
+        .from("knowledge_base")
+        .select("id, processed")
+        .eq("chatbot_id", chatbotId)
+        .eq("processed", false);
+
+      if (!pending?.length) return;
+
+      const session = (await supabase.auth.getSession()).data.session;
+      for (let i = 0; i < pending.length; i++) {
+        setProgressLabel(`Syncing to OpenAI (${i + 1} / ${pending.length})...`);
+        setProgress(40 + Math.round(((i + 1) / pending.length) * 40));
+        const r = await fetch(
+          `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/sync-kb-to-openai`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${session?.access_token}`,
+            },
+            body: JSON.stringify({ knowledge_base_id: pending[i].id }),
+          }
+        );
+        if (!r.ok) throw new Error(await r.text());
+      }
+    }
+
     try {
       if (editingItem) {
         setProgressLabel("Updating knowledge...");
@@ -226,6 +255,7 @@ export const ChatbotDetail = () => {
             content_type: data.contentType,
             filename: data.filename || null,
             processed: false,
+            status: "pending",
           },
         });
       } else {
@@ -235,31 +265,31 @@ export const ChatbotDetail = () => {
           content: data.content,
           content_type: data.contentType,
           filename: data.filename || null,
-          processed: false,
+          processed: false, // we will sync next
+          status: "pending",
         });
       }
-      setProgress(40);
 
-      setProgressLabel("Training chatbot...");
-      await trainChatbot.mutateAsync({
-        chatbotId: id,
-        model: "gpt-3.5-turbo",
-      });
-      setProgress(80);
+      setProgress(35);
+      setProgressLabel("Refreshing list...");
+      const refreshed = await refetchKnowledgeBase(); // ensure new/updated rows are visible
+
+      setProgressLabel("Syncing to OpenAI...");
+      setProgress(40);
+      await syncAllPending(id);
 
       setProgressLabel("Updating UI...");
       await refetchKnowledgeBase();
       setProgress(100);
 
       setEditingItem(null);
-
       window.dispatchEvent(
         new CustomEvent("toast", {
           detail: {
             type: "success",
             message: editingItem
-              ? "Knowledge item updated successfully"
-              : "Knowledge item added successfully",
+              ? "Knowledge item updated & synced"
+              : "Knowledge item added & synced",
           },
         })
       );
@@ -269,7 +299,7 @@ export const ChatbotDetail = () => {
         new CustomEvent("toast", {
           detail: {
             type: "error",
-            message: "Failed to save knowledge item",
+            message: "Failed to save/sync knowledge item",
           },
         })
       );
@@ -483,7 +513,7 @@ export const ChatbotDetail = () => {
 
         {/* Actions */}
         <div className="flex flex-wrap gap-2">
-          <a
+          {/* <a
             href={publicChatUrl}
             target="_blank"
             rel="noopener noreferrer"
@@ -491,7 +521,7 @@ export const ChatbotDetail = () => {
           >
             <ExternalLink className="h-4 w-4 mr-2" />
             Open Chat
-          </a>
+          </a> */}
           <Link
             to={`/chatbots/${id}/settings`}
             className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200"

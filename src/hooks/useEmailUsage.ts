@@ -32,7 +32,6 @@ export const useEmailUsage = () => {
 
       // Use cached result if available and not expired
       if (now - emailCheckCache.timestamp < CACHE_TTL) {
-        console.log("Using cached email usage check result");
         // checkResult = { allowed: emailCheckCache.allowed };
       } else {
         // Otherwise, perform the check
@@ -72,7 +71,6 @@ export const useEmailUsage = () => {
 
       // Use cached result if available and not expired
       if (now - emailCheckCache.timestamp < CACHE_TTL) {
-        console.log("Using cached email permission check");
         return emailCheckCache.allowed;
       }
 

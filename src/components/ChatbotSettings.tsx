@@ -42,6 +42,7 @@ export function ChatbotSettings() {
     description: "",
     welcome_message: "",
     placeholder: "",
+    fallback_message: "",
   });
 
   const [ragData, setRagData] = useState({
@@ -71,6 +72,7 @@ export function ChatbotSettings() {
         description: chatbot.description || "",
         welcome_message: chatbot.welcome_message || "",
         placeholder: chatbot.placeholder || "",
+        fallback_message: chatbot.fallback_message || "",
       });
     }
     if (ragSettings) {
@@ -134,7 +136,7 @@ export function ChatbotSettings() {
       await updateChatbot.mutateAsync({
         id,
         updates: {
-          status: chatbot.status === "inactive" ? "ready" : "inactive",
+          status: chatbot.status === "paused" ? "ready" : "paused",
         },
       });
       setStatusChangeStatus("idle");
@@ -263,6 +265,20 @@ export function ChatbotSettings() {
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Fallback (No-answer) Message
+            </label>
+            <input
+              className="w-full px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
+              value={formData.fallback_message}
+              onChange={(e) => handleChange("fallback_message", e.target.value)}
+              placeholder="Sorry, I don’t have that information yet."
+            />
+            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+              Used when the bot can’t find the answer in its knowledge files.
+            </p>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Input Placeholder
             </label>
             <input
@@ -300,7 +316,7 @@ export function ChatbotSettings() {
                   Chatbot Status
                 </h3>
                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                  {chatbot.status === "inactive"
+                  {chatbot.status === "paused"
                     ? "Your chatbot is currently inactive and not accessible to users"
                     : "Your chatbot is active and accessible to users"}
                 </p>
@@ -309,7 +325,7 @@ export function ChatbotSettings() {
                 onClick={toggleBotStatus}
                 disabled={statusChangeStatus === "loading"}
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
-                  chatbot.status === "inactive"
+                  chatbot.status === "paused"
                     ? "bg-green-600 hover:bg-green-700 text-white"
                     : "bg-gray-600 hover:bg-gray-700 text-white"
                 }`}
@@ -319,7 +335,7 @@ export function ChatbotSettings() {
                 ) : (
                   <Power className="h-4 w-4" />
                 )}
-                {chatbot.status === "inactive"
+                {chatbot.status === "paused"
                   ? "Activate Bot"
                   : "Deactivate Bot"}
               </button>

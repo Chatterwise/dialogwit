@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Send, Bot, User, Loader } from "lucide-react";
-import { useSendMessage } from "../hooks/useChatMessages";
-import { useAuth } from "../hooks/useAuth";
 import { supabase } from "../lib/supabase";
+import { readSSE } from "./utils/sse";
+import { MarkdownMessage } from "./MarkdownMessage";
 
 interface Message {
   id: string;
@@ -20,12 +20,10 @@ type ChatbotSettings = {
 };
 
 export const ChatPreview = ({ botId }: { botId?: string }) => {
-  const [botSettings, setBotSettings] = useState<ChatbotSettings | null>(null);
-
-  // Default initial message while we fetch settings (fast fallback)
   const DEFAULT_WELCOME =
     "Hello! I'm your AI assistant. How can I help you today?";
 
+  const [botSettings, setBotSettings] = useState<ChatbotSettings | null>(null);
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "initial",
@@ -34,31 +32,22 @@ export const ChatPreview = ({ botId }: { botId?: string }) => {
       timestamp: new Date(),
     },
   ]);
-
-  const { user } = useAuth();
   const [inputValue, setInputValue] = useState("");
-  const sendMessage = useSendMessage();
+  const [threadId, setThreadId] = useState<string | null>(null);
+  const [isSending, setIsSending] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
-
   useEffect(() => {
-    scrollToBottom();
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // Fetch chatbot settings (welcome_message, placeholder, name, avatar)
   useEffect(() => {
     let cancelled = false;
-
-    async function loadBotSettings() {
+    (async () => {
       if (!botId) {
         setBotSettings(null);
-        // Keep default welcome if there’s no saved bot
         return;
       }
-
       const { data, error } = await supabase
         .from("chatbots")
         .select("name, welcome_message, placeholder, bot_avatar")
@@ -66,39 +55,28 @@ export const ChatPreview = ({ botId }: { botId?: string }) => {
         .single();
 
       if (cancelled) return;
-
       if (error) {
-        console.warn("Failed to load chatbot settings:", error);
         setBotSettings(null);
-        // Keep whatever message we had
         return;
       }
 
       setBotSettings(data as ChatbotSettings);
-
-      // Reset the conversation to the bot's welcome message on bot change
       const welcome =
         (data?.welcome_message && data.welcome_message.trim()) ||
         DEFAULT_WELCOME;
 
       setMessages([
-        {
-          id: "initial",
-          text: welcome,
-          sender: "bot",
-          timestamp: new Date(),
-        },
+        { id: "initial", text: welcome, sender: "bot", timestamp: new Date() },
       ]);
-    }
-
-    loadBotSettings();
+      setThreadId(null);
+    })().catch(console.error);
     return () => {
       cancelled = true;
     };
   }, [botId]);
 
   const handleSend = async () => {
-    if (!inputValue.trim() || !botId || sendMessage.isPending) return;
+    if (!inputValue.trim() || !botId || isSending) return;
 
     const userMessage: Message = {
       id: Date.now().toString(),
@@ -106,71 +84,90 @@ export const ChatPreview = ({ botId }: { botId?: string }) => {
       sender: "user",
       timestamp: new Date(),
     };
-
     setMessages((prev) => [...prev, userMessage]);
     setInputValue("");
+    setIsSending(true);
 
-    const loadingMessage: Message = {
-      id: (Date.now() + 1).toString(),
-      text: "",
-      sender: "bot",
-      timestamp: new Date(),
-      isLoading: true,
-    };
-    setMessages((prev) => [...prev, loadingMessage]);
+    const botMsgId = `b_${Date.now() + 1}`;
+    setMessages((prev) => [
+      ...prev,
+      {
+        id: botMsgId,
+        text: "",
+        sender: "bot",
+        timestamp: new Date(),
+        isLoading: true,
+      },
+    ]);
 
     try {
-      let finalText = "";
+      const base = import.meta.env.VITE_SUPABASE_URL as string;
+      const anon = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
+      const { data: sessionData } = await supabase.auth.getSession();
+      const bearer = sessionData.session?.access_token ?? anon;
 
-      await sendMessage.mutateAsync({
-        chatbotId: botId,
-        message: userMessage.text,
-        userId: user?.id || "NO_USER",
-        onChunk: (chunk) => {
-          finalText += chunk;
+      const res = await fetch(`${base}/functions/v1/chat-file-search`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          apikey: anon,
+          Authorization: `Bearer ${bearer}`,
+          Accept: "text/event-stream",
+        },
+        cache: "no-store",
+        body: JSON.stringify({
+          chatbot_id: botId,
+          message: userMessage.text,
+          ...(threadId ? { thread_id: threadId } : {}),
+          stream: true,
+        }),
+      });
+
+      let full = "";
+      await readSSE(res, {
+        onReady: (tid) => tid && setThreadId(tid),
+        onDelta: (chunk) => {
+          full += chunk;
+          // show raw stream live (no markdown) to avoid broken code fences while typing
           setMessages((prev) =>
-            prev.map((msg) =>
-              msg.id === loadingMessage.id
-                ? {
-                    ...msg,
-                    text: finalText,
-                    isLoading: true,
-                  }
-                : msg
+            prev.map((m) =>
+              m.id === botMsgId ? { ...m, text: full, isLoading: true } : m
             )
           );
         },
+        onEnd: (payload) => {
+          const finalText = (payload?.text && String(payload.text)) || full;
+          setMessages((prev) =>
+            prev.map((m) =>
+              m.id === botMsgId
+                ? { ...m, text: finalText, isLoading: false }
+                : m
+            )
+          );
+          if (payload?.thread_id && typeof payload.thread_id === "string") {
+            setThreadId(payload.thread_id);
+          }
+        },
       });
-
-      // Once stream ends, mark message as done
+    } catch (e) {
+      console.error(e);
       setMessages((prev) =>
-        prev.map((msg) =>
-          msg.id === loadingMessage.id ? { ...msg, isLoading: false } : msg
-        )
-      );
-    } catch {
-      setMessages((prev) =>
-        prev.map((msg) =>
-          msg.id === loadingMessage.id
+        prev.map((m) =>
+          m.id === botMsgId
             ? {
-                ...msg,
-                text: "Sorry, I encountered an error. Please try again.",
+                ...m,
+                text: "Sorry, I hit an error. Please try again.",
                 isLoading: false,
               }
-            : msg
+            : m
         )
       );
+    } finally {
+      setIsSending(false);
     }
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      handleSend();
-    }
-  };
-
-  const inputPlaceholder =
+  const placeholder =
     (botSettings?.placeholder && botSettings.placeholder.trim()) ||
     "Type your message...";
 
@@ -180,7 +177,6 @@ export const ChatPreview = ({ botId }: { botId?: string }) => {
         <div className="flex items-center justify-between">
           <div className="flex items-center">
             {botSettings?.bot_avatar ? (
-              // Avatar image if configured
               <img
                 src={botSettings.bot_avatar}
                 alt={botSettings.name ?? "Bot"}
@@ -196,7 +192,7 @@ export const ChatPreview = ({ botId }: { botId?: string }) => {
             </h3>
           </div>
           <div className="flex items-center">
-            <div className="h-2 w-2 bg-green-500 rounded-full mr-2"></div>
+            <div className="h-2 w-2 bg-green-500 rounded-full mr-2" />
             <span className="text-xs text-gray-600 dark:text-gray-400">
               Online
             </span>
@@ -213,7 +209,7 @@ export const ChatPreview = ({ botId }: { botId?: string }) => {
             }`}
           >
             <div
-              className={`max-w-xs lg:max-w-md px-4 py-3 rounded-xl shadow-subtle ${
+              className={`max-w-[80%] px-4 py-3 rounded-xl shadow-sm ${
                 message.sender === "user"
                   ? "bg-primary-600 text-white"
                   : "bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-800 text-gray-900 dark:text-gray-100"
@@ -230,13 +226,29 @@ export const ChatPreview = ({ botId }: { botId?: string }) => {
                   ) : (
                     <Bot className="h-4 w-4 mr-2 mt-0.5 text-primary-600 dark:text-primary-400 flex-shrink-0" />
                   ))}
+
                 <div className="flex-1">
-                  <p className="text-sm whitespace-pre-wrap">
-                    {message.text}
-                    {message.isLoading && (
-                      <span className="animate-pulse">▌</span>
-                    )}
-                  </p>
+                  {message.isLoading ? (
+                    message.text ? (
+                      <pre className="text-sm whitespace-pre-wrap break-words font-mono leading-5">
+                        {message.text}
+                      </pre>
+                    ) : (
+                      <div className="flex items-center space-x-2">
+                        <Loader className="h-4 w-4 animate-spin" />
+                        <span className="text-sm">Thinking…</span>
+                      </div>
+                    )
+                  ) : message.sender === "bot" ? (
+                    <div className="prose prose-sm dark:prose-invert max-w-none">
+                      <MarkdownMessage text={message.text} />
+                    </div>
+                  ) : (
+                    <p className="text-sm whitespace-pre-wrap break-words">
+                      {message.text}
+                    </p>
+                  )}
+
                   <span
                     className={`text-xs opacity-75 mt-1 block ${
                       message.sender === "user"
@@ -250,6 +262,7 @@ export const ChatPreview = ({ botId }: { botId?: string }) => {
                     })}
                   </span>
                 </div>
+
                 {message.sender === "user" && (
                   <User className="h-4 w-4 ml-2 mt-0.5 text-white/80 flex-shrink-0" />
                 )}
@@ -266,17 +279,22 @@ export const ChatPreview = ({ botId }: { botId?: string }) => {
             type="text"
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
-            onKeyPress={handleKeyPress}
-            placeholder={inputPlaceholder}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                handleSend();
+              }
+            }}
+            placeholder={placeholder}
             className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-primary-400 transition"
-            disabled={sendMessage.isPending || !botId}
+            disabled={isSending || !botId}
           />
           <button
             onClick={handleSend}
-            disabled={!inputValue.trim() || sendMessage.isPending || !botId}
+            disabled={!inputValue.trim() || isSending || !botId}
             className="p-2.5 bg-primary-600 text-white rounded-xl hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
           >
-            {sendMessage.isPending ? (
+            {isSending ? (
               <Loader className="h-4 w-4 animate-spin" />
             ) : (
               <Send className="h-4 w-4" />

@@ -220,7 +220,7 @@ export const useRoleTemplates = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("bot_role_templates")
-        .select("id, name, description, system_instructions, bot_avatar, placeholder, welcome_message")
+        .select("id,name,description,welcome_message,placeholder,bot_avatar,status,fallback_message,system_instructions")
         .eq("is_default", true)
         .order("name", { ascending: true });
 

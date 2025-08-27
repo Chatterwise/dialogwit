@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file. See [standa
 
 ## [Unreleased]
 
+### 1.1.1 (2025-08-27)
+
+### Changed
+
+- Updated the edgefunctions to use openAI vectors and agents **[CHAT-36]**
 - Supabase welcome_message Chatbot table field now defaults to null. **[CHAT-33]**
 - Removed chatbot on create default from ChatbotBuilder.tsx. **[CHAT-33]**
 - Fixed odd scrolling in PublicChat.tsx, added a logic for chatbot to default to use welcome_message property or default Hello! I'm ${chatbot.name}. ${chatbot.description} How can I help you today? **[CHAT-33]**
@@ -15,7 +20,7 @@ All notable changes to this project will be documented in this file. See [standa
 - Reposition add knowledge button in KnowledgeBase.tsx. **[CHAT-7]**
 - Added ScrollToTop to the ../docs/getting-started/introduction, ../docs/getting-started/first-chatbot, ../docs/getting-started/knowledge-base, /training-chatbot, All /docs/integrations pages, all /docs/advanced-features pages **[CHAT-25]**
 - Removed non drafted entries from tutorials page. **[CHAT-25]**
-- Profile Picture upload issue  **[CHAT-20]**
+- Profile Picture upload issue **[CHAT-20]**
 - Chatbot status is not updating properly **[CHAT-26]**
 - Added a markdown parcer of the main chatbot of the app **[CHAT-24]**
 - Settings on header not auto closing when focus is lost **[CHAT-28]**
