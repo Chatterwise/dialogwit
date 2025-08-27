@@ -3,7 +3,6 @@ import { Outlet, Link, useLocation } from "react-router-dom";
 import {
   LayoutDashboard,
   Bot,
-  BookOpen,
   Puzzle,
   Palette,
   Zap,
@@ -64,8 +63,8 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
   };
 
   const overlayVariants = {
-    open: { opacity: 1, pointerEvents: "auto" as "auto" },
-    closed: { opacity: 0, pointerEvents: "none" as "none" },
+    open: { opacity: 1, pointerEvents: "auto" as const },
+    closed: { opacity: 0, pointerEvents: "none" as const },
   };
 
   return (
