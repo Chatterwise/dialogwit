@@ -15,15 +15,24 @@ import { useBilling } from "../hooks/useBilling";
 import { useStripe } from "../hooks/useStripe";
 import { stripeConfig } from "../stripe-config";
 import { motion } from "framer-motion";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "../hooks/useTranslation";
 
 const SubscriptionStatus: React.FC = () => {
   const { t } = useTranslation();
   const { subscription, usage, isLoading } = useBilling();
-
   const { createCheckoutSession, isLoading: stripeLoading } = useStripe();
   const navigate = useNavigate();
+  const { lang = "en" } = useParams<{ lang: string }>();
+  const langPrefix = `/${lang}`;
+
+  const localeMap: Record<string, string> = {
+    en: "en-US",
+    es: "es-ES",
+    de: "de-DE",
+    hu: "hu-HU",
+  };
+  const locale = localeMap[lang] ?? "en-US";
 
   const getPlanIcon = (planName: string) => {
     switch (planName) {
@@ -65,7 +74,7 @@ const SubscriptionStatus: React.FC = () => {
     }
   };
 
-  const handlePricingNavigation = () => navigate("/pricing");
+  const handlePricingNavigation = () => navigate(`${langPrefix}/pricing`);
 
   const getPlanDetails = (planName: string) => {
     return stripeConfig.products.find((p) =>
@@ -74,7 +83,7 @@ const SubscriptionStatus: React.FC = () => {
   };
 
   const formatDate = (dateString: string) =>
-    new Date(dateString).toLocaleDateString("en-US", {
+    new Date(dateString).toLocaleDateString(locale, {
       year: "numeric",
       month: "long",
       day: "numeric",
@@ -405,7 +414,7 @@ const SubscriptionStatus: React.FC = () => {
               )}
             </div>
             <button
-              onClick={() => (window.location.href = "/billing?tab=plans")}
+              onClick={() => navigate(`${langPrefix}/billing?tab=plans`)}
               className="text-primary-600 dark:text-primary-400 font-medium text-sm hover:text-primary-700 dark:hover:text-primary-300 flex items-center"
               aria-label={t(
                 "subscription.usage.cta.viewPlans.aria",

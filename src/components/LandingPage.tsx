@@ -30,6 +30,7 @@ import { FloatingChatButton } from "./ChatTemplates/FloatingChatButton";
 import Footer from "./ui/Footer";
 import { DemoChatbot } from "./DemoChatbotLanding";
 import { useTranslation } from "../hooks/useTranslation";
+import { LanguageSelector } from "./LanguageSelector";
 type PricingCardProps = {
   name: string;
   price: string | number;
@@ -228,6 +229,8 @@ const LandingPage: React.FC = () => {
               transition={{ duration: 0.5, delay: 0.2 }}
               className="hidden md:flex items-center space-x-4"
             >
+              <LanguageSelector />
+
               <button
                 onClick={toggleTheme}
                 className="p-2 rounded-full bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 transition-colors"

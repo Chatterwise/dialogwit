@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { Sun, Moon, LogOut, Menu, Plus, ChevronDown, X } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import { useTheme } from "../../hooks/useTheme";
 import { motion } from "framer-motion";
@@ -17,6 +17,11 @@ export const Header = () => {
   const [showCreateMenu, setShowCreateMenu] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const { data: profile } = useUserProfile(user?.id || "");
+  const { lang = "en" } = useParams<{ lang: string }>();
+
+  // helper to always keep the lang prefix
+  const withLang = (path: string) =>
+    `/${lang}${path.startsWith("/") ? path : `/${path}`}`;
 
   const userMenuRef = useRef<HTMLDivElement>(null);
   const createMenuRef = useRef<HTMLDivElement>(null);
@@ -33,10 +38,18 @@ export const Header = () => {
     const handleOutside = (e: PointerEvent) => {
       const target = e.target as Node;
 
-      if (showUserMenu && userMenuRef.current && !userMenuRef.current.contains(target)) {
+      if (
+        showUserMenu &&
+        userMenuRef.current &&
+        !userMenuRef.current.contains(target)
+      ) {
         setShowUserMenu(false);
       }
-      if (showCreateMenu && createMenuRef.current && !createMenuRef.current.contains(target)) {
+      if (
+        showCreateMenu &&
+        createMenuRef.current &&
+        !createMenuRef.current.contains(target)
+      ) {
         setShowCreateMenu(false);
       }
     };
@@ -60,7 +73,7 @@ export const Header = () => {
   const handleSignOut = async () => {
     try {
       await signOut();
-      navigate("/auth");
+      navigate(withLang("/auth"), { replace: true });
     } catch (error) {
       console.error("Sign out error:", error);
     }
@@ -78,13 +91,17 @@ export const Header = () => {
           aria-label={t("header_mobile_menu_toggle", "Toggle mobile menu")}
           title={t("header_mobile_menu_toggle", "Toggle mobile menu")}
         >
-          {showMobileMenu ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+          {showMobileMenu ? (
+            <X className="h-6 w-6" />
+          ) : (
+            <Menu className="h-6 w-6" />
+          )}
         </button>
 
         <div></div>
 
         {/* Actions: Create, Language, Theme, Avatar */}
-        <div className="flex items-center space-x-3">
+        <div className="flex items-center space-x-4">
           <LanguageSelector />
 
           {/* Create */}
@@ -101,7 +118,9 @@ export const Header = () => {
               aria-expanded={showCreateMenu}
             >
               <Plus className="w-4 h-4 mr-1" />
-              <span className="text-sm font-medium">{t("header_create", "Create")}</span>
+              <span className="text-sm font-medium">
+                {t("header_create", "Create")}
+              </span>
               <ChevronDown className="w-4 h-4 ml-1" />
             </motion.button>
 
@@ -109,7 +128,7 @@ export const Header = () => {
               <div className="absolute right-0 mt-2 w-48 rounded-xl shadow-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 z-30">
                 <div className="py-1">
                   <Link
-                    to="chatbots/new"
+                    to={withLang("/chatbots/new")}
                     className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
                     onClick={() => {
                       setShowCreateMenu(false);
@@ -119,7 +138,7 @@ export const Header = () => {
                     {t("nav_new_chatbot", "New Chatbot")}
                   </Link>
                   <Link
-                    to="bot-knowledge"
+                    to={withLang("/bot-knowledge")}
                     className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
                     onClick={() => {
                       setShowCreateMenu(false);
@@ -129,7 +148,7 @@ export const Header = () => {
                     {t("nav_add_knowledge", "Add Knowledge")}
                   </Link>
                   <Link
-                    to="integrations"
+                    to={withLang("/integrations")}
                     className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
                     onClick={() => {
                       setShowCreateMenu(false);
@@ -152,7 +171,11 @@ export const Header = () => {
             title={t("header_toggle_theme", "Toggle dark/light mode")}
             aria-label={t("header_toggle_theme", "Toggle dark/light mode")}
           >
-            {isDark ? <Sun className="w-5 h-5 text-yellow-400" /> : <Moon className="w-5 h-5 text-gray-600" />}
+            {isDark ? (
+              <Sun className="w-5 h-5 text-yellow-400" />
+            ) : (
+              <Moon className="w-5 h-5 text-gray-600" />
+            )}
           </motion.button>
 
           {/* Avatar & Dropdown */}
@@ -172,7 +195,9 @@ export const Header = () => {
               {avatarUrl ? (
                 <img
                   src={avatarUrl}
-                  alt={user?.email ?? t("header_user_avatar_alt", "User avatar")}
+                  alt={
+                    user?.email ?? t("header_user_avatar_alt", "User avatar")
+                  }
                   className="w-full h-full object-cover"
                   loading="lazy"
                   referrerPolicy="no-referrer"
@@ -180,7 +205,8 @@ export const Header = () => {
               ) : (
                 <div className="w-full h-full bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center">
                   <span className="text-base font-bold text-white">
-                    {user?.email?.charAt(0).toUpperCase() || t("header_user_initial_fallback", "U")}
+                    {user?.email?.charAt(0).toUpperCase() ||
+                      t("header_user_initial_fallback", "U")}
                   </span>
                 </div>
               )}
@@ -201,7 +227,7 @@ export const Header = () => {
                 {/* Menu Items */}
                 <div className="py-1">
                   <Link
-                    to="settings"
+                    to={withLang("/settings")}
                     className="block px-5 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-primary-50 dark:hover:bg-primary-900/30 rounded-lg transition-colors"
                     onClick={() => {
                       setShowUserMenu(false);
@@ -211,7 +237,7 @@ export const Header = () => {
                     {t("nav_settings", "Settings")}
                   </Link>
                   <Link
-                    to="billing"
+                    to={withLang("/billing")}
                     className="block px-5 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-primary-50 dark:hover:bg-primary-900/30 rounded-lg transition-colors"
                     onClick={() => setShowUserMenu(false)}
                   >
@@ -222,7 +248,9 @@ export const Header = () => {
                     className="flex items-center w-full text-left px-5 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-all group"
                   >
                     <LogOut className="mr-2 h-4 w-4 text-gray-500 group-hover:text-red-600 transition-colors" />
-                    <span className="group-hover:text-red-600">{t("header_sign_out", "Sign out")}</span>
+                    <span className="group-hover:text-red-600">
+                      {t("header_sign_out", "Sign out")}
+                    </span>
                   </button>
                 </div>
 
@@ -243,42 +271,42 @@ export const Header = () => {
         <div className="md:hidden bg-white/90 dark:bg-gray-900/90 backdrop-blur-md border-t border-gray-200 dark:border-gray-800">
           <div className="px-4 py-2 space-y-2">
             <Link
-              to="dashboard"
+              to={withLang("/dashboard")}
               className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
               onClick={() => setShowMobileMenu(false)}
             >
               {t("nav_home", "Home")}
             </Link>
             <Link
-              to="chatbots/new"
+              to={withLang("/chatbots/new")}
               className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
               onClick={() => setShowMobileMenu(false)}
             >
               {t("nav_new_chatbot", "New Chatbot")}
             </Link>
             <Link
-              to="bot-knowledge"
+              to={withLang("/bot-knowledge")}
               className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
               onClick={() => setShowMobileMenu(false)}
             >
               {t("nav_add_knowledge", "Add Knowledge")}
             </Link>
             <Link
-              to="integrations"
+              to={withLang("/integrations")}
               className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
               onClick={() => setShowMobileMenu(false)}
             >
               {t("nav_new_integration", "New Integration")}
             </Link>
             <Link
-              to="settings"
+              to={withLang("/settings")}
               className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
               onClick={() => setShowMobileMenu(false)}
             >
               {t("nav_settings", "Settings")}
             </Link>
             <Link
-              to="billing"
+              to={withLang("/billing")}
               className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
               onClick={() => setShowMobileMenu(false)}
             >
@@ -291,7 +319,9 @@ export const Header = () => {
               title={t("header_sign_out", "Sign out")}
             >
               <LogOut className="inline mr-2 h-4 w-4 text-gray-500 group-hover:text-red-600 transition-colors" />
-              <span className="group-hover:text-red-600">{t("header_sign_out", "Sign out")}</span>
+              <span className="group-hover:text-red-600">
+                {t("header_sign_out", "Sign out")}
+              </span>
             </button>
           </div>
         </div>

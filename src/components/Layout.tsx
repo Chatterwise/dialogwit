@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Outlet, Link, useLocation } from "react-router-dom";
+import { Outlet, Link, useLocation, useParams } from "react-router-dom";
 import {
   LayoutDashboard,
   Bot,
@@ -65,8 +65,19 @@ const DEV_NAV_LABELS: Record<(typeof devNavigation)[number]["key"], string> = {
 export const Layout = ({ children }: { children: React.ReactNode }) => {
   const { t } = useTranslation();
   const location = useLocation();
+  const { lang } = useParams();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [devOpen, setDevOpen] = useState(false);
+
+  // locale-aware path helper
+  const withLang = (to: string) => {
+    const cleaned = to.startsWith("/") ? to : `/${to}`;
+    const current = lang ?? "en";
+    // If already prefixed with current lang, return as-is
+    if (cleaned === `/${current}` || cleaned.startsWith(`/${current}/`))
+      return cleaned;
+    return `/${current}${cleaned}`;
+  };
 
   // Close sidebar when route changes on mobile
   useEffect(() => {
@@ -74,7 +85,7 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
   }, [location.pathname]);
 
   const isDevActive = devNavigation.some((item) =>
-    location.pathname.startsWith(item.href)
+    location.pathname.startsWith(withLang(item.href))
   );
 
   // Animation variants
@@ -157,7 +168,8 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
                 <nav className="space-y-1">
                   {mainNavigation.map((item) => {
                     const Icon = item.icon;
-                    const isActive = location.pathname === item.href;
+                    const to = withLang(item.href);
+                    const isActive = location.pathname.startsWith(to);
                     const label = t(
                       `layout.nav.${item.key}`,
                       MAIN_NAV_LABELS[item.key]
@@ -165,7 +177,7 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
                     return (
                       <Link
                         key={item.key}
-                        to={item.href}
+                        to={to}
                         className={`group flex items-center px-3 py-2.5 text-base font-medium rounded-xl transition-all duration-200 ${
                           isActive
                             ? "bg-gradient-to-r from-primary-100 to-primary-200 text-primary-700 shadow-sm dark:from-gray-800 dark:to-gray-900 dark:text-primary-400"
@@ -216,7 +228,8 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
                         >
                           {devNavigation.map((item) => {
                             const Icon = item.icon;
-                            const isActive = location.pathname === item.href;
+                            const to = withLang(item.href);
+                            const isActive = location.pathname.startsWith(to);
                             const label = t(
                               `layout.nav.dev.${item.key}`,
                               DEV_NAV_LABELS[item.key]
@@ -224,7 +237,7 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
                             return (
                               <Link
                                 key={item.key}
-                                to={item.href}
+                                to={to}
                                 className={`ml-8 group flex items-center px-3 py-2.5 text-base font-medium rounded-xl transition-all duration-200 ${
                                   isActive
                                     ? "bg-gradient-to-r from-primary-100 to-primary-200 text-primary-700 shadow-sm dark:from-gray-800 dark:to-gray-900 dark:text-primary-400"
@@ -247,7 +260,7 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
               {/* Mobile quick actions */}
               <div className="p-4 border-t border-gray-100 dark:border-gray-800">
                 <Link
-                  to="/chatbots/new"
+                  to={withLang("/chatbots/new")}
                   className="flex items-center justify-center w-full px-4 py-2 bg-primary-600 text-white rounded-xl hover:bg-primary-700 transition-colors"
                 >
                   <Plus className="h-4 w-4 mr-2" />
@@ -270,7 +283,8 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
               <nav className="flex-1 px-3 space-y-1">
                 {mainNavigation.map((item) => {
                   const Icon = item.icon;
-                  const isActive = location.pathname === item.href;
+                  const to = withLang(item.href);
+                  const isActive = location.pathname.startsWith(to);
                   const label = t(
                     `layout.nav.${item.key}`,
                     MAIN_NAV_LABELS[item.key]
@@ -282,7 +296,7 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
                       whileTap={{ scale: 0.98 }}
                     >
                       <Link
-                        to={item.href}
+                        to={to}
                         className={`group flex items-center px-3 py-2.5 text-base font-medium rounded-xl transition-all duration-200 ${
                           isActive
                             ? "bg-gradient-to-r from-primary-100 to-primary-200 text-primary-700 shadow dark:from-gray-800 dark:to-gray-900 dark:text-primary-400"
@@ -336,7 +350,8 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
                       >
                         {devNavigation.map((item) => {
                           const Icon = item.icon;
-                          const isActive = location.pathname === item.href;
+                          const to = withLang(item.href);
+                          const isActive = location.pathname.startsWith(to);
                           const label = t(
                             `layout.nav.dev.${item.key}`,
                             DEV_NAV_LABELS[item.key]
@@ -348,7 +363,7 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
                               whileTap={{ scale: 0.98 }}
                             >
                               <Link
-                                to={item.href}
+                                to={to}
                                 className={`ml-8 group flex items-center px-3 py-2.5 text-base font-medium rounded-xl transition-all duration-200 ${
                                   isActive
                                     ? "bg-gradient-to-r from-primary-100 to-primary-200 text-primary-700 shadow dark:from-gray-800 dark:to-gray-900 dark:text-primary-400"
@@ -376,7 +391,7 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
                 whileTap={{ scale: 0.97 }}
               >
                 <Link
-                  to="/chatbots/new"
+                  to={withLang("/chatbots/new")}
                   className="flex items-center justify-center w-full px-4 py-2.5 bg-gradient-to-r from-primary-600 to-primary-500 text-white rounded-xl hover:from-primary-700 hover:to-primary-600 transition-all shadow-md hover:shadow-lg"
                 >
                   <Plus className="h-4 w-4 mr-2" />

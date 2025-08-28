@@ -13,21 +13,30 @@ export const useStripe = () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) throw new Error("You must be logged in to create a checkout session");
 
+      // derive current lang from the first path segment (fallback to "en")
+      const segments = window.location.pathname.split("/").filter(Boolean);
+      const lang = segments[0] || "en";
+      const base = `${window.location.origin}/${lang}`;
+
       const response = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/stripe-checkout`,
         {
           method: "POST",
           headers: {
             Authorization: `Bearer ${session.access_token}`,
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
+            // optional but recommended for Edge Functions
+            // apikey: import.meta.env.VITE_SUPABASE_ANON_KEY as string,
+            // Accept: "application/json",
           },
           body: JSON.stringify({
             user_id: session.user.id,
             price_id: priceId,
             mode,
-            success_url: `${window.location.origin}/success`,
-            cancel_url: `${window.location.origin}/cancel`
-          })
+            // include lang + session id placeholder for your SuccessPage
+            success_url: `${base}/success?session_id={CHECKOUT_SESSION_ID}`,
+            cancel_url: `${base}/cancel`,
+          }),
         }
       );
 
@@ -39,7 +48,8 @@ export const useStripe = () => {
       const { url } = await response.json();
       if (!url) throw new Error("No checkout URL received");
 
-      window.location.href = url;
+      // use assign to replace location
+      window.location.assign(url);
     } catch (err) {
       const message = err instanceof Error ? err.message : "Unexpected error";
       setError(message);
@@ -63,8 +73,10 @@ export const useStripe = () => {
           method: "POST",
           headers: {
             Authorization: `Bearer ${session.access_token}`,
-            "Content-Type": "application/json"
-          }
+            "Content-Type": "application/json",
+            // apikey: import.meta.env.VITE_SUPABASE_ANON_KEY as string,
+            // Accept: "application/json",
+          },
         }
       );
 
@@ -88,6 +100,6 @@ export const useStripe = () => {
     createCheckoutSession,
     cancelSubscription,
     isLoading,
-    error
+    error,
   };
 };

@@ -102,29 +102,30 @@ function AppContent() {
         path="/:lang/*"
         element={
           <LanguageProvider>
-            {" "}
             {/* LanguageProvider is now inside the /:lang route */}
             <Routes>
               {/* Public routes */}
               <Route
                 path="/" // This will match /:lang/
-                element={!user ? <LandingPage /> : <Navigate to="dashboard" />} // Navigate to relative path
+                element={!user ? <LandingPage /> : <Navigate to="dashboard" />}
               />
               <Route
-                path="auth" // This will match /:lang/auth
-                element={!user ? <Auth /> : <Navigate to="dashboard" />}
+                path="auth" // /:lang/auth
+                element={
+                  !user ? <Auth /> : <Navigate to="../dashboard" replace />
+                }
               />
               <Route
-                path="auth/callback" // This will match /:lang/auth/callback
+                path="auth/callback"
                 element={
                   user ? (
                     emailConfirmed ? (
-                      <Navigate to="dashboard" />
+                      <Navigate to="../dashboard" replace />
                     ) : (
                       <EmailConfirmationRequired />
                     )
                   ) : (
-                    <Navigate to="auth" />
+                    <Navigate to="../auth" replace />
                   )
                 }
               />
@@ -217,13 +218,13 @@ function AppContent() {
 
               {/* Protected routes */}
               <Route
-                path="*" // Catch-all for protected routes under /:lang/
+                path="*"
                 element={
                   user ? (
                     emailConfirmed ? (
                       <Layout>
                         <Routes>
-                          {/* Wrap chatbot-related routes with ChatbotLimitGuard */}
+                          {/* Chatbot routes */}
                           <Route
                             path="chatbots/new"
                             element={<ChatbotBuilder />}
@@ -291,7 +292,8 @@ function AppContent() {
                       <EmailConfirmationRequired />
                     )
                   ) : (
-                    <Navigate to="/" />
+                    // IMPORTANT: keep the lang prefix by using a relative redirect
+                    <Navigate to="../auth" replace />
                   )
                 }
               />
@@ -308,7 +310,7 @@ export default function App() {
     <HelmetProvider>
       <QueryClientProvider client={queryClient}>
         <Router>
-          <AppContent /> {/* LanguageProvider is now inside AppContent */}
+          <AppContent />
           <ToastRenderer />
         </Router>
       </QueryClientProvider>
