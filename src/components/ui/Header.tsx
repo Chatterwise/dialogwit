@@ -1,19 +1,11 @@
 import { useState, useRef, useEffect } from "react";
-import {
-  Sun,
-  Moon,
-  LogOut,
-  Bell,
-  Menu,
-  Plus,
-  ChevronDown,
-  X,
-} from "lucide-react";
+import { Sun, Moon, LogOut, Menu, Plus, ChevronDown, X } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import { useTheme } from "../../hooks/useTheme";
 import { motion } from "framer-motion";
 import { useUserProfile } from "../../hooks/useUserProfile";
+import { LanguageSelector } from "../LanguageSelector";
 
 export const Header = () => {
   const { user, signOut } = useAuth();
@@ -101,6 +93,7 @@ export const Header = () => {
 
         {/* Actions: Create, Notification, Theme Toggle, Avatar */}
         <div className="flex items-center space-x-3">
+          <LanguageSelector /> {/* Add LanguageSelector here */}
           {/* Create (wrapper has ref) */}
           <div className="relative" ref={createMenuRef}>
             <motion.button
@@ -155,7 +148,6 @@ export const Header = () => {
               </div>
             )}
           </div>
-
           {/* Notification Button */}
           {/* <motion.button
             whileHover={{ scale: 1.1 }}
@@ -166,7 +158,6 @@ export const Header = () => {
             <Bell className="w-5 h-5 text-gray-600 dark:text-gray-300" />
             <span className="absolute top-0 right-0 block h-2 w-2 rounded-full bg-red-500 ring-2 ring-white dark:ring-gray-800"></span>
           </motion.button> */}
-
           {/* Theme Toggle */}
           <motion.button
             whileHover={{ scale: 1.1 }}
@@ -181,7 +172,6 @@ export const Header = () => {
               <Moon className="w-5 h-5 text-gray-600" />
             )}
           </motion.button>
-
           {/* Avatar & Dropdown (wrapper has ref) */}
           <div className="relative" ref={userMenuRef}>
             <motion.button
