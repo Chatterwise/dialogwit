@@ -6,7 +6,7 @@ interface TranslationDictionary {
 }
 
 // Import all translation files using Vite's glob import
-const translationModules = import.meta.glob('../i18n/*.json');
+const translationModules = import.meta.glob('/i18n/*.json');
 export const useTranslation = () => {
   const { currentLanguage } = useLanguage();
   const [translations, setTranslations] = useState<TranslationDictionary>({});
@@ -19,7 +19,7 @@ export const useTranslation = () => {
       setError(null);
       try {
         // Use the glob import to load the correct translation file
-        const modulePath = `../i18n/${currentLanguage}.json`;
+        const modulePath = `/i18n/${currentLanguage}.json`;
         const moduleLoader = translationModules[modulePath];
         
         if (!moduleLoader) {
