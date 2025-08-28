@@ -68,6 +68,7 @@ import KnowledgeBasePage from "./pages/docs/KnowledgeBasePage";
 import TrainingChatbotPage from "./pages/docs/TrainingChatbotPage";
 import { BotChatsPage } from "./components/BotChatsPage";
 import { LanguageProvider } from "./contexts/LanguageContext"; // Import LanguageProvider
+import LanguageRedirect from "./components/LanguageRedirect";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -94,8 +95,8 @@ function AppContent() {
 
   return (
     <Routes>
-      {/* Redirect root to default language */}
-      <Route path="/" element={<Navigate to="/en" replace />} />
+      {/* Redirect root to best language based on storage/browser */}
+      <Route path="/" element={<LanguageRedirect />} />
 
       {/* All other routes are now nested within a /:lang route */}
       <Route

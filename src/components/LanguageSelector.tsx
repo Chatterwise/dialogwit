@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useLanguage } from "../contexts/LanguageContext";
 import { languages } from "../lib/languages";
+import { clearStoredPreferredLanguage } from "../lib/locale";
 import { useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "../hooks/useTranslation";
 import { ChevronDown } from "lucide-react";
@@ -82,7 +83,7 @@ export const LanguageSelector: React.FC = () => {
         <div
           role="listbox"
           aria-label={t("language.list", "Languages")}
-          className="absolute right-0 z-40 mt-2 w-44 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-lg overflow-hidden"
+          className="absolute right-0 z-40 mt-2 w-56 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-lg overflow-hidden"
         >
           {languages.map((lang) => {
             const selected = lang.code === currentLanguage;
@@ -106,6 +107,17 @@ export const LanguageSelector: React.FC = () => {
               </button>
             );
           })}
+          <div className="my-1 h-px bg-gray-200 dark:bg-gray-700" />
+          <button
+            onClick={() => {
+              clearStoredPreferredLanguage();
+              // Close the menu; do not navigate automatically.
+              setOpen(false);
+            }}
+            className="w-full text-left px-3 py-2 text-xs text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30"
+          >
+            Reset language preference
+          </button>
         </div>
       )}
     </div>

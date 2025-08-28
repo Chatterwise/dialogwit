@@ -7,6 +7,13 @@ import React, {
 } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { languages, DEFAULT_LANGUAGE } from "../lib/languages";
+import GeoLanguageModal from "../components/GeoLanguageModal";
+import {
+  detectBrowserLanguage,
+  getStoredPreferredLanguage,
+  isSupportedLanguage,
+  setStoredPreferredLanguage,
+} from "../lib/locale";
 
 interface LanguageContextType {
   currentLanguage: string;
@@ -42,14 +49,27 @@ export const LanguageProvider: React.FC<{ children: ReactNode }> = ({
       lang !== currentLanguage
     ) {
       setCurrentLanguage(lang);
+      // keep preference in localStorage in sync with URL
+      setStoredPreferredLanguage(lang);
     }
   }, [lang, currentLanguage]);
 
+  // If the URL param is invalid, redirect to best supported language
+  useEffect(() => {
+    if (!lang || !languages.some((l) => l.code === lang)) {
+      const stored = getStoredPreferredLanguage();
+      const detected = detectBrowserLanguage();
+      const target = stored || detected || DEFAULT_LANGUAGE;
+      if (target !== lang) {
+        navigate(`/${target}`, { replace: true });
+      }
+    }
+  }, [lang, navigate]);
+
   const setLanguage = (newLang: string) => {
-    if (
-      languages.some((l) => l.code === newLang) &&
-      newLang !== currentLanguage
-    ) {
+    if (isSupportedLanguage(newLang) && newLang !== currentLanguage) {
+      // persist preference
+      setStoredPreferredLanguage(newLang);
       // Update the URL to reflect the new language
       const pathSegments = location.pathname.split("/").filter(Boolean);
       // pathSegments[0] is guaranteed to be the current language code due to App.tsx routing
@@ -61,6 +81,8 @@ export const LanguageProvider: React.FC<{ children: ReactNode }> = ({
   return (
     <LanguageContext.Provider value={{ currentLanguage, setLanguage }}>
       {children}
+      {/* Offer IP-based suggestion when appropriate */}
+      <GeoLanguageModal currentLanguage={currentLanguage} setLanguage={setLanguage} />
     </LanguageContext.Provider>
   );
 };
