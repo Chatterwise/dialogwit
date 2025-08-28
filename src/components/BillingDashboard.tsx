@@ -13,21 +13,18 @@ import {
   FileText,
   AlertCircle,
   Bot,
-  Link,
 } from "lucide-react";
+import { Link } from "react-router-dom";
 import { useBilling } from "../hooks/useBilling";
-import { useStripe } from "../hooks/useStripe";
 import SubscriptionStatus from "./SubscriptionStatus";
+import { useTranslation } from "../hooks/useTranslation";
 
 export const BillingDashboard: React.FC = () => {
-  const { subscription, invoices, usage, isLoading, refetch } = useBilling();
-  const { createPortalSession, isLoading: stripeLoading } = useStripe();
+  const { t } = useTranslation();
+  const { subscription, invoices, usage, isLoading } = useBilling();
   const [activeTab, setActiveTab] = useState<"overview" | "invoices" | "usage">(
     "overview"
   );
-  const handleManageBilling = async () => {
-    await createPortalSession();
-  };
 
   const formatCurrency = (amount: number, currency: string = "usd") => {
     return new Intl.NumberFormat("en-US", {
@@ -94,10 +91,13 @@ export const BillingDashboard: React.FC = () => {
           transition={{ duration: 0.5 }}
         >
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-            Billing & Usage
+            {t("billing_title", "Billing & Usage")}
           </h1>
           <p className="text-gray-600 dark:text-gray-400 mt-2">
-            Manage your subscription, view invoices, and monitor usage
+            {t(
+              "billing_subtitle",
+              "Manage your subscription, view invoices, and monitor usage"
+            )}
           </p>
         </motion.div>
         <motion.div
@@ -107,14 +107,7 @@ export const BillingDashboard: React.FC = () => {
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
         >
-          {/* <button
-            onClick={handleManageBilling}
-            disabled={stripeLoading}
-            className="bg-gradient-to-r from-gray-900 to-gray-800 dark:from-gray-700 dark:to-gray-800 text-white px-6 py-3 rounded-xl font-medium hover:from-gray-800 hover:to-gray-700 transition-all shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
-          >
-            <CreditCard className="w-5 h-5 mr-2" />
-            {stripeLoading ? "Loading..." : "Manage Billing"}
-          </button> */}
+          {/* (reserved for actions) */}
         </motion.div>
       </div>
 
@@ -122,9 +115,21 @@ export const BillingDashboard: React.FC = () => {
       <div className="border-b border-gray-200 dark:border-gray-800 mb-8">
         <nav className="-mb-px flex space-x-8">
           {[
-            { id: "overview", label: "Overview", icon: TrendingUp },
-            { id: "invoices", label: "Invoices", icon: Download },
-            { id: "usage", label: "Usage", icon: AlertTriangle },
+            {
+              id: "overview",
+              label: t("billing_tab_overview", "Overview"),
+              icon: TrendingUp,
+            },
+            {
+              id: "invoices",
+              label: t("billing_tab_invoices", "Invoices"),
+              icon: Download,
+            },
+            {
+              id: "usage",
+              label: t("billing_tab_usage", "Usage"),
+              icon: AlertTriangle,
+            },
           ].map((tab) => (
             <button
               key={tab.id}
@@ -165,10 +170,11 @@ export const BillingDashboard: React.FC = () => {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                      Current Plan
+                      {t("billing_current_plan", "Current Plan")}
                     </p>
                     <p className="text-2xl font-bold text-gray-900 dark:text-white capitalize">
-                      {subscription?.plan_name || "Free"}
+                      {subscription?.plan_name ||
+                        t("billing_plan_free", "Free")}
                     </p>
                   </div>
                   <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-full">
@@ -186,7 +192,7 @@ export const BillingDashboard: React.FC = () => {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                      Monthly Spend
+                      {t("billing_monthly_spend", "Monthly Spend")}
                     </p>
                     <p className="text-2xl font-bold text-gray-900 dark:text-white">
                       {subscription?.plan_name === "free"
@@ -215,12 +221,12 @@ export const BillingDashboard: React.FC = () => {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                      Next Billing
+                      {t("billing_next_billing", "Next Billing")}
                     </p>
                     <p className="text-2xl font-bold text-gray-900 dark:text-white">
                       {subscription?.current_period_end
                         ? formatDate(subscription.current_period_end)
-                        : "N/A"}
+                        : t("billing_na", "N/A")}
                     </p>
                   </div>
                   <div className="p-3 bg-purple-100 dark:bg-purple-900/30 rounded-full">
@@ -230,7 +236,7 @@ export const BillingDashboard: React.FC = () => {
               </motion.div>
             </div>
 
-            {/* Usage Metrics */}
+            {/* Usage Metrics (Overview) */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -238,7 +244,7 @@ export const BillingDashboard: React.FC = () => {
               className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 p-6"
             >
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-6">
-                Usage Metrics
+                {t("billing_usage_metrics", "Usage Metrics")}
               </h3>
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -247,10 +253,10 @@ export const BillingDashboard: React.FC = () => {
                     {usage?.tokens_used?.toLocaleString() || 0}
                   </div>
                   <div className="text-sm text-gray-600 dark:text-gray-400">
-                    Tokens Used
+                    {t("billing_tokens_used", "Tokens Used")}
                   </div>
                   <div className="text-xs text-gray-500 dark:text-gray-500 mt-1">
-                    This month
+                    {t("billing_this_month", "This month")}
                   </div>
                 </div>
                 <div className="text-center">
@@ -258,10 +264,10 @@ export const BillingDashboard: React.FC = () => {
                     {usage?.chatbots_created || 0}
                   </div>
                   <div className="text-sm text-gray-600 dark:text-gray-400">
-                    Chatbots Created
+                    {t("billing_chatbots_created", "Chatbots Created")}
                   </div>
                   <div className="text-xs text-gray-500 dark:text-gray-500 mt-1">
-                    Total
+                    {t("billing_total", "Total")}
                   </div>
                 </div>
                 <div className="text-center">
@@ -269,10 +275,10 @@ export const BillingDashboard: React.FC = () => {
                     {usage?.documents_uploaded || 0}
                   </div>
                   <div className="text-sm text-gray-600 dark:text-gray-400">
-                    Documents Uploaded
+                    {t("billing_documents_uploaded", "Documents Uploaded")}
                   </div>
                   <div className="text-xs text-gray-500 dark:text-gray-500 mt-1">
-                    Total
+                    {t("billing_total", "Total")}
                   </div>
                 </div>
                 <div className="text-center">
@@ -280,23 +286,29 @@ export const BillingDashboard: React.FC = () => {
                     {usage?.api_requests || 0}
                   </div>
                   <div className="text-sm text-gray-600 dark:text-gray-400">
-                    API Requests
+                    {t("billing_api_requests", "API Requests")}
                   </div>
                   <div className="text-xs text-gray-500 dark:text-gray-500 mt-1">
-                    This month
+                    {t("billing_this_month", "This month")}
                   </div>
                 </div>
               </div>
 
               <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700 flex justify-between items-center">
                 <div className="text-sm text-gray-600 dark:text-gray-400">
-                  Need more detailed analytics?
+                  {t(
+                    "billing_more_analytics_prompt",
+                    "Need more detailed analytics?"
+                  )}
                 </div>
                 <Link
-                  to="/analytics"
+                  to="analytics"
                   className="text-primary-600 dark:text-primary-400 font-medium text-sm hover:text-primary-700 dark:hover:text-primary-300 flex items-center"
                 >
-                  View detailed analytics
+                  {t(
+                    "billing_view_detailed_analytics",
+                    "View detailed analytics"
+                  )}
                   <ArrowRight className="w-4 h-4 ml-1" />
                 </Link>
               </div>
@@ -313,10 +325,13 @@ export const BillingDashboard: React.FC = () => {
           >
             <div className="p-6 border-b border-gray-200 dark:border-gray-700">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                Invoice History
+                {t("billing_invoice_history", "Invoice History")}
               </h3>
               <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                Download and view your billing history
+                {t(
+                  "billing_invoice_history_desc",
+                  "Download and view your billing history"
+                )}
               </p>
             </div>
             <div className="overflow-x-auto">
@@ -325,19 +340,19 @@ export const BillingDashboard: React.FC = () => {
                   <thead className="bg-gray-50 dark:bg-gray-900">
                     <tr>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                        Invoice
+                        {t("billing_th_invoice", "Invoice")}
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                        Date
+                        {t("billing_th_date", "Date")}
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                        Amount
+                        {t("billing_th_amount", "Amount")}
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                        Status
+                        {t("billing_th_status", "Status")}
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                        Actions
+                        {t("billing_th_actions", "Actions")}
                       </th>
                     </tr>
                   </thead>
@@ -377,7 +392,7 @@ export const BillingDashboard: React.FC = () => {
                               className="text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 flex items-center"
                             >
                               <Download className="w-4 h-4 mr-1" />
-                              Download
+                              {t("billing_action_download", "Download")}
                             </a>
                           )}
                         </td>
@@ -389,11 +404,13 @@ export const BillingDashboard: React.FC = () => {
                 <div className="p-6 text-center">
                   <Download className="w-12 h-12 text-gray-400 dark:text-gray-600 mx-auto mb-4" />
                   <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
-                    No invoices yet
+                    {t("billing_no_invoices_title", "No invoices yet")}
                   </h3>
                   <p className="text-gray-600 dark:text-gray-400">
-                    Your invoices will appear here once you start a paid
-                    subscription.
+                    {t(
+                      "billing_no_invoices_desc",
+                      "Your invoices will appear here once you start a paid subscription."
+                    )}
                   </p>
                 </div>
               )}
@@ -412,18 +429,18 @@ export const BillingDashboard: React.FC = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                    Usage Details
+                    {t("billing_usage_details", "Usage Details")}
                   </h3>
                   <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                    Detailed breakdown of your current usage
+                    {t(
+                      "billing_usage_details_desc",
+                      "Detailed breakdown of your current usage"
+                    )}
                   </p>
                 </div>
-                <button
-                  onClick={() => refetch()}
-                  className="flex items-center text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
-                >
+                <button className="flex items-center text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white">
                   <RefreshCw className="w-4 h-4 mr-1" />
-                  Refresh
+                  {t("billing_refresh", "Refresh")}
                 </button>
               </div>
             </div>
@@ -436,7 +453,7 @@ export const BillingDashboard: React.FC = () => {
                     <div>
                       <div className="flex justify-between mb-2">
                         <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                          Tokens
+                          {t("billing_tokens", "Tokens")}
                         </span>
                         <span className="text-sm text-gray-600 dark:text-gray-400">
                           {usage.tokens_used?.toLocaleString() || 0} /{" "}
@@ -445,17 +462,6 @@ export const BillingDashboard: React.FC = () => {
                           ).toLocaleString("en-US")}
                         </span>
                       </div>
-                      {/* <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
-                        <div
-                          className="bg-primary-600 dark:bg-primary-500 h-2.5 rounded-full"
-                          style={{
-                            width: `${Math.min(
-                              100,
-                              ((usage.tokens_used || 0) / 100000) * 100
-                            )}%`,
-                          }}
-                        ></div>
-                      </div> */}
                       <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
                         {subscription && (
                           <div
@@ -473,50 +479,6 @@ export const BillingDashboard: React.FC = () => {
                         )}
                       </div>
                     </div>
-
-                    {/* <div>
-                      <div className="flex justify-between mb-2">
-                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                          Chatbots
-                        </span>
-                        <span className="text-sm text-gray-600 dark:text-gray-400">
-                          {usage.chatbots_created || 0} / 100
-                        </span>
-                      </div>
-                      <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
-                        <div
-                          className="bg-green-600 dark:bg-green-500 h-2.5 rounded-full"
-                          style={{
-                            width: `${Math.min(
-                              100,
-                              ((usage.chatbots_created || 0) / 100) * 100
-                            )}%`,
-                          }}
-                        ></div>
-                      </div>
-                    </div> */}
-
-                    {/* <div>
-                      <div className="flex justify-between mb-2">
-                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                          Documents
-                        </span>
-                        <span className="text-sm text-gray-600 dark:text-gray-400">
-                          {usage.documents_uploaded || 0} / 500
-                        </span>
-                      </div>
-                      <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
-                        <div
-                          className="bg-purple-600 dark:bg-purple-500 h-2.5 rounded-full"
-                          style={{
-                            width: `${Math.min(
-                              100,
-                              ((usage.documents_uploaded || 0) / 50) * 100
-                            )}%`,
-                          }}
-                        ></div>
-                      </div>
-                    </div> */}
                   </div>
 
                   {/* Usage Metrics */}
@@ -525,12 +487,12 @@ export const BillingDashboard: React.FC = () => {
                       <div className="flex items-center mb-2">
                         <FileText className="w-5 h-5 text-primary-600 dark:text-primary-400 mr-2" />
                         <h4 className="font-medium text-gray-900 dark:text-white text-sm">
-                          Token Usage
+                          {t("billing_token_usage", "Token Usage")}
                         </h4>
                       </div>
                       <div className="flex items-center justify-between">
                         <span className="text-sm text-gray-600 dark:text-gray-400">
-                          Current
+                          {t("billing_current", "Current")}
                         </span>
                         <span className="text-sm font-medium text-gray-900 dark:text-white">
                           {usage.tokens_used?.toLocaleString() || 0}
@@ -538,7 +500,7 @@ export const BillingDashboard: React.FC = () => {
                       </div>
                       <div className="flex items-center justify-between mt-1">
                         <span className="text-sm text-gray-600 dark:text-gray-400">
-                          Limit
+                          {t("billing_limit", "Limit")}
                         </span>
                         <span className="text-sm font-medium text-gray-900 dark:text-white">
                           {(
@@ -552,12 +514,12 @@ export const BillingDashboard: React.FC = () => {
                       <div className="flex items-center mb-2">
                         <Bot className="w-5 h-5 text-green-600 dark:text-green-400 mr-2" />
                         <h4 className="font-medium text-gray-900 dark:text-white text-sm">
-                          Chatbots
+                          {t("billing_chatbots", "Chatbots")}
                         </h4>
                       </div>
                       <div className="flex items-center justify-between">
                         <span className="text-sm text-gray-600 dark:text-gray-400">
-                          Created
+                          {t("billing_created", "Created")}
                         </span>
                         <span className="text-sm font-medium text-gray-900 dark:text-white">
                           {(usage.chatbots_created || 0).toLocaleString(
@@ -565,51 +527,35 @@ export const BillingDashboard: React.FC = () => {
                           )}
                         </span>
                       </div>
-                      {/* <div className="flex items-center justify-between mt-1">
-                        <span className="text-sm text-gray-600 dark:text-gray-400">
-                          Limit
-                        </span>
-                        <span className="text-sm font-medium text-gray-900 dark:text-white">
-                          5
-                        </span>
-                      </div> */}
                     </div>
 
                     <div className="bg-gray-50 dark:bg-gray-900/50 p-4 rounded-lg">
                       <div className="flex items-center mb-2">
                         <FileText className="w-5 h-5 text-purple-600 dark:text-purple-400 mr-2" />
                         <h4 className="font-medium text-gray-900 dark:text-white text-sm">
-                          Documents
+                          {t("billing_documents", "Documents")}
                         </h4>
                       </div>
                       <div className="flex items-center justify-between">
                         <span className="text-sm text-gray-600 dark:text-gray-400">
-                          Uploaded
+                          {t("billing_uploaded", "Uploaded")}
                         </span>
                         <span className="text-sm font-medium text-gray-900 dark:text-white">
                           {usage.documents_uploaded || 0}
                         </span>
                       </div>
-                      {/* <div className="flex items-center justify-between mt-1">
-                        <span className="text-sm text-gray-600 dark:text-gray-400">
-                          Limit
-                        </span>
-                        <span className="text-sm font-medium text-gray-900 dark:text-white">
-                          50
-                        </span>
-                      </div> */}
                     </div>
 
                     <div className="bg-gray-50 dark:bg-gray-900/50 p-4 rounded-lg">
                       <div className="flex items-center mb-2">
                         <Zap className="w-5 h-5 text-yellow-600 dark:text-yellow-400 mr-2" />
                         <h4 className="font-medium text-gray-900 dark:text-white text-sm">
-                          API Requests
+                          {t("billing_api_requests_title", "API Requests")}
                         </h4>
                       </div>
                       <div className="flex items-center justify-between">
                         <span className="text-sm text-gray-600 dark:text-gray-400">
-                          Used
+                          {t("billing_used", "Used")}
                         </span>
                         <span className="text-sm font-medium text-gray-900 dark:text-white">
                           {usage.api_requests || 0}
@@ -617,7 +563,7 @@ export const BillingDashboard: React.FC = () => {
                       </div>
                       <div className="flex items-center justify-between mt-1">
                         <span className="text-sm text-gray-600 dark:text-gray-400">
-                          Rate Limit
+                          {t("billing_rate_limit", "Rate Limit")}
                         </span>
                         <span className="text-sm font-medium text-gray-900 dark:text-white">
                           50/min
@@ -631,11 +577,13 @@ export const BillingDashboard: React.FC = () => {
                     <div className="flex flex-col md:flex-row md:items-center md:justify-between">
                       <div className="mb-4 md:mb-0">
                         <h4 className="text-lg font-semibold text-gray-900 dark:text-white">
-                          Need more resources?
+                          {t("billing_need_more", "Need more resources?")}
                         </h4>
                         <p className="text-sm text-gray-700 dark:text-gray-300 mt-1">
-                          Upgrade your plan to get more tokens, chatbots, and
-                          features.
+                          {t(
+                            "billing_upgrade_hint",
+                            "Upgrade your plan to get more tokens, chatbots, and features."
+                          )}
                         </p>
                       </div>
                       <motion.div
@@ -643,11 +591,11 @@ export const BillingDashboard: React.FC = () => {
                         whileTap={{ scale: 0.95 }}
                       >
                         <Link
-                          to="/pricing"
+                          to="pricing"
                           className="inline-flex items-center px-4 py-2 bg-primary-600 dark:bg-primary-700 text-white rounded-lg font-medium shadow-md hover:shadow-lg transition-all"
                         >
                           <Zap className="w-4 h-4 mr-2" />
-                          View Plans
+                          {t("billing_view_plans", "View Plans")}
                         </Link>
                       </motion.div>
                     </div>
@@ -657,10 +605,13 @@ export const BillingDashboard: React.FC = () => {
                 <div className="text-center py-8">
                   <AlertCircle className="w-12 h-12 text-gray-400 dark:text-gray-600 mx-auto mb-4" />
                   <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
-                    No usage data
+                    {t("billing_no_usage_title", "No usage data")}
                   </h3>
                   <p className="text-gray-600 dark:text-gray-400">
-                    Start using ChatterWise to see your usage statistics here.
+                    {t(
+                      "billing_no_usage_desc",
+                      "Start using ChatterWise to see your usage statistics here."
+                    )}
                   </p>
                 </div>
               )}

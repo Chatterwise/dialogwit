@@ -115,7 +115,7 @@ const PricingCard: React.FC<PricingCardProps> = ({
         ))}
       </ul>
       <Link
-        to="/pricing"
+        to="pricing"
         className={`block w-full py-3 px-4 rounded-xl font-medium text-center transition-colors ${
           popular
             ? "bg-primary-600 hover:bg-primary-700 text-white"
@@ -240,25 +240,25 @@ const LandingPage: React.FC = () => {
                 )}
               </button>
               <Link
-                to="/pricing"
+                to="pricing"
                 className="text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 px-3 py-2 text-sm font-medium"
               >
                 {t("nav_pricing")}
               </Link>
               <Link
-                to="/documentation"
+                to="documentation"
                 className="text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 px-3 py-2 text-sm font-medium"
               >
                 {t("nav_documentation")}
               </Link>
               <Link
-                to="/auth"
+                to="auth"
                 className="text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 px-3 py-2 text-sm font-medium"
               >
                 {t("nav_login")}
               </Link>
               <Link
-                to="/auth"
+                to="auth"
                 className="bg-primary-600 text-white hover:bg-primary-700 dark:hover:bg-primary-500 px-4 py-2 rounded-xl text-sm font-medium transition-colors"
               >
                 {t("nav_signup")}
@@ -300,28 +300,28 @@ const LandingPage: React.FC = () => {
               {t("toggle_theme")}
             </button>
             <Link
-              to="/pricing"
+              to="pricing"
               onClick={() => setMobileMenuOpen(false)}
               className="block px-3 py-2 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
             >
               {t("nav_pricing")}
             </Link>
             <Link
-              to="/documentation"
+              to="documentation"
               onClick={() => setMobileMenuOpen(false)}
               className="block px-3 py-2 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
             >
               {t("nav_documentation")}
             </Link>
             <Link
-              to="/auth"
+              to="auth"
               onClick={() => setMobileMenuOpen(false)}
               className="block px-3 py-2 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
             >
               {t("nav_login")}
             </Link>
             <Link
-              to="/auth"
+              to="auth"
               onClick={() => setMobileMenuOpen(false)}
               className="block px-3 py-2 rounded-md text-sm font-medium bg-primary-600 text-white hover:bg-primary-700 dark:hover:bg-primary-500"
             >
@@ -381,7 +381,7 @@ const LandingPage: React.FC = () => {
                   whileTap={{ scale: 0.95 }}
                 >
                   <Link
-                    to="/auth"
+                    to="auth"
                     className="w-full sm:w-auto bg-gradient-to-r from-primary-600 to-primary-500 hover:from-primary-700 hover:to-primary-600 text-white px-8 py-4 rounded-xl text-lg font-semibold shadow-lg hover:shadow-xl transition-all flex items-center justify-center"
                   >
                     {t("get_started")}
@@ -393,7 +393,7 @@ const LandingPage: React.FC = () => {
                   whileTap={{ scale: 0.95 }}
                 >
                   <Link
-                    to="/documentation"
+                    to="documentation"
                     className="w-full sm:w-auto bg-white dark:bg-gray-800 text-primary-600 dark:text-primary-400 border border-primary-200 dark:border-primary-800 px-8 py-4 rounded-xl text-lg font-semibold shadow-sm hover:shadow-md transition-all flex items-center justify-center"
                   >
                     {t("learn_more")}
@@ -866,7 +866,7 @@ const LandingPage: React.FC = () => {
                 whileTap={{ scale: 0.95 }}
               >
                 <Link
-                  to="/auth"
+                  to="auth"
                   className="bg-white text-primary-600 px-8 py-4 rounded-xl text-lg font-semibold shadow-lg hover:shadow-xl transition-all transform"
                 >
                   {t("start_building_free")}
@@ -877,7 +877,7 @@ const LandingPage: React.FC = () => {
                 whileTap={{ scale: 0.95 }}
               >
                 <Link
-                  to="/pricing"
+                  to="pricing"
                   className="bg-transparent text-white border-2 border-white px-8 py-4 rounded-xl text-lg font-semibold hover:bg-white/10 transition-colors"
                 >
                   {t("view_pricing")}

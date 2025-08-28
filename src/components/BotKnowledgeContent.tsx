@@ -1,3 +1,4 @@
+// BotKnowledgeContent.tsx
 import {
   FileText,
   Trash2,
@@ -15,6 +16,7 @@ import { useToast } from "../lib/toastStore";
 import { BotKnowledgeContentProps, KnowledgeItem } from "./utils/types";
 import React from "react";
 import { supabase } from "../lib/supabase";
+import { useTranslation } from "../hooks/useTranslation";
 
 type LocalStatus = "processing" | "completed" | "error";
 
@@ -48,6 +50,8 @@ export default function BotKnowledgeContent({
   const toast = useToast();
 
   // Local, optimistic progress/state for nicer UX during batch
+  const { t } = useTranslation();
+
   const [batchActive, setBatchActive] = React.useState(false);
   const [batchTotals, setBatchTotals] = React.useState({
     total: 0,
@@ -207,21 +211,21 @@ export default function BotKnowledgeContent({
       return (
         <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-400">
           <CheckCircle className="h-3 w-3 mr-1" />
-          Processed
+          {t("kb.status.processed")}
         </span>
       );
     } else if (isProcessing) {
       return (
         <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-400">
           <LoaderIcon className="h-3 w-3 mr-1 animate-spin" />
-          Processing
+          {t("kb.status.processing")}
         </span>
       );
     } else {
       return (
         <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-900/20 text-gray-700 dark:text-gray-400">
           <Clock className="h-3 w-3 mr-1" />
-          Pending
+          {t("kb.status.pending")}
         </span>
       );
     }
@@ -260,7 +264,7 @@ export default function BotKnowledgeContent({
 
   const handleProcessItem = async (item: KnowledgeItemWithRuntime) => {
     if (!handleProcess) return;
-    toast.info(`Processing "${item.filename || item.id}"...`);
+    toast.info(`${t("kb.toast.processing")} "${item.filename || item.id}"...`);
     await processOne(item);
   };
 
@@ -272,13 +276,15 @@ export default function BotKnowledgeContent({
       (it) => selectedItems.includes(it.id) && !it.processed
     );
     if (items.length === 0) {
-      toast.info(
-        "Nothing to process (already processed or no items selected)."
-      );
+      toast.info(t("kb.toast.nothing_to_process"));
       return;
     }
 
-    toast.info(`Processing ${items.length} item(s)...`);
+    toast.info(
+      `${t("kb.toast.processing")} ${items.length} ${t(
+        "kb.toast.items_suffix"
+      )}`
+    );
     setBatchActive(true);
     setBatchTotals({ total: items.length, completed: 0, failed: 0 });
 
@@ -298,11 +304,15 @@ export default function BotKnowledgeContent({
 
     setBatchActive(false);
     if (failed === 0) {
-      toast.success("Batch submitted. Watching for completion…");
+      toast.success(t("kb.toast.batch_submitted"));
     } else if (done === 0) {
-      toast.error("All items failed to submit.");
+      toast.error(t("kb.toast.all_failed"));
     } else {
-      toast.info(`${done} submitted, ${failed} failed to submit.`);
+      toast.info(
+        `${done} ${t("kb.toast.submitted")}, ${failed} ${t(
+          "kb.toast.failed_to_submit"
+        )}.`
+      );
     }
   };
 
@@ -319,14 +329,14 @@ export default function BotKnowledgeContent({
       <div className="px-8 py-5 border-b border-gray-100 dark:border-gray-700 bg-gradient-to-r from-primary-50 via-white to-accent-50 dark:from-primary-900/20 dark:via-gray-900/40 dark:to-accent-900/20 rounded-t-2xl">
         <div className="flex items-center justify-between">
           <h3 className="text-lg font-bold text-gray-900 dark:text-white">
-            Bot Knowledge Items
+            {t("kb.header.title")}
           </h3>
           <div className="flex items-center space-x-4">
             <div className="relative">
               <Search className="h-4 w-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500" />
               <input
                 type="text"
-                placeholder="Search content..."
+                placeholder={t("kb.search.placeholder")}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-400 dark:focus:ring-primary-600 focus:border-primary-400 dark:focus:border-primary-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition"
@@ -339,9 +349,9 @@ export default function BotKnowledgeContent({
               }
               className="px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-400 dark:focus:ring-primary-600 focus:border-primary-400 dark:focus:border-primary-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition"
             >
-              <option value="all">All Types</option>
-              <option value="text">Text</option>
-              <option value="document">Document</option>
+              <option value="all">{t("kb.filter.all")}</option>
+              <option value="text">{t("kb.filter.text")}</option>
+              <option value="document">{t("kb.filter.document")}</option>
             </select>
           </div>
         </div>
@@ -361,12 +371,12 @@ export default function BotKnowledgeContent({
                     className="rounded border-gray-300 dark:border-gray-700 text-primary-600 dark:text-primary-400 focus:ring-primary-500 dark:focus:ring-primary-600"
                   />
                   <span className="ml-2 text-sm text-gray-600 dark:text-gray-400">
-                    Select all ({filteredKnowledge.length})
+                    {t("kb.select_all_label")} ({filteredKnowledge.length})
                   </span>
                 </label>
                 {selectedItems.length > 0 && (
                   <span className="text-sm text-gray-600 dark:text-gray-400">
-                    {selectedItems.length} selected
+                    {selectedItems.length} {t("kb.selected_label")}
                   </span>
                 )}
               </div>
@@ -380,18 +390,18 @@ export default function BotKnowledgeContent({
                       className="inline-flex items-center px-3 py-1.5 border border-purple-300 dark:border-purple-700 text-sm font-medium rounded-lg text-purple-700 dark:text-purple-300 bg-white dark:bg-gray-800 hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-colors disabled:opacity-50"
                     >
                       <Play className="h-4 w-4 mr-1" />
-                      Process Selected
+                      {t("kb.actions.process_selected")}
                     </button>
                     <button
                       onClick={() => {
                         handleBulkDelete();
-                        toast.success("Selected items deleted");
+                        toast.success(t("kb.toast.selected_items_deleted"));
                       }}
                       disabled={processing || batchActive}
                       className="inline-flex items-center px-3 py-1.5 border border-red-300 dark:border-red-700 text-sm font-medium rounded-lg text-red-600 dark:text-red-400 bg-white dark:bg-gray-800 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors disabled:opacity-50"
                     >
                       <Trash2 className="h-4 w-4 mr-1" />
-                      Delete Selected
+                      {t("kb.actions.delete_selected")}
                     </button>
                   </>
                 )}
@@ -402,12 +412,13 @@ export default function BotKnowledgeContent({
               <div className="w-full">
                 <div className="flex items-center justify-between text-xs text-gray-600 dark:text-gray-400 mb-1">
                   <span>
-                    Submitted {batchTotals.completed + batchTotals.failed}/
+                    {t("kb.batch.submitted")}{" "}
+                    {batchTotals.completed + batchTotals.failed}/
                     {batchTotals.total}
                   </span>
                   <span>
-                    {batchTotals.completed} ok • {batchTotals.failed} failed to
-                    submit
+                    {batchTotals.completed} {t("kb.batch.ok")} •{" "}
+                    {batchTotals.failed} {t("kb.batch.failed_to_submit")}
                   </span>
                 </div>
                 <div className="w-full h-2 bg-purple-100 dark:bg-purple-900/20 rounded-full overflow-hidden">
@@ -428,13 +439,13 @@ export default function BotKnowledgeContent({
             <FileText className="h-12 w-12 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
             <h3 className="text-lg font-bold text-gray-900 dark:text-white">
               {searchTerm || filterType !== "all"
-                ? "No matching items"
-                : "No Bot Knowledge items"}
+                ? t("kb.empty.no_matching_title")
+                : t("kb.empty.no_items_title")}
             </h3>
             <p className="text-gray-400 dark:text-gray-500">
               {searchTerm || filterType !== "all"
-                ? "Try adjusting your search or filter criteria."
-                : "Add content to help your chatbot answer questions."}
+                ? t("kb.empty.no_matching_desc")
+                : t("kb.empty.no_items_desc")}
             </p>
           </div>
         ) : (
@@ -458,6 +469,11 @@ export default function BotKnowledgeContent({
                   ? 25
                   : 0;
 
+              const contentTypeLabel =
+                item.content_type === "text"
+                  ? t("kb.item.type.text")
+                  : t("kb.item.type.document");
+
               return (
                 <motion.div
                   key={item.id}
@@ -476,7 +492,8 @@ export default function BotKnowledgeContent({
                       />
                       <FileText className="h-5 w-5 text-gray-400 dark:text-gray-500 mr-2" />
                       <span className="text-sm font-semibold text-gray-900 dark:text-white">
-                        {item.filename || `${item.content_type} content`}
+                        {item.filename ||
+                          `${contentTypeLabel} ${t("kb.item.content_suffix")}`}
                       </span>
                       <span
                         className={`ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
@@ -485,7 +502,7 @@ export default function BotKnowledgeContent({
                             : "bg-accent-100 dark:bg-accent-900/20 text-accent-700 dark:text-accent-400"
                         }`}
                       >
-                        {item.content_type}
+                        {contentTypeLabel}
                       </span>
                     </div>
                     <div className="flex items-center space-x-2">
@@ -495,41 +512,47 @@ export default function BotKnowledgeContent({
                           onClick={() => handleProcessItem(item)}
                           disabled={processing || batchActive}
                           className="p-1 text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded transition-colors duration-200 disabled:opacity-50 flex items-center"
-                          title="Process"
+                          title={t("kb.tooltip.process")}
                         >
                           <Play className="h-4 w-4 mr-1" />
-                          <span className="text-xs">Process</span>
+                          <span className="text-xs">
+                            {t("kb.tooltip.process")}
+                          </span>
                         </button>
                       )}
                       <button
                         onClick={() => handleView(toBase(item))}
                         className="p-1 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-600 rounded transition-colors duration-200"
-                        title="View"
+                        title={t("kb.tooltip.view")}
                       >
                         <Eye className="h-4 w-4" />
                       </button>
                       <button
                         onClick={() => handleEdit(toBase(item))}
                         className="p-1 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded transition-colors duration-200"
-                        title="Edit"
+                        title={t("kb.tooltip.edit")}
                       >
                         <Edit className="h-4 w-4" />
                       </button>
                       <button
                         onClick={() => handleDownload(toBase(item))}
                         className="p-1 text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20 rounded transition-colors duration-200"
-                        title="Download"
+                        title={t("kb.tooltip.download")}
                       >
                         <Download className="h-4 w-4" />
                       </button>
                       <button
                         onClick={() => {
                           handleDelete(item.id);
-                          toast.success(`${item.filename || item.id} deleted`);
+                          toast.success(
+                            `${item.filename || item.id} ${t(
+                              "kb.toast.deleted_suffix"
+                            )}`
+                          );
                         }}
                         disabled={processing || batchActive}
                         className="p-1 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors duration-200 disabled:opacity-50"
-                        title="Delete"
+                        title={t("kb.tooltip.delete")}
                       >
                         <Trash2 className="h-4 w-4" />
                       </button>
@@ -557,12 +580,15 @@ export default function BotKnowledgeContent({
 
                   <div className="flex items-center justify-between text-xs text-gray-400 dark:text-gray-500 mt-2">
                     <span>
-                      Added{" "}
+                      {t("kb.item.added_prefix")}{" "}
                       {item.created_at
                         ? new Date(item.created_at).toLocaleDateString()
-                        : "unknown date"}
+                        : t("kb.item.unknown_date")}
                     </span>
-                    <span>{item.content?.length || 0} characters</span>
+                    <span>
+                      {item.content?.length || 0}{" "}
+                      {t("kb.item.characters_suffix")}
+                    </span>
                   </div>
                 </motion.div>
               );

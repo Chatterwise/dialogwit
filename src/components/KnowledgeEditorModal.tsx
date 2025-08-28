@@ -15,6 +15,7 @@ import { FileUpload } from "./FileUpload";
 import { supabase } from "../lib/supabase";
 import { useToast } from "../lib/toastStore";
 import { KnowledgeItem } from "./utils/types";
+import { useTranslation } from "../hooks/useTranslation";
 
 interface ProcessedFile {
   file: File;
@@ -39,13 +40,6 @@ interface KnowledgeEditorModalProps {
   chatbotId: string;
 }
 
-/**
- * This version:
- * - Removes "text" content entirely (documents only).
- * - Allows selecting & uploading multiple documents at once.
- * - Shows per-file status during upload (pending → processing → completed/error).
- * - Keeps the 2-step flow: (1) Upload documents, (2) Review & Confirm.
- */
 export const KnowledgeEditorModal: React.FC<KnowledgeEditorModalProps> = ({
   isOpen,
   onClose,
@@ -53,6 +47,7 @@ export const KnowledgeEditorModal: React.FC<KnowledgeEditorModalProps> = ({
   isProcessing = false,
   chatbotId,
 }) => {
+  const { t } = useTranslation();
   const [step, setStep] = useState(1);
   const [files, setFiles] = useState<ProcessedFile[]>([]);
   const [saving, setSaving] = useState(false);
@@ -155,7 +150,10 @@ export const KnowledgeEditorModal: React.FC<KnowledgeEditorModalProps> = ({
           successCount++;
         } catch (err: unknown) {
           // Mark as error
-          let errorMessage = "Unknown error";
+          let errorMessage = t(
+            "knowledgeEditor.errors.unknown",
+            "Unknown error"
+          );
           if (err instanceof Error) {
             errorMessage = err.message;
           } else if (typeof err === "string") {
@@ -174,21 +172,38 @@ export const KnowledgeEditorModal: React.FC<KnowledgeEditorModalProps> = ({
 
       if (errorCount === 0) {
         toast.success(
-          `${successCount} file${
-            successCount > 1 ? "s" : ""
-          } uploaded and queued for processing`
+          t(
+            "knowledgeEditor.toasts.uploadSuccess",
+            "{{count}} file{{suffix}} uploaded and queued for processing",
+            { count: successCount, suffix: successCount > 1 ? "s" : "" }
+          )
         );
         onClose();
       } else if (successCount === 0) {
-        toast.error("All uploads failed. Please check errors and try again.");
+        toast.error(
+          t(
+            "knowledgeEditor.toasts.allFailed",
+            "All uploads failed. Please check errors and try again."
+          )
+        );
       } else {
         toast.info(
-          `${successCount} succeeded, ${errorCount} failed. You can retry the failed ones.`
+          t(
+            "knowledgeEditor.toasts.partial",
+            "{{success}} succeeded, {{failed}} failed. You can retry the failed ones.",
+            { success: successCount, failed: errorCount }
+          )
         );
       }
     } catch (e) {
       console.error("Error saving knowledge:", e);
-      toast.error(`Error saving knowledge: ${e}`);
+      toast.error(
+        t(
+          "knowledgeEditor.toasts.saveError",
+          "Error saving knowledge: {{message}}",
+          { message: String(e) }
+        )
+      );
     } finally {
       setSaving(false);
     }
@@ -197,7 +212,9 @@ export const KnowledgeEditorModal: React.FC<KnowledgeEditorModalProps> = ({
   if (!isOpen) return null;
 
   const isEdit = !!editingItem;
-  const modalTitle = isEdit ? "Edit Knowledge Item" : "Add Knowledge";
+  const modalTitle = isEdit
+    ? t("knowledgeEditor.title.edit", "Edit Knowledge Item")
+    : t("knowledgeEditor.title.add", "Add Knowledge");
 
   return (
     <div className="fixed inset-0 bg-gray-800/40 dark:bg-black/60 flex items-center justify-center z-50 backdrop-blur-sm">
@@ -207,6 +224,9 @@ export const KnowledgeEditorModal: React.FC<KnowledgeEditorModalProps> = ({
         exit={{ opacity: 0, scale: 0.95 }}
         transition={{ duration: 0.3 }}
         className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-3xl w-full mx-4 border border-gray-100 dark:border-gray-700 max-h-[90vh] overflow-hidden flex flex-col"
+        role="dialog"
+        aria-modal="true"
+        aria-label={modalTitle}
       >
         {/* Header */}
         <div className="px-8 py-5 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
@@ -223,6 +243,8 @@ export const KnowledgeEditorModal: React.FC<KnowledgeEditorModalProps> = ({
           <button
             onClick={onClose}
             className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+            aria-label={t("knowledgeEditor.actions.close", "Close")}
+            title={t("knowledgeEditor.actions.close", "Close")}
           >
             <X className="h-5 w-5" />
           </button>
@@ -260,7 +282,14 @@ export const KnowledgeEditorModal: React.FC<KnowledgeEditorModalProps> = ({
                 </div>
               </div>
               <div className="text-sm text-gray-500 dark:text-gray-400">
-                Step {step} of 2
+                {t(
+                  "knowledgeEditor.steps.counter",
+                  "Step {{current}} of {{total}}",
+                  {
+                    current: step,
+                    total: 2,
+                  }
+                )}
               </div>
             </div>
           </div>
@@ -280,7 +309,7 @@ export const KnowledgeEditorModal: React.FC<KnowledgeEditorModalProps> = ({
                 className="p-8"
               >
                 <h4 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">
-                  Upload Documents
+                  {t("knowledgeEditor.step1.title", "Upload Documents")}
                 </h4>
 
                 <FileUpload
@@ -303,7 +332,12 @@ export const KnowledgeEditorModal: React.FC<KnowledgeEditorModalProps> = ({
                               {f.name}
                             </div>
                             <div className="text-xs text-gray-500 dark:text-gray-400">
-                              {humanSize(f.size)} • {f.type || "unknown"}
+                              {humanSize(f.size)} •{" "}
+                              {f.type ||
+                                t(
+                                  "knowledgeEditor.file.meta.unknownType",
+                                  "unknown"
+                                )}
                             </div>
                           </div>
                         </div>
@@ -311,30 +345,46 @@ export const KnowledgeEditorModal: React.FC<KnowledgeEditorModalProps> = ({
                         <div className="flex items-center space-x-3">
                           {f.status === "pending" && (
                             <span className="text-xs px-2 py-1 rounded bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
-                              Pending
+                              {t(
+                                "knowledgeEditor.file.status.pending",
+                                "Pending"
+                              )}
                             </span>
                           )}
                           {f.status === "processing" && (
                             <span className="inline-flex items-center text-xs px-2 py-1 rounded bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300">
                               <Loader className="h-3 w-3 mr-1 animate-spin" />
-                              Uploading...
+                              {t(
+                                "knowledgeEditor.file.status.processing",
+                                "Uploading..."
+                              )}
                             </span>
                           )}
                           {f.status === "completed" && (
                             <span className="inline-flex items-center text-xs px-2 py-1 rounded bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300">
                               <Check className="h-3 w-3 mr-1" />
-                              Uploaded
+                              {t(
+                                "knowledgeEditor.file.status.completed",
+                                "Uploaded"
+                              )}
                             </span>
                           )}
                           {f.status === "error" && (
                             <span className="inline-flex items-center text-xs px-2 py-1 rounded bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300">
-                              Error
+                              {t("knowledgeEditor.file.status.error", "Error")}
                             </span>
                           )}
                           <button
                             onClick={() => removeFile(f.id)}
                             className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400"
-                            title="Remove"
+                            title={t(
+                              "knowledgeEditor.actions.remove",
+                              "Remove"
+                            )}
+                            aria-label={t(
+                              "knowledgeEditor.actions.remove",
+                              "Remove"
+                            )}
                             disabled={
                               saving ||
                               isProcessing ||
@@ -362,17 +412,20 @@ export const KnowledgeEditorModal: React.FC<KnowledgeEditorModalProps> = ({
                 className="p-8"
               >
                 <h4 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">
-                  Review & Confirm
+                  {t("knowledgeEditor.step2.title", "Review & Confirm")}
                 </h4>
 
                 <div className="space-y-6">
                   <div className="bg-gray-50 dark:bg-gray-900/50 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
                     <h5 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
-                      Summary
+                      {t("knowledgeEditor.step2.summary.title", "Summary")}
                     </h5>
                     {files.length === 0 ? (
                       <p className="text-sm text-gray-600 dark:text-gray-300">
-                        No files selected.
+                        {t(
+                          "knowledgeEditor.step2.summary.empty",
+                          "No files selected."
+                        )}
                       </p>
                     ) : (
                       <ul className="space-y-2">
@@ -400,12 +453,16 @@ export const KnowledgeEditorModal: React.FC<KnowledgeEditorModalProps> = ({
                       </div>
                       <div>
                         <h5 className="text-lg font-medium text-blue-900 dark:text-blue-100 mb-2">
-                          Ready to Add
+                          {t(
+                            "knowledgeEditor.step2.ready.title",
+                            "Ready to Add"
+                          )}
                         </h5>
                         <p className="text-sm text-blue-700 dark:text-blue-300">
-                          Your documents will be uploaded and queued for
-                          processing. The chatbot will use their content in
-                          answers once processed.
+                          {t(
+                            "knowledgeEditor.step2.ready.desc",
+                            "Your documents will be uploaded and queued for processing. The chatbot will use their content in answers once processed."
+                          )}
                         </p>
                       </div>
                     </div>
@@ -424,7 +481,8 @@ export const KnowledgeEditorModal: React.FC<KnowledgeEditorModalProps> = ({
               className="px-5 py-2 text-sm font-semibold text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors duration-200"
               disabled={saving || isProcessing}
             >
-              <ChevronLeft className="h-4 w-4 mr-2 inline" /> Back
+              <ChevronLeft className="h-4 w-4 mr-2 inline" />{" "}
+              {t("knowledgeEditor.actions.back", "Back")}
             </button>
           ) : (
             <div />
@@ -443,16 +501,19 @@ export const KnowledgeEditorModal: React.FC<KnowledgeEditorModalProps> = ({
             {saving || isProcessing ? (
               <>
                 <Loader className="h-4 w-4 mr-2 animate-spin" />
-                {isProcessing ? "Processing..." : "Saving..."}
+                {isProcessing
+                  ? t("knowledgeEditor.actions.processing", "Processing...")
+                  : t("knowledgeEditor.actions.saving", "Saving...")}
               </>
             ) : step === 2 ? (
               <>
                 <Check className="h-4 w-4 mr-2" />
-                Add to Knowledge Base
+                {t("knowledgeEditor.actions.addToKb", "Add to Knowledge Base")}
               </>
             ) : (
               <>
-                Next <ChevronRight className="h-4 w-4 ml-2" />
+                {t("knowledgeEditor.actions.next", "Next")}{" "}
+                <ChevronRight className="h-4 w-4 ml-2" />
               </>
             )}
           </button>

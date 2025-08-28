@@ -3,6 +3,7 @@ import { Send, Bot, User, Loader } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { readSSE } from "./utils/sse";
 import { MarkdownMessage } from "./MarkdownMessage";
+import { useTranslation } from "../hooks/useTranslation";
 
 interface Message {
   id: string;
@@ -20,8 +21,10 @@ type ChatbotSettings = {
 };
 
 export const ChatPreview = ({ botId }: { botId?: string }) => {
-  const DEFAULT_WELCOME =
-    "Hello! I'm your AI assistant. How can I help you today?";
+  // Localized defaults
+  const { t } = useTranslation();
+
+  const DEFAULT_WELCOME = t("chat.preview.defaults.welcome");
 
   const [botSettings, setBotSettings] = useState<ChatbotSettings | null>(null);
   const [messages, setMessages] = useState<Message[]>([
@@ -63,7 +66,7 @@ export const ChatPreview = ({ botId }: { botId?: string }) => {
       setBotSettings(data as ChatbotSettings);
       const welcome =
         (data?.welcome_message && data.welcome_message.trim()) ||
-        DEFAULT_WELCOME;
+        t("chat.preview.defaults.welcome");
 
       setMessages([
         { id: "initial", text: welcome, sender: "bot", timestamp: new Date() },
@@ -156,7 +159,7 @@ export const ChatPreview = ({ botId }: { botId?: string }) => {
           m.id === botMsgId
             ? {
                 ...m,
-                text: "Sorry, I hit an error. Please try again.",
+                text: t("chat.preview.errors.generic"),
                 isLoading: false,
               }
             : m
@@ -169,7 +172,7 @@ export const ChatPreview = ({ botId }: { botId?: string }) => {
 
   const placeholder =
     (botSettings?.placeholder && botSettings.placeholder.trim()) ||
-    "Type your message...";
+    t("chat.preview.input.placeholder");
 
   return (
     <div className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-lg rounded-2xl shadow-xl border border-gray-100 dark:border-gray-800 h-96 flex flex-col">
@@ -179,7 +182,7 @@ export const ChatPreview = ({ botId }: { botId?: string }) => {
             {botSettings?.bot_avatar ? (
               <img
                 src={botSettings.bot_avatar}
-                alt={botSettings.name ?? "Bot"}
+                alt={botSettings.name ?? t("chat.preview.header.bot_alt")}
                 className="h-6 w-6 rounded-full mr-3 object-cover"
               />
             ) : (
@@ -187,14 +190,16 @@ export const ChatPreview = ({ botId }: { botId?: string }) => {
             )}
             <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100">
               {botSettings?.name
-                ? `Chat Preview — ${botSettings.name}`
-                : "Chat Preview"}
+                ? t("chat.preview.header.title_named", {
+                    name: botSettings.name,
+                  })
+                : t("chat.preview.header.title")}
             </h3>
           </div>
           <div className="flex items-center">
             <div className="h-2 w-2 bg-green-500 rounded-full mr-2" />
             <span className="text-xs text-gray-600 dark:text-gray-400">
-              Online
+              {t("chat.preview.status.online")}
             </span>
           </div>
         </div>
@@ -220,7 +225,7 @@ export const ChatPreview = ({ botId }: { botId?: string }) => {
                   (botSettings?.bot_avatar ? (
                     <img
                       src={botSettings.bot_avatar}
-                      alt={botSettings.name ?? "Bot"}
+                      alt={botSettings.name ?? t("chat.preview.header.bot_alt")}
                       className="h-4 w-4 mr-2 mt-0.5 rounded-full object-cover flex-shrink-0"
                     />
                   ) : (
@@ -236,7 +241,9 @@ export const ChatPreview = ({ botId }: { botId?: string }) => {
                     ) : (
                       <div className="flex items-center space-x-2">
                         <Loader className="h-4 w-4 animate-spin" />
-                        <span className="text-sm">Thinking…</span>
+                        <span className="text-sm">
+                          {t("chat.preview.status.thinking")}
+                        </span>
                       </div>
                     )
                   ) : message.sender === "bot" ? (
@@ -286,11 +293,13 @@ export const ChatPreview = ({ botId }: { botId?: string }) => {
               }
             }}
             placeholder={placeholder}
+            aria-label={t("chat.preview.input.aria_message")}
             className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-primary-400 transition"
             disabled={isSending || !botId}
           />
           <button
             onClick={handleSend}
+            aria-label={t("chat.preview.actions.send")}
             disabled={!inputValue.trim() || isSending || !botId}
             className="p-2.5 bg-primary-600 text-white rounded-xl hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
           >
@@ -303,7 +312,7 @@ export const ChatPreview = ({ botId }: { botId?: string }) => {
         </div>
         {!botId && (
           <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-            Chat preview is only available for saved chatbots
+            {t("chat.preview.notice.no_bot")}
           </p>
         )}
       </div>

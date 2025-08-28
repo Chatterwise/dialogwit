@@ -16,17 +16,21 @@ import {
 import { useTheme } from "../hooks/useTheme";
 import { ScrollToTop } from "./utils/ScrollToTop";
 import { ActionModal } from "./ActionModal";
+import { useTranslation } from "../hooks/useTranslation";
 
 // GoBackButton component
 const GoBackButton = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   return (
     <button
       onClick={() => navigate(-1)}
       className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors mb-8 dark:bg-primary-700 dark:hover:bg-primary-800"
+      aria-label={t("pricing.actions.goBack", "Go Back")}
+      title={t("pricing.actions.goBack", "Go Back")}
     >
       <ArrowLeft className="h-4 w-4 mr-2 inline" />
-      Go Back
+      {t("pricing.actions.goBack", "Go Back")}
     </button>
   );
 };
@@ -45,9 +49,10 @@ const FaqItem = ({
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="flex justify-between items-center w-full text-left font-semibold text-gray-900 dark:text-white"
+        aria-expanded={isOpen}
       >
         <span>{question}</span>
-        <span>{isOpen ? "−" : "+"}</span>
+        <span aria-hidden>{isOpen ? "−" : "+"}</span>
       </button>
       {isOpen && (
         <p className="mt-2 text-gray-600 dark:text-gray-300 text-sm">
@@ -58,8 +63,9 @@ const FaqItem = ({
   );
 };
 
-// State for FAQ
+// Pricing Plans
 const PricingPlans: React.FC = () => {
+  const { t } = useTranslation();
   const { user } = useAuth();
   useTheme();
 
@@ -84,7 +90,7 @@ const PricingPlans: React.FC = () => {
     try {
       await cancelStripeSubscription();
     } catch (error) {
-      console.error("Failed to create checkout session:", error);
+      console.error("Failed to cancel subscription:", error);
     }
   };
 
@@ -112,15 +118,15 @@ const PricingPlans: React.FC = () => {
   };
 
   const formatNumber = (num: number) => {
-    if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`;
-    if (num >= 1000) return `${(num / 1000).toFixed(0)}K`;
+    if (num >= 1_000_000) return `${(num / 1_000_000).toFixed(1)}M`;
+    if (num >= 1_000) return `${(num / 1_000).toFixed(0)}K`;
     return num.toString();
   };
 
   return (
     <div className="relative min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 dark:from-gray-900 dark:to-gray-800">
       {/* Subtle background accents (optional) */}
-      <div className="absolute inset-0 opacity-20 dark:opacity-10">
+      <div className="absolute inset-0 opacity-20 dark:opacity-10" aria-hidden>
         <div className="absolute top-20 left-10 w-64 h-64 bg-primary-400/10 dark:bg-primary-400/5 rounded-full blur-3xl"></div>
         <div className="absolute bottom-20 right-10 w-80 h-80 bg-accent-400/10 dark:bg-accent-400/5 rounded-full blur-3xl"></div>
       </div>
@@ -137,11 +143,13 @@ const PricingPlans: React.FC = () => {
           className="text-center mb-12"
         >
           <h2 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
-            Choose Your Plan
+            {t("pricing.header.title", "Choose Your Plan")}
           </h2>
           <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
-            Start building AI-powered chatbots today. Upgrade or downgrade at
-            any time.
+            {t(
+              "pricing.header.subtitle",
+              "Start building AI-powered chatbots today. Upgrade or downgrade at any time."
+            )}
           </p>
         </motion.div>
 
@@ -173,7 +181,7 @@ const PricingPlans: React.FC = () => {
                 {plan.popular && (
                   <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
                     <span className="bg-gradient-to-r from-primary-500 to-accent-500 text-white px-4 py-1 rounded-full text-sm font-medium">
-                      Most Popular
+                      {t("pricing.cards.mostPopular", "Most Popular")}
                     </span>
                   </div>
                 )}
@@ -214,11 +222,13 @@ const PricingPlans: React.FC = () => {
                   {/* Usage Limits */}
                   <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 mb-6">
                     <h4 className="font-semibold text-gray-900 dark:text-white mb-3 text-sm">
-                      Usage Limits
+                      {t("pricing.cards.usageLimits", "Usage Limits")}
                     </h4>
                     <div className="space-y-2 text-xs text-gray-600 dark:text-gray-400">
                       <div className="flex justify-between">
-                        <span>Tokens/month:</span>
+                        <span>
+                          {t("pricing.cards.tokensPerMonth", "Tokens/month:")}
+                        </span>
                         <span className="font-medium">
                           {formatNumber(plan.limits.tokens_per_month)}
                         </span>
@@ -233,7 +243,7 @@ const PricingPlans: React.FC = () => {
                         navigate("/auth");
                       } else if (!isCurrentPlan) {
                         if (isFreePlan) {
-                          setShowCancelModal(true); // show modal instead of cancelSubscription()
+                          setShowCancelModal(true);
                         } else {
                           handleSubscribe(plan.priceId);
                         }
@@ -257,37 +267,70 @@ const PricingPlans: React.FC = () => {
                         ? "opacity-50 cursor-not-allowed"
                         : ""
                     }`}
+                    aria-busy={billingLoading || stripeLoading}
+                    aria-label={
+                      billingLoading || stripeLoading
+                        ? t("pricing.cta.processing", "Processing...")
+                        : isCurrentPlan
+                        ? t("pricing.cta.currentPlan", "Current Plan")
+                        : !user
+                        ? t("pricing.cta.signIn", "Sign Up / Login")
+                        : t("pricing.cta.getStarted", "Get Started")
+                    }
+                    title={
+                      billingLoading || stripeLoading
+                        ? t("pricing.cta.processing", "Processing...")
+                        : undefined
+                    }
                   >
                     {billingLoading || stripeLoading ? (
                       <div className="flex items-center justify-center">
-                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-                        Processing...
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+                        {t("pricing.cta.processing", "Processing...")}
                       </div>
                     ) : isCurrentPlan ? (
-                      "Current Plan"
+                      t("pricing.cta.currentPlan", "Current Plan")
                     ) : !user ? (
-                      "Sign Up / Login"
+                      t("pricing.cta.signIn", "Sign Up / Login")
                     ) : (
-                      `Get Started - $${plan.price}/${plan.interval}`
+                      `${t("pricing.cta.getStarted", "Get Started")} - $${
+                        plan.price
+                      }/${plan.interval}`
                     )}
                   </button>
                 </div>
+
+                {/* Downgrade modal (to Free) */}
                 <ActionModal
                   isOpen={showCancelModal}
                   onClose={() => setShowCancelModal(false)}
                   action={{
-                    title: "Downgrade to Free Plan",
-                    description:
-                      "This will cancel your current subscription immediately and move you to the Free plan. You will lose access to premium features.",
+                    title: t(
+                      "pricing.modal.downgrade.title",
+                      "Downgrade to Free Plan"
+                    ),
+                    description: t(
+                      "pricing.modal.downgrade.description",
+                      "This will cancel your current subscription immediately and move you to the Free plan. You will lose access to premium features."
+                    ),
                     onConfirm: async () => {
-                      await cancelSubscription(); // This calls your hook
-                      window.location.reload(); // Optional: force UI update
+                      await cancelSubscription();
+                      window.location.reload();
                     },
-                    actionLabel: "Downgrade",
+                    actionLabel: t(
+                      "pricing.modal.downgrade.actionLabel",
+                      "Downgrade"
+                    ),
                     actionColor: "red",
                     requireType: true,
-                    confirmationWord: "FREE",
-                    note: "You can resubscribe to any plan at any time.",
+                    confirmationWord: t(
+                      "pricing.modal.downgrade.confirmationWord",
+                      "FREE"
+                    ),
+                    note: t(
+                      "pricing.modal.downgrade.note",
+                      "You can resubscribe to any plan at any time."
+                    ),
                   }}
                 />
               </motion.div>
@@ -302,26 +345,45 @@ const PricingPlans: React.FC = () => {
           transition={{ duration: 0.5 }}
           viewport={{ once: true }}
           className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 mb-16"
+          aria-labelledby="faq-heading"
         >
-          <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-6 text-center">
-            Frequently Asked Questions
+          <h3
+            id="faq-heading"
+            className="text-2xl font-bold text-gray-900 dark:text-white mb-6 text-center"
+          >
+            {t("pricing.faq.title", "Frequently Asked Questions")}
           </h3>
           <div className="space-y-4">
             <FaqItem
-              question="Can I change plans anytime?"
-              answer="Yes! You can upgrade or downgrade your plan at any time. Changes take effect immediately, and we'll prorate the billing."
+              question={t("pricing.faq.q1", "Can I change plans anytime?")}
+              answer={t(
+                "pricing.faq.a1",
+                "Yes! You can upgrade or downgrade your plan at any time. Changes take effect immediately, and we'll prorate the billing."
+              )}
             />
             <FaqItem
-              question="What happens if I exceed my limits?"
-              answer="We'll notify you when you're approaching your limits. You can purchase add-ons or upgrade your plan to continue using the service."
+              question={t(
+                "pricing.faq.q2",
+                "What happens if I exceed my limits?"
+              )}
+              answer={t(
+                "pricing.faq.a2",
+                "We'll notify you when you're approaching your limits. You can purchase add-ons or upgrade your plan to continue using the service."
+              )}
             />
             <FaqItem
-              question="Do you offer refunds?"
-              answer="We offer a 30-day money-back guarantee for all paid plans. Contact support if you're not satisfied."
+              question={t("pricing.faq.q3", "Do you offer refunds?")}
+              answer={t(
+                "pricing.faq.a3",
+                "We offer a 30-day money-back guarantee for all paid plans. Contact support if you're not satisfied."
+              )}
             />
             <FaqItem
-              question="Is there a free trial?"
-              answer="Yes! All new users start with our Free plan. You can upgrade anytime to access more features and higher limits."
+              question={t("pricing.faq.q4", "Is there a free trial?")}
+              answer={t(
+                "pricing.faq.a4",
+                "Yes! All new users start with our Free plan. You can upgrade anytime to access more features and higher limits."
+              )}
             />
           </div>
         </motion.div>

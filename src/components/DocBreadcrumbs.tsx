@@ -1,6 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { ChevronRight, Home } from "lucide-react";
+import { useTranslation } from "../hooks/useTranslation";
 
 interface BreadcrumbItem {
   name: string;
@@ -12,9 +13,12 @@ interface DocBreadcrumbsProps {
 }
 
 export const DocBreadcrumbs: React.FC<DocBreadcrumbsProps> = ({ items }) => {
+  const { t } = useTranslation();
+
   return (
-    <nav className="flex" aria-label="Breadcrumb">
+    <nav className="flex" aria-label={t("breadcrumbs.aria", "Breadcrumb")}>
       <ol className="flex items-center space-x-2 text-sm text-gray-500 dark:text-gray-400">
+        {/* Home */}
         <li>
           <Link
             to="/"
@@ -23,18 +27,23 @@ export const DocBreadcrumbs: React.FC<DocBreadcrumbsProps> = ({ items }) => {
             <Home className="h-4 w-4" />
           </Link>
         </li>
+
+        {/* Divider */}
         <li>
           <ChevronRight className="h-4 w-4" />
         </li>
+
+        {/* Documentation root */}
         <li>
           <Link
             to="/documentation"
             className="hover:text-gray-700 dark:hover:text-gray-300"
           >
-            Documentation
+            {t("breadcrumbs.documentation", "Documentation")}
           </Link>
         </li>
 
+        {/* Nested items */}
         {items.map((item, index) => (
           <React.Fragment key={item.href}>
             <li>
