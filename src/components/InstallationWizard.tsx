@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   Code,
   Download,
@@ -17,6 +17,7 @@ import { Link } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import { useChatbots } from "../hooks/useChatbots";
 import { motion } from "framer-motion";
+import { useTranslation } from "../hooks/useTranslation";
 
 interface WizardStep {
   id: string;
@@ -25,6 +26,7 @@ interface WizardStep {
 }
 
 export const InstallationWizard = () => {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const { data: chatbots = [], isLoading: chatbotsLoading } = useChatbots(
     user?.id || ""
@@ -49,127 +51,195 @@ export const InstallationWizard = () => {
   const steps: WizardStep[] = [
     {
       id: "framework",
-      title: "Choose Your Framework",
-      description: "Select the framework or platform you're using",
+      title: t(
+        "installationWizard.steps.framework.title",
+        "Choose Your Framework"
+      ),
+      description: t(
+        "installationWizard.steps.framework.desc",
+        "Select the framework or platform you're using"
+      ),
     },
     {
       id: "template",
-      title: "Select Template Style",
-      description: "Choose a chat template that matches your design",
+      title: t(
+        "installationWizard.steps.template.title",
+        "Select Template Style"
+      ),
+      description: t(
+        "installationWizard.steps.template.desc",
+        "Choose a chat template that matches your design"
+      ),
     },
     {
       id: "configuration",
-      title: "Configure Settings",
-      description: "Select your chatbot and configure settings",
+      title: t(
+        "installationWizard.steps.configuration.title",
+        "Configure Settings"
+      ),
+      description: t(
+        "installationWizard.steps.configuration.desc",
+        "Select your chatbot and configure settings"
+      ),
     },
     {
       id: "installation",
-      title: "Installation Code",
-      description: "Copy the generated code to your project",
+      title: t(
+        "installationWizard.steps.installation.title",
+        "Installation Code"
+      ),
+      description: t(
+        "installationWizard.steps.installation.desc",
+        "Copy the generated code to your project"
+      ),
     },
   ];
 
   const frameworks = [
     {
       id: "react",
-      name: "React / Next.js",
-      description: "Use beautiful template components",
+      name: t("installationWizard.frameworks.react.name", "React / Next.js"),
+      description: t(
+        "installationWizard.frameworks.react.desc",
+        "Use beautiful template components"
+      ),
       icon: "⚛️",
-      type: "template",
+      type: "template" as const,
     },
     {
       id: "vue",
-      name: "Vue.js",
-      description: "Universal script tag integration",
+      name: t("installationWizard.frameworks.vue.name", "Vue.js"),
+      description: t(
+        "installationWizard.frameworks.vue.desc",
+        "Universal script tag integration"
+      ),
       icon: "💚",
-      type: "script",
+      type: "script" as const,
     },
     {
       id: "angular",
-      name: "Angular",
-      description: "Universal script tag integration",
+      name: t("installationWizard.frameworks.angular.name", "Angular"),
+      description: t(
+        "installationWizard.frameworks.angular.desc",
+        "Universal script tag integration"
+      ),
       icon: "🅰️",
-      type: "script",
+      type: "script" as const,
     },
     {
       id: "svelte",
-      name: "Svelte",
-      description: "Universal script tag integration",
+      name: t("installationWizard.frameworks.svelte.name", "Svelte"),
+      description: t(
+        "installationWizard.frameworks.svelte.desc",
+        "Universal script tag integration"
+      ),
       icon: "🧡",
-      type: "script",
+      type: "script" as const,
     },
     {
       id: "vanilla",
-      name: "Vanilla JS",
-      description: "Pure JavaScript integration",
+      name: t("installationWizard.frameworks.vanilla.name", "Vanilla JS"),
+      description: t(
+        "installationWizard.frameworks.vanilla.desc",
+        "Pure JavaScript integration"
+      ),
       icon: "🟨",
-      type: "script",
+      type: "script" as const,
     },
     {
       id: "wordpress",
-      name: "WordPress",
-      description: "Plugin or theme integration",
+      name: t("installationWizard.frameworks.wordpress.name", "WordPress"),
+      description: t(
+        "installationWizard.frameworks.wordpress.desc",
+        "Plugin or theme integration"
+      ),
       icon: "📝",
-      type: "script",
+      type: "script" as const,
     },
     {
       id: "shopify",
-      name: "Shopify",
-      description: "Theme liquid template",
+      name: t("installationWizard.frameworks.shopify.name", "Shopify"),
+      description: t(
+        "installationWizard.frameworks.shopify.desc",
+        "Theme liquid template"
+      ),
       icon: "🛍️",
-      type: "script",
+      type: "script" as const,
     },
     {
       id: "other",
-      name: "Other",
-      description: "Any other platform",
+      name: t("installationWizard.frameworks.other.name", "Other"),
+      description: t(
+        "installationWizard.frameworks.other.desc",
+        "Any other platform"
+      ),
       icon: "🌐",
-      type: "script",
+      type: "script" as const,
     },
   ];
 
   const templates = [
     {
       id: "modern",
-      name: "Modern",
-      description: "Sleek gradient design with rounded corners",
+      name: t("installationWizard.templates.modern.name", "Modern"),
+      description: t(
+        "installationWizard.templates.modern.desc",
+        "Sleek gradient design with rounded corners"
+      ),
       preview: "bg-gradient-to-r from-blue-500 to-purple-500",
     },
     {
       id: "minimal",
-      name: "Minimal",
-      description: "Clean and simple interface",
+      name: t("installationWizard.templates.minimal.name", "Minimal"),
+      description: t(
+        "installationWizard.templates.minimal.desc",
+        "Clean and simple interface"
+      ),
       preview: "bg-gray-100 border border-gray-300",
     },
     {
       id: "bubble",
-      name: "Bubble",
-      description: "Playful bubble-style messages",
+      name: t("installationWizard.templates.bubble.name", "Bubble"),
+      description: t(
+        "installationWizard.templates.bubble.desc",
+        "Playful bubble-style messages"
+      ),
       preview: "bg-gradient-to-r from-pink-400 to-rose-400",
     },
     {
       id: "professional",
-      name: "Professional",
-      description: "Corporate and business-focused",
+      name: t(
+        "installationWizard.templates.professional.name",
+        "Professional"
+      ),
+      description: t(
+        "installationWizard.templates.professional.desc",
+        "Corporate and business-focused"
+      ),
       preview: "bg-slate-700",
     },
     {
       id: "gaming",
-      name: "Gaming",
-      description: "Gaming-inspired with neon accents",
+      name: t("installationWizard.templates.gaming.name", "Gaming"),
+      description: t(
+        "installationWizard.templates.gaming.desc",
+        "Gaming-inspired with neon accents"
+      ),
       preview: "bg-gradient-to-r from-green-500 to-emerald-500",
     },
     {
       id: "elegant",
-      name: "Elegant",
-      description: "Sophisticated and refined",
+      name: t("installationWizard.templates.elegant.name", "Elegant"),
+      description: t(
+        "installationWizard.templates.elegant.desc",
+        "Sophisticated and refined"
+      ),
       preview: "bg-gradient-to-r from-purple-500 to-indigo-500",
     },
   ];
 
   const generateCode = () => {
     const framework = frameworks.find((f) => f.id === selections.framework);
-
     if (framework?.type === "template") {
       return generateReactCode();
     } else {
@@ -179,8 +249,7 @@ export const InstallationWizard = () => {
 
   const generateReactCode = () => {
     const templateName =
-      selections.template.charAt(0).toUpperCase() +
-      selections.template.slice(1);
+      selections.template.charAt(0).toUpperCase() + selections.template.slice(1);
     const selectedBot = chatbots.find((bot) => bot.id === selections.botId);
 
     return `import React, { useState } from 'react'
@@ -231,7 +300,6 @@ export default App`;
 
   const generateScriptCode = () => {
     const selectedBot = chatbots.find((bot) => bot.id === selections.botId);
-    // Use the current origin for the script source
     const scriptSrc = `${window.location.origin}/chatbot-widget.js`;
 
     return `<!-- Add this script tag to your HTML -->
@@ -575,7 +643,7 @@ export const ChatTemplate = ({
                   onChange={(e) => setInputValue(e.target.value)}
                   onKeyPress={handleKeyPress}
                   placeholder={placeholder}
-                  className={\`flex-1 px-3 py-2 rounded-lg border \${
+                  className={\`flex-1 px-3 py-2 rounded-lg border \${ 
                     theme === 'dark' 
                       ? 'bg-gray-800 border-gray-600 text-white placeholder-gray-400' 
                       : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
@@ -600,8 +668,7 @@ export const ChatTemplate = ({
   };
 
   const getSpecificTemplateContent = (templateId: string) => {
-    const templateName =
-      templateId.charAt(0).toUpperCase() + templateId.slice(1);
+    const templateName = templateId.charAt(0).toUpperCase() + templateId.slice(1);
 
     return `import React from 'react'
 import { ChatTemplate } from './ChatTemplate'
@@ -640,9 +707,7 @@ export const ${templateName}Chat = (props: ${templateName}ChatProps) => {
   };
 
   const copyTemplateCode = () => {
-    navigator.clipboard.writeText(
-      getSpecificTemplateContent(selections.template)
-    );
+    navigator.clipboard.writeText(getSpecificTemplateContent(selections.template));
     setCopiedTemplateCode(true);
     setTimeout(() => setCopiedTemplateCode(false), 2000);
   };
@@ -707,10 +772,14 @@ export const ${templateName}Chat = (props: ${templateName}ChatProps) => {
       >
         <div className="flex items-center justify-between mb-4">
           <h1 className="text-2xl font-extrabold text-gray-900 dark:text-white font-display tracking-tight">
-            Installation Wizard
+            {t("installationWizard.title", "Installation Wizard")}
           </h1>
           <span className="text-sm text-gray-500 dark:text-gray-400">
-            Step {currentStep + 1} of {steps.length}
+            {t(
+              "installationWizard.stepCount",
+              "Step {{current}} of {{total}}",
+              { current: currentStep + 1, total: steps.length }
+            )}
           </span>
         </div>
         <div className="flex items-center">
@@ -729,6 +798,11 @@ export const ${templateName}Chat = (props: ${templateName}ChatProps) => {
                       ? "bg-primary-600 dark:bg-primary-700 text-white shadow-md"
                       : "bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400"
                   }`}
+                  aria-label={t(
+                    "installationWizard.stepIndicator",
+                    "Step {{num}}",
+                    { num: index + 1 }
+                  )}
                 >
                   {index + 1}
                 </div>
@@ -784,8 +858,11 @@ export const ${templateName}Chat = (props: ${templateName}ChatProps) => {
                       ? "border-primary-500 bg-primary-50 dark:bg-primary-900/20 ring-2 ring-primary-200 dark:ring-primary-800"
                       : "border-gray-100 dark:border-gray-800 hover:bg-primary-50 dark:hover:bg-primary-900/10"
                   }`}
+                  aria-pressed={selections.framework === framework.id}
                 >
-                  <div className="text-2xl mb-2">{framework.icon}</div>
+                  <div className="text-2xl mb-2" aria-hidden>
+                    {framework.icon}
+                  </div>
                   <h3 className="font-semibold text-gray-900 dark:text-white mb-1">
                     {framework.name}
                   </h3>
@@ -801,8 +878,14 @@ export const ${templateName}Chat = (props: ${templateName}ChatProps) => {
                       }`}
                     >
                       {framework.type === "template"
-                        ? "React Templates"
-                        : "Script Tag"}
+                        ? t(
+                            "installationWizard.frameworks.type.template",
+                            "React Templates"
+                          )
+                        : t(
+                            "installationWizard.frameworks.type.script",
+                            "Script Tag"
+                          )}
                     </span>
                   </div>
                 </motion.button>
@@ -836,6 +919,7 @@ export const ${templateName}Chat = (props: ${templateName}ChatProps) => {
                       ? "border-primary-500 ring-2 ring-primary-200 dark:ring-primary-800"
                       : "border-gray-100 dark:border-gray-800 hover:border-primary-200 dark:hover:border-primary-700"
                   }`}
+                  aria-pressed={selections.template === template.id}
                 >
                   <div className={`h-20 ${template.preview} relative`}>
                     <div className="absolute inset-0 bg-black/10 flex items-center justify-center">
@@ -859,7 +943,10 @@ export const ${templateName}Chat = (props: ${templateName}ChatProps) => {
                 className="inline-flex items-center text-primary-600 dark:text-primary-400 hover:text-primary-500 dark:hover:text-primary-300 text-sm font-medium"
               >
                 <ExternalLink className="h-4 w-4 mr-1" />
-                View live template gallery
+                {t(
+                  "installationWizard.viewGallery",
+                  "View live template gallery"
+                )}
               </Link>
             </div>
           </div>
@@ -880,13 +967,19 @@ export const ${templateName}Chat = (props: ${templateName}ChatProps) => {
               {/* Chatbot Selection */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Select Chatbot *
+                  {t(
+                    "installationWizard.config.selectChatbot",
+                    "Select Chatbot *"
+                  )}
                 </label>
                 {chatbotsLoading ? (
                   <div className="flex items-center justify-center py-8">
-                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary-600 dark:border-primary-400"></div>
+                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary-600 dark:border-primary-400" />
                     <span className="ml-2 text-sm text-gray-500 dark:text-gray-400">
-                      Loading chatbots...
+                      {t(
+                        "installationWizard.config.loadingBots",
+                        "Loading chatbots..."
+                      )}
                     </span>
                   </div>
                 ) : readyChatbots.length === 0 ? (
@@ -895,18 +988,26 @@ export const ${templateName}Chat = (props: ${templateName}ChatProps) => {
                       <AlertCircle className="h-5 w-5 text-yellow-600 dark:text-yellow-400 mt-0.5 mr-3" />
                       <div>
                         <h4 className="text-sm font-medium text-yellow-800 dark:text-yellow-300">
-                          No Ready Chatbots Found
+                          {t(
+                            "installationWizard.config.noReadyTitle",
+                            "No Ready Chatbots Found"
+                          )}
                         </h4>
                         <p className="text-sm text-yellow-700 dark:text-yellow-400 mt-1">
-                          You need to create and train a chatbot first before
-                          you can integrate it.
+                          {t(
+                            "installationWizard.config.noReadyBody",
+                            "You need to create and train a chatbot first before you can integrate it."
+                          )}
                         </p>
                         <Link
                           to="/chatbots/new"
                           className="inline-flex items-center mt-2 text-sm font-medium text-yellow-800 dark:text-yellow-300 hover:text-yellow-900 dark:hover:text-yellow-200"
                         >
                           <Bot className="h-4 w-4 mr-1" />
-                          Create a chatbot
+                          {t(
+                            "installationWizard.config.createBot",
+                            "Create a chatbot"
+                          )}
                         </Link>
                       </div>
                     </div>
@@ -926,6 +1027,7 @@ export const ${templateName}Chat = (props: ${templateName}ChatProps) => {
                             ? "border-primary-500 bg-primary-50 dark:bg-primary-900/20 ring-2 ring-primary-200 dark:ring-primary-800"
                             : "border-gray-100 dark:border-gray-800 hover:bg-primary-50 dark:hover:bg-primary-900/10"
                         }`}
+                        aria-pressed={selections.botId === chatbot.id}
                       >
                         <div className="flex items-center">
                           <Bot className="h-5 w-5 text-primary-600 dark:text-primary-400 mr-3" />
@@ -938,13 +1040,18 @@ export const ${templateName}Chat = (props: ${templateName}ChatProps) => {
                             </p>
                             <div className="flex items-center mt-2">
                               <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300">
-                                Ready
+                                {t("installationWizard.config.readyBadge", "Ready")}
                               </span>
                               <span className="text-xs text-gray-500 dark:text-gray-400 ml-2">
-                                Created{" "}
-                                {new Date(
-                                  chatbot.created_at
-                                ).toLocaleDateString()}
+                                {t(
+                                  "installationWizard.config.createdOn",
+                                  "Created {{date}}",
+                                  {
+                                    date: new Date(
+                                      chatbot.created_at
+                                    ).toLocaleDateString(),
+                                  }
+                                )}
                               </span>
                             </div>
                           </div>
@@ -954,11 +1061,12 @@ export const ${templateName}Chat = (props: ${templateName}ChatProps) => {
                   </div>
                 )}
               </div>
+
               {/* Theme and Position Settings */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Theme
+                    {t("installationWizard.config.theme.label", "Theme")}
                   </label>
                   <select
                     value={selections.theme}
@@ -967,14 +1075,20 @@ export const ${templateName}Chat = (props: ${templateName}ChatProps) => {
                     }
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-400 dark:focus:ring-primary-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
                   >
-                    <option value="light">Light</option>
-                    <option value="dark">Dark</option>
-                    <option value="auto">Auto</option>
+                    <option value="light">
+                      {t("installationWizard.config.theme.light", "Light")}
+                    </option>
+                    <option value="dark">
+                      {t("installationWizard.config.theme.dark", "Dark")}
+                    </option>
+                    <option value="auto">
+                      {t("installationWizard.config.theme.auto", "Auto")}
+                    </option>
                   </select>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Position
+                    {t("installationWizard.config.position.label", "Position")}
                   </label>
                   <select
                     value={selections.position}
@@ -983,22 +1097,40 @@ export const ${templateName}Chat = (props: ${templateName}ChatProps) => {
                     }
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-400 dark:focus:ring-primary-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
                   >
-                    <option value="bottom-right">Bottom Right</option>
-                    <option value="bottom-left">Bottom Left</option>
-                    <option value="center">Center</option>
-                    <option value="fullscreen">Fullscreen</option>
+                    <option value="bottom-right">
+                      {t(
+                        "installationWizard.config.position.bottomRight",
+                        "Bottom Right"
+                      )}
+                    </option>
+                    <option value="bottom-left">
+                      {t(
+                        "installationWizard.config.position.bottomLeft",
+                        "Bottom Left"
+                      )}
+                    </option>
+                    <option value="center">
+                      {t("installationWizard.config.position.center", "Center")}
+                    </option>
+                    <option value="fullscreen">
+                      {t(
+                        "installationWizard.config.position.fullscreen",
+                        "Fullscreen"
+                      )}
+                    </option>
                   </select>
                 </div>
               </div>
+
               {/* API Configuration */}
               <div className="bg-primary-50 dark:bg-primary-900/20 border border-primary-100 dark:border-primary-800 rounded-xl p-4">
                 <h4 className="text-sm font-semibold text-primary-900 dark:text-primary-200 mb-3">
-                  API Configuration
+                  {t("installationWizard.api.title", "API Configuration")}
                 </h4>
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      API URL
+                      {t("installationWizard.api.url.label", "API URL")}
                     </label>
                     <input
                       type="url"
@@ -1007,17 +1139,29 @@ export const ${templateName}Chat = (props: ${templateName}ChatProps) => {
                         setSelections({ ...selections, apiUrl: e.target.value })
                       }
                       className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-400 dark:focus:ring-primary-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
-                      placeholder="https://your-api.supabase.co/functions/v1"
+                      placeholder={t(
+                        "installationWizard.api.url.placeholder",
+                        "Enter your Supabase Functions URL"
+                      )}
                     />
                     <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                       {import.meta.env.VITE_SUPABASE_URL
-                        ? "Pre-filled from environment"
-                        : "Enter your Supabase Functions URL"}
+                        ? t(
+                            "installationWizard.api.url.prefilled",
+                            "Pre-filled from environment"
+                          )
+                        : t(
+                            "installationWizard.api.url.helper",
+                            "Enter your Supabase Functions URL"
+                          )}
                     </p>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      API Key (Anon Key)
+                      {t(
+                        "installationWizard.api.key.label",
+                        "API Key (Anon Key)"
+                      )}
                     </label>
                     <input
                       type="password"
@@ -1026,12 +1170,21 @@ export const ${templateName}Chat = (props: ${templateName}ChatProps) => {
                         setSelections({ ...selections, apiKey: e.target.value })
                       }
                       className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-400 dark:focus:ring-primary-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
-                      placeholder="Enter your Supabase anon key"
+                      placeholder={t(
+                        "installationWizard.api.key.placeholder",
+                        "Enter your Supabase anon key"
+                      )}
                     />
                     <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                       {import.meta.env.VITE_SUPABASE_ANON_KEY
-                        ? "Pre-filled from environment"
-                        : "Your Supabase anonymous key for client-side requests"}
+                        ? t(
+                            "installationWizard.api.url.prefilled",
+                            "Pre-filled from environment"
+                          )
+                        : t(
+                            "installationWizard.api.key.help",
+                            "Your Supabase anonymous key for client-side requests"
+                          )}
                     </p>
                   </div>
                 </div>
@@ -1048,16 +1201,26 @@ export const ${templateName}Chat = (props: ${templateName}ChatProps) => {
                 {steps[3].title}
               </h2>
               <p className="text-gray-600 dark:text-gray-400">
-                Copy this code and add it to your project
+                {t(
+                  "installationWizard.install.copyIntro",
+                  "Copy this code and add it to your project"
+                )}
               </p>
             </div>
+
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                  {frameworks.find((f) => f.id === selections.framework)
-                    ?.type === "template"
-                    ? "React Component Code"
-                    : "HTML Script Tag"}
+                  {frameworks.find((f) => f.id === selections.framework)?.type ===
+                  "template"
+                    ? t(
+                        "installationWizard.install.reactCodeTitle",
+                        "React Component Code"
+                      )
+                    : t(
+                        "installationWizard.install.scriptCodeTitle",
+                        "HTML Script Tag"
+                      )}
                 </h3>
                 <div className="flex space-x-2">
                   <motion.button
@@ -1065,13 +1228,16 @@ export const ${templateName}Chat = (props: ${templateName}ChatProps) => {
                     whileTap={{ scale: 0.95 }}
                     onClick={copyCode}
                     className="flex items-center px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                    aria-live="polite"
                   >
                     {copiedCode ? (
                       <Check className="h-4 w-4 mr-2" />
                     ) : (
                       <Copy className="h-4 w-4 mr-2" />
                     )}
-                    {copiedCode ? "Copied!" : "Copy Code"}
+                    {copiedCode
+                      ? t("installationWizard.install.copied", "Copied!")
+                      : t("installationWizard.install.copy", "Copy Code")}
                   </motion.button>
                   <motion.button
                     whileHover={{ scale: 1.05 }}
@@ -1094,10 +1260,11 @@ export const ${templateName}Chat = (props: ${templateName}ChatProps) => {
                     className="flex items-center px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors"
                   >
                     <Download className="h-4 w-4 mr-2" />
-                    Download
+                    {t("installationWizard.install.download", "Download")}
                   </motion.button>
                 </div>
               </div>
+
               <div className="bg-gray-900 rounded-xl p-4 text-sm text-gray-100 font-mono overflow-x-auto">
                 <pre>{generateCode()}</pre>
               </div>
@@ -1107,22 +1274,25 @@ export const ${templateName}Chat = (props: ${templateName}ChatProps) => {
             {selections.framework === "react" && (
               <div className="mt-8 space-y-4">
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                  Template Files
+                  {t("installationWizard.templateFiles.title", "Template Files")}
                 </h3>
+
                 <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4 mb-4">
                   <div className="flex items-start">
                     <AlertCircle className="h-5 w-5 text-yellow-600 dark:text-yellow-400 mt-0.5 mr-3" />
                     <div>
                       <h4 className="text-sm font-medium text-yellow-800 dark:text-yellow-300">
-                        Important: Download Template Files
+                        {t(
+                          "installationWizard.templateFiles.noticeTitle",
+                          "Important: Download Template Files"
+                        )}
                       </h4>
                       <p className="text-sm text-yellow-700 dark:text-yellow-400 mt-1">
-                        The React integration requires template files. Download
-                        both files below and place them in your project's{" "}
-                        <code className="bg-yellow-100 dark:bg-yellow-900/40 px-1 rounded">
-                          src/components/ChatTemplates/
-                        </code>{" "}
-                        directory.
+                        {t(
+                          "installationWizard.templateFiles.noticeBody",
+                          "The React integration requires template files. Download both files below and place them in your project's {{path}} directory.",
+                          { path: "src/components/ChatTemplates/" }
+                        )}
                       </p>
                     </div>
                   </div>
@@ -1132,7 +1302,10 @@ export const ${templateName}Chat = (props: ${templateName}ChatProps) => {
                 <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
                   <div className="flex items-center justify-between mb-2">
                     <h4 className="text-sm font-medium text-gray-900 dark:text-white">
-                      1. ChatTemplate.tsx
+                      {t(
+                        "installationWizard.templateFiles.base.title",
+                        "1. ChatTemplate.tsx"
+                      )}
                     </h4>
                     <div className="flex space-x-2">
                       <motion.button
@@ -1146,7 +1319,15 @@ export const ${templateName}Chat = (props: ${templateName}ChatProps) => {
                         ) : (
                           <Copy className="h-3 w-3 mr-1" />
                         )}
-                        {copiedBaseTemplateCode ? "Copied!" : "Copy"}
+                        {copiedBaseTemplateCode
+                          ? t(
+                              "installationWizard.templateFiles.button.copied",
+                              "Copied!"
+                            )
+                          : t(
+                              "installationWizard.templateFiles.button.copy",
+                              "Copy"
+                            )}
                       </motion.button>
                       <motion.button
                         whileHover={{ scale: 1.05 }}
@@ -1160,12 +1341,18 @@ export const ${templateName}Chat = (props: ${templateName}ChatProps) => {
                         className="flex items-center px-2 py-1 text-xs font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors"
                       >
                         <Download className="h-3 w-3 mr-1" />
-                        Download
+                        {t(
+                          "installationWizard.templateFiles.button.download",
+                          "Download"
+                        )}
                       </motion.button>
                     </div>
                   </div>
                   <p className="text-xs text-gray-600 dark:text-gray-400">
-                    Base template component that handles chat functionality
+                    {t(
+                      "installationWizard.templateFiles.base.desc",
+                      "Base template component that handles chat functionality"
+                    )}
                   </p>
                 </div>
 
@@ -1173,10 +1360,15 @@ export const ${templateName}Chat = (props: ${templateName}ChatProps) => {
                 <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
                   <div className="flex items-center justify-between mb-2">
                     <h4 className="text-sm font-medium text-gray-900 dark:text-white">
-                      2.{" "}
-                      {selections.template.charAt(0).toUpperCase() +
-                        selections.template.slice(1)}
-                      Chat.tsx
+                      {t(
+                        "installationWizard.templateFiles.specific.title",
+                        "2. {{templateName}}Chat.tsx",
+                        {
+                          templateName:
+                            selections.template.charAt(0).toUpperCase() +
+                            selections.template.slice(1),
+                        }
+                      )}
                     </h4>
                     <div className="flex space-x-2">
                       <motion.button
@@ -1190,7 +1382,15 @@ export const ${templateName}Chat = (props: ${templateName}ChatProps) => {
                         ) : (
                           <Copy className="h-3 w-3 mr-1" />
                         )}
-                        {copiedTemplateCode ? "Copied!" : "Copy"}
+                        {copiedTemplateCode
+                          ? t(
+                              "installationWizard.templateFiles.button.copied",
+                              "Copied!"
+                            )
+                          : t(
+                              "installationWizard.templateFiles.button.copy",
+                              "Copy"
+                            )}
                       </motion.button>
                       <motion.button
                         whileHover={{ scale: 1.05 }}
@@ -1207,13 +1407,19 @@ export const ${templateName}Chat = (props: ${templateName}ChatProps) => {
                         className="flex items-center px-2 py-1 text-xs font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors"
                       >
                         <Download className="h-3 w-3 mr-1" />
-                        Download
+                        {t(
+                          "installationWizard.templateFiles.button.download",
+                          "Download"
+                        )}
                       </motion.button>
                     </div>
                   </div>
                   <p className="text-xs text-gray-600 dark:text-gray-400">
-                    Specific template implementation for {selections.template}{" "}
-                    style
+                    {t(
+                      "installationWizard.templateFiles.specific.desc",
+                      "Specific template implementation for {{template}} style",
+                      { template: selections.template }
+                    )}
                   </p>
                 </div>
               </div>
@@ -1226,7 +1432,10 @@ export const ${templateName}Chat = (props: ${templateName}ChatProps) => {
                   <Bot className="h-5 w-5 text-primary-600 dark:text-primary-400 mt-0.5 mr-3" />
                   <div>
                     <h4 className="text-sm font-medium text-primary-900 dark:text-primary-200">
-                      Selected Chatbot
+                      {t(
+                        "installationWizard.selectedBot.title",
+                        "Selected Chatbot"
+                      )}
                     </h4>
                     {(() => {
                       const selectedBot = chatbots.find(
@@ -1241,7 +1450,9 @@ export const ${templateName}Chat = (props: ${templateName}ChatProps) => {
                             {selectedBot.description}
                           </p>
                           <p className="text-xs text-primary-600 dark:text-primary-500 mt-1">
-                            ID: {selectedBot.id}
+                            {t("installationWizard.selectedBot.id", "ID: {{id}}", {
+                              id: selectedBot.id,
+                            })}
                           </p>
                         </div>
                       ) : null;
@@ -1250,10 +1461,11 @@ export const ${templateName}Chat = (props: ${templateName}ChatProps) => {
                 </div>
               </div>
             )}
+
             {/* Next Steps */}
             <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-xl p-6">
               <h4 className="text-lg font-medium text-green-900 dark:text-green-200 mb-3">
-                Next Steps
+                {t("installationWizard.nextSteps.title", "Next Steps")}
               </h4>
               <ol className="text-sm text-green-800 dark:text-green-300 space-y-2">
                 {frameworks.find((f) => f.id === selections.framework)?.type ===
@@ -1264,11 +1476,18 @@ export const ${templateName}Chat = (props: ${templateName}ChatProps) => {
                         1
                       </span>
                       <div>
-                        <strong>Create directory structure:</strong> Create a{" "}
-                        <code className="bg-green-100 dark:bg-green-900/50 px-1 rounded">
-                          src/components/ChatTemplates
-                        </code>{" "}
-                        folder in your project
+                        <strong>
+                          {t(
+                            "installationWizard.nextSteps.react.1.title",
+                            "Create directory structure"
+                          )}
+                          :
+                        </strong>{" "}
+                        {t(
+                          "installationWizard.nextSteps.react.1.body",
+                          "Create a {{path}} folder in your project",
+                          { path: "src/components/ChatTemplates" }
+                        )}
                       </div>
                     </li>
                     <li className="flex items-start">
@@ -1276,9 +1495,17 @@ export const ${templateName}Chat = (props: ${templateName}ChatProps) => {
                         2
                       </span>
                       <div>
-                        <strong>Save template files:</strong> Download both
-                        template files and place them in the ChatTemplates
-                        folder
+                        <strong>
+                          {t(
+                            "installationWizard.nextSteps.react.2.title",
+                            "Save template files"
+                          )}
+                          :
+                        </strong>{" "}
+                        {t(
+                          "installationWizard.nextSteps.react.2.body",
+                          "Download both template files and place them in the ChatTemplates folder"
+                        )}
                       </div>
                     </li>
                     <li className="flex items-start">
@@ -1286,7 +1513,13 @@ export const ${templateName}Chat = (props: ${templateName}ChatProps) => {
                         3
                       </span>
                       <div>
-                        <strong>Install dependencies:</strong>{" "}
+                        <strong>
+                          {t(
+                            "installationWizard.nextSteps.react.3.title",
+                            "Install dependencies"
+                          )}
+                          :
+                        </strong>{" "}
                         <code className="bg-green-100 dark:bg-green-900/50 px-1 rounded">
                           npm install lucide-react
                         </code>
@@ -1297,8 +1530,17 @@ export const ${templateName}Chat = (props: ${templateName}ChatProps) => {
                         4
                       </span>
                       <div>
-                        <strong>Add the code:</strong> Copy the generated code
-                        to your React component
+                        <strong>
+                          {t(
+                            "installationWizard.nextSteps.react.4.title",
+                            "Add the code"
+                          )}
+                          :
+                        </strong>{" "}
+                        {t(
+                          "installationWizard.nextSteps.react.4.body",
+                          "Copy the generated code to your React component"
+                        )}
                       </div>
                     </li>
                     <li className="flex items-start">
@@ -1306,8 +1548,17 @@ export const ${templateName}Chat = (props: ${templateName}ChatProps) => {
                         5
                       </span>
                       <div>
-                        <strong>Test integration:</strong> Your chatbot is ready
-                        to use!
+                        <strong>
+                          {t(
+                            "installationWizard.nextSteps.react.5.title",
+                            "Test integration"
+                          )}
+                          :
+                        </strong>{" "}
+                        {t(
+                          "installationWizard.nextSteps.react.5.body",
+                          "Your chatbot is ready to use!"
+                        )}
                       </div>
                     </li>
                   </>
@@ -1318,11 +1569,20 @@ export const ${templateName}Chat = (props: ${templateName}ChatProps) => {
                         1
                       </span>
                       <div>
-                        <strong>Host the widget:</strong> The widget script is
-                        already hosted at{" "}
-                        <code className="bg-green-100 dark:bg-green-900/50 px-1 rounded">
-                          {window.location.origin}/chatbot-widget.js
-                        </code>
+                        <strong>
+                          {t(
+                            "installationWizard.nextSteps.script.1.title",
+                            "Host the widget"
+                          )}
+                          :
+                        </strong>{" "}
+                        {t(
+                          "installationWizard.nextSteps.script.1.body",
+                          "The widget script is already hosted at {{url}}",
+                          {
+                            url: `${window.location.origin}/chatbot-widget.js`,
+                          }
+                        )}
                       </div>
                     </li>
                     <li className="flex items-start">
@@ -1330,8 +1590,17 @@ export const ${templateName}Chat = (props: ${templateName}ChatProps) => {
                         2
                       </span>
                       <div>
-                        <strong>Add script tag:</strong> Copy the generated
-                        script tag to your HTML
+                        <strong>
+                          {t(
+                            "installationWizard.nextSteps.script.2.title",
+                            "Add script tag"
+                          )}
+                          :
+                        </strong>{" "}
+                        {t(
+                          "installationWizard.nextSteps.script.2.body",
+                          "Copy the generated script tag to your HTML"
+                        )}
                       </div>
                     </li>
                     <li className="flex items-start">
@@ -1339,14 +1608,24 @@ export const ${templateName}Chat = (props: ${templateName}ChatProps) => {
                         3
                       </span>
                       <div>
-                        <strong>Test integration:</strong> Your chatbot should
-                        appear and function correctly
+                        <strong>
+                          {t(
+                            "installationWizard.nextSteps.script.3.title",
+                            "Test integration"
+                          )}
+                          :
+                        </strong>{" "}
+                        {t(
+                          "installationWizard.nextSteps.script.3.body",
+                          "Your chatbot should appear and function correctly"
+                        )}
                       </div>
                     </li>
                   </>
                 )}
               </ol>
             </div>
+
             {/* Additional Resources */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <motion.div
@@ -1357,10 +1636,16 @@ export const ${templateName}Chat = (props: ${templateName}ChatProps) => {
                 <Link to="/templates" className="block">
                   <Palette className="h-6 w-6 text-primary-600 dark:text-primary-400 mx-auto mb-2" />
                   <h4 className="font-medium text-gray-900 dark:text-white">
-                    Template Gallery
+                    {t(
+                      "installationWizard.resources.gallery.title",
+                      "Template Gallery"
+                    )}
                   </h4>
                   <p className="text-sm text-gray-600 dark:text-gray-400">
-                    Browse all templates
+                    {t(
+                      "installationWizard.resources.gallery.body",
+                      "Browse all templates"
+                    )}
                   </p>
                 </Link>
               </motion.div>
@@ -1372,10 +1657,16 @@ export const ${templateName}Chat = (props: ${templateName}ChatProps) => {
                 <Link to="/integrations" className="block">
                   <Code className="h-6 w-6 text-green-600 dark:text-green-400 mx-auto mb-2" />
                   <h4 className="font-medium text-gray-900 dark:text-white">
-                    Documentation
+                    {t(
+                      "installationWizard.resources.docs.title",
+                      "Documentation"
+                    )}
                   </h4>
                   <p className="text-sm text-gray-600 dark:text-gray-400">
-                    Complete setup guide
+                    {t(
+                      "installationWizard.resources.docs.body",
+                      "Complete setup guide"
+                    )}
                   </p>
                 </Link>
               </motion.div>
@@ -1387,10 +1678,16 @@ export const ${templateName}Chat = (props: ${templateName}ChatProps) => {
                 <Link to="/chatbots" className="block">
                   <Settings className="h-6 w-6 text-accent-600 dark:text-accent-400 mx-auto mb-2" />
                   <h4 className="font-medium text-gray-900 dark:text-white">
-                    Manage Chatbots
+                    {t(
+                      "installationWizard.resources.manage.title",
+                      "Manage Chatbots"
+                    )}
                   </h4>
                   <p className="text-sm text-gray-600 dark:text-gray-400">
-                    View & edit chatbots
+                    {t(
+                      "installationWizard.resources.manage.body",
+                      "View & edit chatbots"
+                    )}
                   </p>
                 </Link>
               </motion.div>
@@ -1409,8 +1706,9 @@ export const ${templateName}Chat = (props: ${templateName}ChatProps) => {
           className="flex items-center px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
           <ChevronLeft className="h-4 w-4 mr-2" />
-          Previous
+          {t("installationWizard.nav.previous", "Previous")}
         </motion.button>
+
         {currentStep < steps.length - 1 ? (
           <motion.button
             whileHover={{ scale: 1.05 }}
@@ -1419,7 +1717,7 @@ export const ${templateName}Chat = (props: ${templateName}ChatProps) => {
             disabled={!canProceed()}
             className="flex items-center px-4 py-2 text-sm font-semibold text-white bg-primary-600 dark:bg-primary-500 border border-transparent rounded-xl hover:bg-primary-700 dark:hover:bg-primary-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
-            Next
+            {t("installationWizard.nav.next", "Next")}
             <ChevronRight className="h-4 w-4 ml-2" />
           </motion.button>
         ) : (
@@ -1429,7 +1727,7 @@ export const ${templateName}Chat = (props: ${templateName}ChatProps) => {
             onClick={() => setCurrentStep(0)}
             className="flex items-center px-4 py-2 text-sm font-semibold text-white bg-green-600 dark:bg-green-500 border border-transparent rounded-xl hover:bg-green-700 dark:hover:bg-green-600 transition-colors"
           >
-            Start Over
+            {t("installationWizard.nav.startOver", "Start Over")}
             <Zap className="h-4 w-4 ml-2" />
           </motion.button>
         )}

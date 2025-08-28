@@ -14,8 +14,9 @@ import {
 import { useAuth } from "../hooks/useAuth";
 import { Logo } from "./ui/Logo";
 import { useTheme } from "../hooks/useTheme";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { EmailGate } from "./EmailGate";
+import { useTranslation } from "../hooks/useTranslation";
 
 const leftBgLight = "bg-gradient-to-br from-primary-500 to-accent-500";
 const leftBgDark = "bg-gradient-to-br from-gray-900 to-primary-900";
@@ -42,6 +43,7 @@ const rocketVector = (
 );
 
 export function Auth() {
+  const { t } = useTranslation();
   const [mode, setMode] = useState<"login" | "signup">("login");
   const [isResetPassword, setIsResetPassword] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -62,28 +64,22 @@ export function Auth() {
     useAuth();
   const { theme } = useTheme();
   const location = useLocation();
-  const params = new URLSearchParams(location.search);
+  const navigate = useNavigate();
+  const { lang = "en" } = useParams<{ lang: string }>();
 
+  const params = new URLSearchParams(location.search);
   const email = params.get("email");
   const password = params.get("password");
 
-  // Check if user needs email confirmation
   useEffect(() => {
     if (email && password) {
-      setForm({
-        email: email,
-        password: password,
-        confirm: "",
-        name: "",
-      });
+      setForm({ email, password, confirm: "", name: "" });
     }
   }, [email, password]);
+
   useEffect(() => {
-    if (user && !emailConfirmed) {
-      setShowEmailConfirmation(true);
-    } else {
-      setShowEmailConfirmation(false);
-    }
+    if (user && !emailConfirmed) setShowEmailConfirmation(true);
+    else setShowEmailConfirmation(false);
   }, [user, emailConfirmed]);
 
   const needsConfirm = showEmailConfirmation || (user && !emailConfirmed);
@@ -92,9 +88,8 @@ export function Auth() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-white dark:bg-gray-900">
         <EmailGate
-          email={user?.email || form.email} // fall-back to typed address
+          email={user?.email || form.email}
           onResend={async () => {
-            /* call your resend-confirmation endpoint here */
             await signUp(form.email, form.password, form.name);
           }}
         />
@@ -106,43 +101,74 @@ export function Auth() {
   const validate = () => {
     const errs: { [k: string]: string } = {};
     if (!form.email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/))
-      errs.email = "Enter a valid email";
+      errs.email = t("auth_error_invalid_email", "Enter a valid email");
     if (mode === "signup" && form.name.trim().length < 2)
-      errs.name = "Enter your full name";
+      errs.name = t("auth_error_name_required", "Enter your full name");
     if (form.password.length < 6)
-      errs.password = "Password must be at least 6 characters";
+      errs.password = t(
+        "auth_error_password_length",
+        "Password must be at least 6 characters"
+      );
     if (mode === "signup" && form.password !== form.confirm)
-      errs.confirm = "Passwords do not match";
+      errs.confirm = t(
+        "auth_error_password_mismatch",
+        "Passwords do not match"
+      );
     return errs;
   };
 
-  // Error message handler
-  const getErrorMessage = (error: unknown): string => {
+  // Map backend errors to friendly messages
+  const getErrorMessage = (err: unknown): string => {
     const message =
-      typeof error === "object" &&
-      error !== null &&
-      "message" in error &&
-      typeof (error as { message?: string }).message === "string"
-        ? (error as { message: string }).message
+      typeof err === "object" &&
+      err !== null &&
+      "message" in err &&
+      typeof (err as any).message === "string"
+        ? (err as any).message
         : "";
+
     if (
       message.includes("Invalid login credentials") ||
       message.includes("invalid_credentials")
     )
-      return "The email or password you entered is incorrect. Please check your credentials and try again.";
+      return t(
+        "auth_error_invalid_credentials",
+        "The email or password you entered is incorrect. Please check your credentials and try again."
+      );
     if (message.includes("Email not confirmed"))
-      return "Please check your email and click the confirmation link before signing in.";
+      return t(
+        "auth_error_email_not_confirmed",
+        "Please check your email and click the confirmation link before signing in."
+      );
     if (message.includes("User not found"))
-      return "No account found with this email address. Please check your email or sign up for a new account.";
+      return t(
+        "auth_error_user_not_found",
+        "No account found with this email address. Please check your email or sign up for a new account."
+      );
     if (message.includes("Password should be at least"))
-      return "Password must be at least 6 characters long.";
+      return t(
+        "auth_error_password_length",
+        "Password must be at least 6 characters"
+      );
     if (message.includes("Unable to validate email address"))
-      return "Please enter a valid email address.";
+      return t(
+        "auth_error_invalid_email",
+        "Please enter a valid email address."
+      );
     if (message.includes("Email rate limit exceeded"))
-      return "Too many email attempts. Please wait a few minutes before trying again.";
+      return t(
+        "auth_error_rate_limit",
+        "Too many email attempts. Please wait a few minutes before trying again."
+      );
     if (message.includes("Signup is disabled"))
-      return "Account registration is currently disabled. Please contact support.";
-    return message || "An unexpected error occurred. Please try again.";
+      return t(
+        "auth_error_signup_disabled",
+        "Account registration is currently disabled. Please contact support."
+      );
+    return (
+      message ||
+      t("auth_error_generic", "An unexpected error occurred. Please try again.")
+    );
   };
 
   // Submit handler
@@ -158,21 +184,25 @@ export function Auth() {
     try {
       if (isResetPassword) {
         const { error } = await resetPassword(form.email);
-        if (error) {
-          setError(getErrorMessage(error));
-        } else {
+        if (error) setError(getErrorMessage(error));
+        else {
           setSuccess(
-            "Password reset email sent! Check your inbox and spam folder."
+            t(
+              "auth_reset_sent",
+              "Password reset email sent! Check your inbox and spam folder."
+            )
           );
           setIsResetPassword(false);
         }
       } else if (mode === "signup") {
         const { error } = await signUp(form.email, form.password, form.name);
-        if (error) {
-          setError(getErrorMessage(error));
-        } else {
+        if (error) setError(getErrorMessage(error));
+        else {
           setSuccess(
-            "Account created! Please check your email to confirm your account."
+            t(
+              "auth_signup_success",
+              "Account created! Please check your email to confirm your account."
+            )
           );
           setShowEmailConfirmation(true);
         }
@@ -180,10 +210,18 @@ export function Auth() {
         const { error } = await signIn(form.email, form.password);
         if (error) {
           setError(getErrorMessage(error));
+        } else {
+          // ✅ Go directly to the lang-scoped dashboard
+          navigate(`/${lang}/dashboard`, { replace: true });
         }
       }
     } catch {
-      setError("An unexpected error occurred. Please try again.");
+      setError(
+        t(
+          "auth_error_generic",
+          "An unexpected error occurred. Please try again."
+        )
+      );
     } finally {
       setSubmitting(false);
     }
@@ -202,9 +240,10 @@ export function Auth() {
       </div>
     );
   }
+
   return (
     <div className="min-h-screen flex items-stretch font-sans transition-colors duration-500">
-      {/* Left Side: Text & Vector */}
+      {/* Left Side */}
       <div
         className={`relative w-1/2 hidden lg:flex flex-col justify-center px-20 py-12 ${
           theme === "dark" ? leftBgDark : leftBgLight
@@ -212,7 +251,7 @@ export function Auth() {
       >
         <AnimatePresence mode="wait">
           <motion.div
-            key={mode}
+            key={mode + String(isResetPassword)}
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -24 }}
@@ -222,31 +261,40 @@ export function Auth() {
             {rocketVector}
             <h2 className="text-4xl font-bold mb-6 font-display tracking-tight">
               {isResetPassword
-                ? "Reset Password"
+                ? t("auth_left_title_reset", "Reset Password")
                 : mode === "signup"
-                ? "Join ChatterWise today!"
-                : "Welcome back!"}
+                ? t("auth_left_title_signup", "Join ChatterWise today!")
+                : t("auth_left_title_login", "Welcome back!")}
             </h2>
             <p className="text-lg leading-relaxed">
               {isResetPassword
-                ? "Enter your email to receive a password reset link."
+                ? t(
+                    "auth_left_desc_reset",
+                    "Enter your email to receive a password reset link."
+                  )
                 : mode === "signup"
-                ? "Build intelligent, scalable chatbots with ease. Enjoy seamless integration, powerful AI features, and secure, scalable infrastructure."
-                : "Empower your workflow with AI-driven chatbots. Sign in to access your personalized dashboard and start creating."}
+                ? t(
+                    "auth_left_desc_signup",
+                    "Build intelligent, scalable chatbots with ease. Enjoy seamless integration, powerful AI features, and secure, scalable infrastructure."
+                  )
+                : t(
+                    "auth_left_desc_login",
+                    "Empower your workflow with AI-driven chatbots. Sign in to access your personalized dashboard and start creating."
+                  )}
             </p>
           </motion.div>
         </AnimatePresence>
       </div>
 
-      {/* Right Side: Form & Logo */}
-      <div className="w-full min-h-screen flex flex-col justify-center items-center bg-white dark:bg-gray-900 transition-colors duration-500 p-6">
+      {/* Right Side */}
+      <div className="w/full min-h-screen flex flex-col justify-center items-center bg-white dark:bg-gray-900 transition-colors duration-500 p-6">
         <div className="w-full max-w-md mx-auto">
-          {/* Logo and Theme Toggle */}
+          {/* Logo */}
           <div className="flex justify-between items-center mb-8">
             <Logo size="lg" />
           </div>
 
-          {/* Mode Switch Buttons */}
+          {/* Mode Switch */}
           <div className="flex justify-center mb-8 space-x-4">
             <button
               className={`px-6 py-2 rounded-full text-sm font-semibold transition ${
@@ -261,7 +309,7 @@ export function Auth() {
                 setSuccess("");
               }}
             >
-              Sign In
+              {t("auth_tab_signin", "Sign In")}
             </button>
             <button
               className={`px-6 py-2 rounded-full text-sm font-semibold transition ${
@@ -276,7 +324,7 @@ export function Auth() {
                 setSuccess("");
               }}
             >
-              Sign Up
+              {t("auth_tab_signup", "Sign Up")}
             </button>
           </div>
 
@@ -308,7 +356,7 @@ export function Auth() {
               {!isResetPassword && mode === "signup" && (
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Full Name
+                    {t("auth_label_full_name", "Full Name")}
                   </label>
                   <div className="relative">
                     <User className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
@@ -322,7 +370,10 @@ export function Auth() {
                           ? "border-red-400"
                           : "border-gray-300 dark:border-gray-700"
                       }`}
-                      placeholder="Enter your full name"
+                      placeholder={t(
+                        "auth_placeholder_full_name",
+                        "Enter your full name"
+                      )}
                     />
                   </div>
                   {errors.name && (
@@ -330,9 +381,10 @@ export function Auth() {
                   )}
                 </div>
               )}
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  E-mail
+                  {t("auth_label_email", "E-mail")}
                 </label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
@@ -346,20 +398,24 @@ export function Auth() {
                         ? "border-red-400"
                         : "border-gray-300 dark:border-gray-700"
                     }`}
-                    placeholder="Enter your e-mail address"
+                    placeholder={t(
+                      "auth_placeholder_email",
+                      "Enter your e-mail address"
+                    )}
                   />
                 </div>
                 {errors.email && (
                   <p className="mt-1 text-xs text-red-600">{errors.email}</p>
                 )}
               </div>
+
               {!isResetPassword && (
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Password
+                    {t("auth_label_password", "Password")}{" "}
                     {mode === "signup" && (
                       <span className="text-xs text-gray-500 ml-1">
-                        (minimum 6 characters)
+                        {t("auth_hint_min_chars", "(minimum 6 characters)")}
                       </span>
                     )}
                   </label>
@@ -375,12 +431,23 @@ export function Auth() {
                           ? "border-red-400"
                           : "border-gray-300 dark:border-gray-700"
                       }`}
-                      placeholder="Enter your password"
+                      placeholder={t(
+                        "auth_placeholder_password",
+                        "Enter your password"
+                      )}
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword((v) => !v)}
                       className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700"
+                      aria-label={t(
+                        "auth_toggle_password",
+                        "Toggle password visibility"
+                      )}
+                      title={t(
+                        "auth_toggle_password",
+                        "Toggle password visibility"
+                      )}
                     >
                       {showPassword ? (
                         <EyeOff className="w-5 h-5" />
@@ -396,10 +463,11 @@ export function Auth() {
                   )}
                 </div>
               )}
+
               {!isResetPassword && mode === "signup" && (
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Confirm Password
+                    {t("auth_label_confirm_password", "Confirm Password")}
                   </label>
                   <div className="relative">
                     <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
@@ -413,12 +481,23 @@ export function Auth() {
                           ? "border-red-400"
                           : "border-gray-300 dark:border-gray-700"
                       }`}
-                      placeholder="Confirm your password"
+                      placeholder={t(
+                        "auth_placeholder_confirm_password",
+                        "Confirm your password"
+                      )}
                     />
                     <button
                       type="button"
                       onClick={() => setShowConfirmPassword((v) => !v)}
                       className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700"
+                      aria-label={t(
+                        "auth_toggle_confirm_password",
+                        "Toggle confirm password visibility"
+                      )}
+                      title={t(
+                        "auth_toggle_confirm_password",
+                        "Toggle confirm password visibility"
+                      )}
                     >
                       {showConfirmPassword ? (
                         <EyeOff className="w-5 h-5" />
@@ -434,6 +513,7 @@ export function Auth() {
                   )}
                 </div>
               )}
+
               {mode === "signup" && !isResetPassword && (
                 <div className="flex items-center mt-2">
                   <input
@@ -442,13 +522,14 @@ export function Auth() {
                     className="mr-2 accent-primary-600 rounded"
                   />
                   <span className="text-xs text-gray-600 dark:text-gray-400">
-                    By signing up you agree{" "}
+                    {t("auth_terms_prefix", "By signing up you agree")}{" "}
                     <a href="#" className="underline">
-                      Terms & Conditions
+                      {t("auth_terms_link", "Terms & Conditions")}
                     </a>
                   </span>
                 </div>
               )}
+
               <button
                 type="submit"
                 disabled={submitting}
@@ -457,11 +538,11 @@ export function Auth() {
                 {submitting ? (
                   <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
                 ) : isResetPassword ? (
-                  "Send Reset Link"
+                  t("auth_cta_send_reset", "Send Reset Link")
                 ) : mode === "signup" ? (
-                  "Sign Up"
+                  t("auth_cta_signup", "Sign Up")
                 ) : (
-                  "Sign In"
+                  t("auth_cta_signin", "Sign In")
                 )}
                 {!submitting && !isResetPassword && (
                   <ArrowRight className="ml-2 w-4 h-4" />
@@ -470,42 +551,42 @@ export function Auth() {
             </motion.form>
           </AnimatePresence>
 
-          {/* Social Auth Divider */}
+          {/* Social Divider */}
           <div className="relative my-6">
             <div className="absolute inset-0 flex items-center">
               <div className="w-full border-t border-gray-200 dark:border-gray-700"></div>
             </div>
             <div className="relative flex justify-center text-sm">
               <span className="bg-white dark:bg-gray-900 px-2 text-gray-400">
-                or
+                {t("auth_or", "or")}
               </span>
             </div>
           </div>
 
+          {/* Social Buttons */}
           <div className="flex flex-wrap gap-4 justify-center mb-6">
-            {/* GitHub OAuth Button */}
             <button
               type="button"
               onClick={signInWithGitHub}
               className="py-2 px-4 flex-1 min-w-[240px] flex justify-center items-center bg-gray-800 hover:bg-gray-700 focus:ring-gray-500 focus:ring-offset-gray-200 text-white transition ease-in duration-200 text-base font-semibold shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 rounded-lg"
+              aria-label={t("auth_oauth_github", "Sign in with GitHub")}
+              title={t("auth_oauth_github", "Sign in with GitHub")}
             >
               <Github className="h-5 w-5 mr-2" />
-              Sign in with GitHub
+              {t("auth_oauth_github", "Sign in with GitHub")}
             </button>
 
-            {/* Discord OAuth Button */}
             <button
               type="button"
               onClick={signInWithDiscord}
               className="py-2 px-4 flex-1 min-w-[240px] flex justify-center items-center bg-white hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-800 dark:text-gray-100 transition ease-in duration-200 text-base font-semibold shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 rounded-lg"
+              aria-label={t("auth_oauth_discord", "Continue with Discord")}
+              title={t("auth_oauth_discord", "Continue with Discord")}
             >
               <svg
                 className="h-5 w-5 mr-2"
                 xmlns="http://www.w3.org/2000/svg"
-                xmlnsXlink="http://www.w3.org/1999/xlink"
                 viewBox="0 -28.5 256 256"
-                version="1.1"
-                preserveAspectRatio="xMidYMid"
               >
                 <g>
                   <path
@@ -515,7 +596,7 @@ export function Auth() {
                   />
                 </g>
               </svg>
-              <span>Continue with Discord</span>
+              <span>{t("auth_oauth_discord", "Continue with Discord")}</span>
             </button>
           </div>
 
@@ -531,7 +612,7 @@ export function Auth() {
                 }}
                 className="text-sm text-primary-600 hover:text-primary-700 hover:underline"
               >
-                Forgot your password?
+                {t("auth_forgot_password", "Forgot your password?")}
               </button>
             )}
             <div className="text-sm text-gray-600">
@@ -544,11 +625,11 @@ export function Auth() {
                   }}
                   className="text-primary-600 hover:text-primary-700 hover:underline"
                 >
-                  Back to sign in
+                  {t("auth_back_to_signin", "Back to sign in")}
                 </button>
               ) : mode === "signup" ? (
                 <>
-                  Already have an account?{" "}
+                  {t("auth_have_account", "Already have an account?")}{" "}
                   <button
                     onClick={() => {
                       setMode("login");
@@ -557,12 +638,12 @@ export function Auth() {
                     }}
                     className="text-primary-600 hover:text-primary-700 hover:underline"
                   >
-                    Sign in
+                    {t("auth_signin", "Sign in")}
                   </button>
                 </>
               ) : (
                 <>
-                  Don't have an account?{" "}
+                  {t("auth_no_account", "Don't have an account?")}{" "}
                   <button
                     onClick={() => {
                       setMode("signup");
@@ -571,7 +652,7 @@ export function Auth() {
                     }}
                     className="text-primary-600 hover:text-primary-700 hover:underline"
                   >
-                    Sign up
+                    {t("auth_signup", "Sign up")}
                   </button>
                 </>
               )}

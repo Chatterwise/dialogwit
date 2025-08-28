@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Mail, RefreshCw, CheckCircle, AlertCircle } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
+import { useTranslation } from "../hooks/useTranslation";
 
 interface EmailConfirmationRequiredProps {
   email?: string;
@@ -10,6 +11,8 @@ export function EmailConfirmationRequired({
   email,
 }: EmailConfirmationRequiredProps) {
   const { resendConfirmation } = useAuth();
+  const { t } = useTranslation();
+
   const [isResending, setIsResending] = useState(false);
   const [resendStatus, setResendStatus] = useState<
     "idle" | "success" | "error"
@@ -29,17 +32,29 @@ export function EmailConfirmationRequired({
       if (error) {
         setResendStatus("error");
         setResendMessage(
-          error.message || "Failed to resend confirmation email"
+          error.message ||
+            t(
+              "emailConfirm.resend.errorDefault",
+              "Failed to resend confirmation email"
+            )
         );
       } else {
         setResendStatus("success");
         setResendMessage(
-          "Confirmation email sent successfully! Please check your inbox."
+          t(
+            "emailConfirm.resend.success",
+            "Confirmation email sent successfully! Please check your inbox."
+          )
         );
       }
-    } catch (error) {
+    } catch {
       setResendStatus("error");
-      setResendMessage("An unexpected error occurred. Please try again.");
+      setResendMessage(
+        t(
+          "emailConfirm.resend.unexpected",
+          "An unexpected error occurred. Please try again."
+        )
+      );
     } finally {
       setIsResending(false);
     }
@@ -51,14 +66,16 @@ export function EmailConfirmationRequired({
         {/* Header */}
         <div className="mb-8">
           <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Mail className="w-8 h-8 text-blue-600" />
+            <Mail className="w-8 h-8 text-blue-600" aria-hidden="true" />
           </div>
           <h1 className="text-2xl font-bold text-gray-900 mb-2">
-            Check Your Email
+            {t("emailConfirm.title", "Check Your Email")}
           </h1>
           <p className="text-gray-600">
-            We've sent a confirmation link to your email address. Please click
-            the link to verify your account and continue.
+            {t(
+              "emailConfirm.subtitle",
+              "We've sent a confirmation link to your email address. Please click the link to verify your account and continue."
+            )}
           </p>
         </div>
 
@@ -66,7 +83,7 @@ export function EmailConfirmationRequired({
         {email && (
           <div className="bg-gray-50 rounded-lg p-4 mb-6">
             <p className="text-sm text-gray-600 mb-1">
-              Confirmation email sent to:
+              {t("emailConfirm.sentTo", "Confirmation email sent to:")}
             </p>
             <p className="font-medium text-gray-900 break-all">{email}</p>
           </div>
@@ -74,25 +91,36 @@ export function EmailConfirmationRequired({
 
         {/* Instructions */}
         <div className="mb-8">
-          <h3 className="font-semibold text-gray-900 mb-3">What to do next:</h3>
+          <h3 className="font-semibold text-gray-900 mb-3">
+            {t("emailConfirm.nextSteps.title", "What to do next:")}
+          </h3>
           <ol className="text-left text-sm text-gray-600 space-y-2">
             <li className="flex items-start">
               <span className="flex-shrink-0 w-5 h-5 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-xs font-medium mr-3 mt-0.5">
                 1
               </span>
-              Check your email inbox (and spam folder)
+              {t(
+                "emailConfirm.nextSteps.step1",
+                "Check your email inbox (and spam folder)"
+              )}
             </li>
             <li className="flex items-start">
               <span className="flex-shrink-0 w-5 h-5 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-xs font-medium mr-3 mt-0.5">
                 2
               </span>
-              Click the "Confirm Email Address\" button in the email
+              {t(
+                "emailConfirm.nextSteps.step2",
+                'Click the "Confirm Email Address" button in the email'
+              )}
             </li>
             <li className="flex items-start">
               <span className="flex-shrink-0 w-5 h-5 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-xs font-medium mr-3 mt-0.5">
                 3
               </span>
-              You'll be redirected back to continue using ChatterWise
+              {t(
+                "emailConfirm.nextSteps.step3",
+                "You'll be redirected back to continue using ChatterWise"
+              )}
             </li>
           </ol>
         </div>
@@ -103,16 +131,18 @@ export function EmailConfirmationRequired({
             onClick={handleResendConfirmation}
             disabled={isResending || !email}
             className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-medium py-3 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center"
+            aria-disabled={isResending || !email}
+            aria-busy={isResending}
           >
             {isResending ? (
               <>
                 <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
-                Sending...
+                {t("emailConfirm.resend.sending", "Sending...")}
               </>
             ) : (
               <>
                 <Mail className="w-4 h-4 mr-2" />
-                Resend Confirmation Email
+                {t("emailConfirm.resend.cta", "Resend Confirmation Email")}
               </>
             )}
           </button>
@@ -122,7 +152,10 @@ export function EmailConfirmationRequired({
         {resendStatus === "success" && (
           <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
             <div className="flex items-center">
-              <CheckCircle className="w-5 h-5 text-green-600 mr-2" />
+              <CheckCircle
+                className="w-5 h-5 text-green-600 mr-2"
+                aria-hidden="true"
+              />
               <p className="text-sm text-green-800">{resendMessage}</p>
             </div>
           </div>
@@ -131,7 +164,10 @@ export function EmailConfirmationRequired({
         {resendStatus === "error" && (
           <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
             <div className="flex items-center">
-              <AlertCircle className="w-5 h-5 text-red-600 mr-2" />
+              <AlertCircle
+                className="w-5 h-5 text-red-600 mr-2"
+                aria-hidden="true"
+              />
               <p className="text-sm text-red-800">{resendMessage}</p>
             </div>
           </div>
@@ -140,10 +176,16 @@ export function EmailConfirmationRequired({
         {/* Help Text */}
         <div className="text-xs text-gray-500">
           <p className="mb-2">
-            Didn't receive the email? Check your spam folder or try resending.
+            {t(
+              "emailConfirm.help.missing",
+              "Didn't receive the email? Check your spam folder or try resending."
+            )}
           </p>
           <p>
-            Need help? Contact our support team at{" "}
+            {t(
+              "emailConfirm.help.needHelp",
+              "Need help? Contact our support team at"
+            )}{" "}
             <a
               href="mailto:support@chatterwise.io"
               className="text-blue-600 hover:underline"

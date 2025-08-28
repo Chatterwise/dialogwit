@@ -1,5 +1,6 @@
 import React, { useState, useCallback, useRef } from "react";
 import { Upload } from "lucide-react";
+import { useTranslation } from "../hooks/useTranslation";
 import { FileUploadProps, ProcessedFile } from "./types/knowledge";
 
 // Local display labels for helper text (not used for typing)
@@ -67,6 +68,7 @@ export const FileUpload: React.FC<FileUploadProps> = ({
   acceptedTypes = Object.keys(ACCEPTED_TYPES) as readonly string[],
   allowMultiple = true,
 }) => {
+  const { t } = useTranslation();
   const [isDragOver, setIsDragOver] = useState(false);
   const inputRef = useRef<HTMLInputElement | null>(null);
 
@@ -117,10 +119,8 @@ export const FileUpload: React.FC<FileUploadProps> = ({
       if (deduped.length === 0) return;
 
       const processed = toProcessed(deduped);
-      // Return ONLY the new batch; parent maintains full list & statuses
       onFilesSelected(processed);
 
-      // reset input so same files can be re-selected if needed
       if (inputRef.current) inputRef.current.value = "";
     },
     [onFilesSelected, maxFiles, maxSizePerFile, acceptedTypes]
@@ -155,10 +155,8 @@ export const FileUpload: React.FC<FileUploadProps> = ({
               }
             ).webkitGetAsEntry?.()
           )
-          .filter(
-            (entry): entry is FileSystemEntry =>
-              entry !== null && entry !== undefined
-          );
+          .filter((entry): entry is FileSystemEntry => entry != null);
+
         const allFiles: File[] = [];
         for (const entry of entries) {
           const files = await processFileEntry(entry);
@@ -194,11 +192,12 @@ export const FileUpload: React.FC<FileUploadProps> = ({
             : "border-gray-300 hover:border-primary-400"
         }`}
         role="region"
-        aria-label="File upload drop zone"
+        aria-label={t("fileUpload.dropZoneAria", "File upload drop zone")}
       >
         {isDragOver && (
           <div className="absolute inset-0 bg-primary-50/50 backdrop-blur-sm rounded-xl" />
         )}
+
         <div
           className={`transform transition-transform duration-200 ${
             isDragOver ? "scale-105" : "scale-100"
@@ -208,12 +207,18 @@ export const FileUpload: React.FC<FileUploadProps> = ({
             className={`h-12 w-12 mx-auto mb-4 ${
               isDragOver ? "text-primary-600 animate-pulse" : "text-gray-400"
             }`}
+            aria-hidden="true"
           />
           <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
-            {isDragOver ? "Drop files here" : "Upload Bot Knowledge Files"}
+            {isDragOver
+              ? t("fileUpload.title.dragOver", "Drop files here")
+              : t("fileUpload.title.default", "Upload Bot Knowledge Files")}
           </h3>
           <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
-            Drag & drop files or folders here, or click to browse
+            {t(
+              "fileUpload.subtitle",
+              "Drag & drop files or folders here, or click to browse"
+            )}
           </p>
         </div>
 
@@ -230,14 +235,25 @@ export const FileUpload: React.FC<FileUploadProps> = ({
           htmlFor="file-upload"
           className="inline-flex items-center px-6 py-3 border border-transparent text-sm font-medium rounded-lg text-white bg-primary-600 hover:bg-primary-700 cursor-pointer transition-colors"
         >
-          <Upload className="h-4 w-4 mr-2" />
-          Choose {allowMultiple ? "Files" : "File"}
+          <Upload className="h-4 w-4 mr-2" aria-hidden="true" />
+          {allowMultiple
+            ? t("fileUpload.chooseFiles", "Choose Files")
+            : t("fileUpload.chooseFile", "Choose File")}
         </label>
 
         <div className="mt-4 text-xs text-gray-600 dark:text-gray-400">
-          <p>Supported: PDF, Word, Excel, PowerPoint, Images, Text</p>
           <p>
-            Max size: {maxSizePerFile}MB • Max per selection: {maxFiles}
+            {t(
+              "fileUpload.supported",
+              "Supported: PDF, Word, Excel, PowerPoint, Images, Text"
+            )}
+          </p>
+          <p>
+            {t(
+              "fileUpload.limits",
+              "Max size: {{size}}MB • Max per selection: {{count}}",
+              { size: maxSizePerFile, count: maxFiles }
+            )}
           </p>
         </div>
       </div>

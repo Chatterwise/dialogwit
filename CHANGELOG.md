@@ -7,7 +7,7 @@ All notable changes to this project will be documented in this file. See [standa
 ### Fixed
 
 - chatbot delition, chatbot status to the metadata **[CHAT-30]**
-
+- Adding translations to the site **[CHAT-37]**
 ### 1.1.1 (2025-08-27)
 
 ### Changed

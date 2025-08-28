@@ -1,12 +1,15 @@
+// SuccessPage.tsx
 import React, { useEffect } from "react";
 import { CheckCircle, ArrowRight, CreditCard, Zap } from "lucide-react";
 import { Link, useSearchParams } from "react-router-dom";
 import { useBilling } from "../hooks/useBilling";
+import { useTranslation } from "../hooks/useTranslation";
 
 const SuccessPage: React.FC = () => {
   const [searchParams] = useSearchParams();
   const { refetch } = useBilling();
   const sessionId = searchParams.get("session_id");
+  const { t } = useTranslation();
 
   useEffect(() => {
     // Refetch billing data to get updated subscription info
@@ -29,32 +32,34 @@ const SuccessPage: React.FC = () => {
 
           {/* Success Message */}
           <h1 className="text-2xl font-bold text-gray-900 mb-4">
-            Payment Successful! 🎉
+            {t("billing.success.title")}
           </h1>
           <p className="text-gray-600 mb-8">
-            Thank you for subscribing to ChatterWise. Your account has been
-            upgraded and you now have access to all the features of your new
-            plan.
+            {t("billing.success.description")}
           </p>
 
           {/* Features Unlocked */}
           <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg p-4 mb-8">
             <h3 className="font-semibold text-gray-900 mb-3 flex items-center justify-center">
               <Zap className="w-5 h-5 text-blue-500 mr-2" />
-              What's Next?
+              {t("billing.success.whats_next_title")}
             </h3>
             <div className="space-y-2 text-sm text-gray-700">
               <div className="flex items-center justify-center">
                 <CheckCircle className="w-4 h-4 text-green-500 mr-2" />
-                <span>Create unlimited chatbots</span>
+                <span>{t("billing.success.whats_next_item_create_bots")}</span>
               </div>
               <div className="flex items-center justify-center">
                 <CheckCircle className="w-4 h-4 text-green-500 mr-2" />
-                <span>Access to advanced AI models</span>
+                <span>
+                  {t("billing.success.whats_next_item_advanced_models")}
+                </span>
               </div>
               <div className="flex items-center justify-center">
                 <CheckCircle className="w-4 h-4 text-green-500 mr-2" />
-                <span>Priority customer support</span>
+                <span>
+                  {t("billing.success.whats_next_item_priority_support")}
+                </span>
               </div>
             </div>
           </div>
@@ -65,7 +70,7 @@ const SuccessPage: React.FC = () => {
               to="/dashboard"
               className="w-full bg-blue-500 text-white py-3 px-4 rounded-lg font-medium hover:bg-blue-600 transition-colors flex items-center justify-center"
             >
-              Go to Dashboard
+              {t("billing.success.btn_go_to_dashboard")}
               <ArrowRight className="w-4 h-4 ml-2" />
             </Link>
 
@@ -74,7 +79,7 @@ const SuccessPage: React.FC = () => {
               className="w-full bg-gray-100 text-gray-700 py-3 px-4 rounded-lg font-medium hover:bg-gray-200 transition-colors flex items-center justify-center"
             >
               <CreditCard className="w-4 h-4 mr-2" />
-              View Billing Details
+              {t("billing.success.btn_view_billing_details")}
             </Link>
           </div>
 
@@ -82,7 +87,7 @@ const SuccessPage: React.FC = () => {
           {sessionId && (
             <div className="mt-6 pt-6 border-t border-gray-200">
               <p className="text-xs text-gray-500">
-                Session ID: {sessionId.slice(-8)}
+                {t("billing.success.session_id_label")} {sessionId.slice(-8)}
               </p>
             </div>
           )}
@@ -91,12 +96,12 @@ const SuccessPage: React.FC = () => {
         {/* Additional Info */}
         <div className="mt-6 text-center">
           <p className="text-sm text-gray-600">
-            Need help getting started?{" "}
+            {t("billing.success.help_text")}{" "}
             <a
               href="mailto:support@chatterwise.io"
               className="text-blue-500 hover:text-blue-600"
             >
-              Contact our support team
+              {t("billing.success.help_cta")}
             </a>
           </p>
         </div>

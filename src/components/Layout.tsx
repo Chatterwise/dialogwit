@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Outlet, Link, useLocation } from "react-router-dom";
+import { Outlet, Link, useLocation, useParams } from "react-router-dom";
 import {
   LayoutDashboard,
   Bot,
@@ -21,31 +21,63 @@ import {
 import { Header } from "./ui/Header";
 import { motion, AnimatePresence } from "framer-motion";
 import { Logo } from "./ui/Logo";
+import { useTranslation } from "../hooks/useTranslation";
 
+// Navigation config (labels are translated at render time)
 const mainNavigation = [
-  { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { name: "Chatbots", href: "/chatbots", icon: Bot },
-  // { name: "Bot Knowledge", href: "/bot-knowledge", icon: BookOpen },
-  { name: "Analytics", href: "/analytics", icon: BarChart3 },
-  { name: "Templates", href: "/templates", icon: Palette },
-  { name: "Integrations", href: "/integrations", icon: Puzzle },
-  { name: "Setup Wizard", href: "/wizard", icon: Zap },
-  { name: "Billing", href: "/billing", icon: CreditCard },
-  { name: "Settings", href: "/settings", icon: Settings },
-];
+  { key: "dashboard", href: "/dashboard", icon: LayoutDashboard },
+  { key: "chatbots", href: "/chatbots", icon: Bot },
+  // { key: "botKnowledge", href: "/bot-knowledge", icon: BookOpen },
+  { key: "analytics", href: "/analytics", icon: BarChart3 },
+  { key: "templates", href: "/templates", icon: Palette },
+  { key: "integrations", href: "/integrations", icon: Puzzle },
+  { key: "wizard", href: "/wizard", icon: Zap },
+  { key: "billing", href: "/billing", icon: CreditCard },
+  { key: "settings", href: "/settings", icon: Settings },
+] as const;
 
 const devNavigation = [
-  { name: "API", href: "/api", icon: Code },
-  { name: "Security", href: "/security", icon: Shield },
-  { name: "Testing Tools", href: "/testing", icon: TestTube },
-];
+  { key: "api", href: "/api", icon: Code },
+  { key: "security", href: "/security", icon: Shield },
+  { key: "testing", href: "/testing", icon: TestTube },
+] as const;
+
+// Default English labels for i18n fallbacks
+const MAIN_NAV_LABELS: Record<(typeof mainNavigation)[number]["key"], string> =
+  {
+    dashboard: "Dashboard",
+    chatbots: "Chatbots",
+    // botKnowledge: "Bot Knowledge",
+    analytics: "Analytics",
+    templates: "Templates",
+    integrations: "Integrations",
+    wizard: "Setup Wizard",
+    billing: "Billing",
+    settings: "Settings",
+  };
+
+const DEV_NAV_LABELS: Record<(typeof devNavigation)[number]["key"], string> = {
+  api: "API",
+  security: "Security",
+  testing: "Testing Tools",
+};
 
 export const Layout = ({ children }: { children: React.ReactNode }) => {
+  const { t } = useTranslation();
   const location = useLocation();
-  // const navigate = useNavigate();
+  const { lang } = useParams();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [devOpen, setDevOpen] = useState(false);
-  // const { theme } = useTheme();
+
+  // locale-aware path helper
+  const withLang = (to: string) => {
+    const cleaned = to.startsWith("/") ? to : `/${to}`;
+    const current = lang ?? "en";
+    // If already prefixed with current lang, return as-is
+    if (cleaned === `/${current}` || cleaned.startsWith(`/${current}/`))
+      return cleaned;
+    return `/${current}${cleaned}`;
+  };
 
   // Close sidebar when route changes on mobile
   useEffect(() => {
@@ -53,7 +85,7 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
   }, [location.pathname]);
 
   const isDevActive = devNavigation.some((item) =>
-    location.pathname.startsWith(item.href)
+    location.pathname.startsWith(withLang(item.href))
   );
 
   // Animation variants
@@ -80,6 +112,7 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
             transition={{ duration: 0.3 }}
             className="fixed inset-0 z-40 bg-gray-800/40 dark:bg-black/60 backdrop-blur-sm md:hidden"
             onClick={() => setSidebarOpen(false)}
+            aria-label={t("layout.mobile.overlay", "Close menu overlay")}
           />
         )}
       </AnimatePresence>
@@ -94,6 +127,9 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
             variants={sidebarVariants}
             transition={{ type: "spring", stiffness: 300, damping: 30 }}
             className="fixed inset-y-0 left-0 z-50 w-72 md:hidden"
+            role="dialog"
+            aria-modal="true"
+            aria-label={t("layout.mobile.sidebar", "Navigation")}
           >
             <div className="h-full flex flex-col border-r border-gray-100 dark:border-gray-800 bg-white/90 dark:bg-gray-900/90 backdrop-blur-lg shadow-xl rounded-r-2xl">
               <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-gray-800">
@@ -106,6 +142,8 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
                 <button
                   onClick={() => setSidebarOpen(false)}
                   className="p-2 rounded-lg text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
+                  aria-label={t("layout.actions.closeSidebar", "Close menu")}
+                  title={t("layout.actions.closeSidebar", "Close menu")}
                 >
                   <X className="h-5 w-5" />
                 </button>
@@ -120,7 +158,8 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
                   <input
                     type="text"
                     className="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
-                    placeholder="Search..."
+                    placeholder={t("layout.search.placeholder", "Search...")}
+                    aria-label={t("layout.search.placeholder", "Search...")}
                   />
                 </div>
               </div>
@@ -129,16 +168,22 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
                 <nav className="space-y-1">
                   {mainNavigation.map((item) => {
                     const Icon = item.icon;
-                    const isActive = location.pathname === item.href;
+                    const to = withLang(item.href);
+                    const isActive = location.pathname.startsWith(to);
+                    const label = t(
+                      `layout.nav.${item.key}`,
+                      MAIN_NAV_LABELS[item.key]
+                    );
                     return (
                       <Link
-                        key={item.name}
-                        to={item.href}
+                        key={item.key}
+                        to={to}
                         className={`group flex items-center px-3 py-2.5 text-base font-medium rounded-xl transition-all duration-200 ${
                           isActive
                             ? "bg-gradient-to-r from-primary-100 to-primary-200 text-primary-700 shadow-sm dark:from-gray-800 dark:to-gray-900 dark:text-primary-400"
                             : "text-gray-600 hover:bg-primary-50 hover:text-primary-700 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-primary-400"
                         }`}
+                        aria-current={isActive ? "page" : undefined}
                       >
                         <Icon
                           className={`mr-3 h-5 w-5 ${
@@ -147,7 +192,7 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
                               : "text-gray-400 group-hover:text-primary-500 dark:group-hover:text-primary-400"
                           } transition-colors`}
                         />
-                        {item.name}
+                        {label}
                       </Link>
                     );
                   })}
@@ -161,17 +206,20 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
                           : "text-gray-600 hover:bg-primary-50 hover:text-primary-700 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-primary-400"
                       }`}
                       onClick={() => setDevOpen(!devOpen)}
+                      aria-expanded={devOpen}
+                      aria-controls="dev-subnav-mobile"
                     >
                       {devOpen ? (
                         <ChevronDown className="mr-3 h-5 w-5" />
                       ) : (
                         <ChevronRight className="mr-3 h-5 w-5" />
                       )}
-                      Developer
+                      {t("layout.nav.developer", "Developer")}
                     </button>
                     <AnimatePresence>
                       {devOpen && (
                         <motion.div
+                          id="dev-subnav-mobile"
                           initial={{ height: 0, opacity: 0 }}
                           animate={{ height: "auto", opacity: 1 }}
                           exit={{ height: 0, opacity: 0 }}
@@ -180,19 +228,25 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
                         >
                           {devNavigation.map((item) => {
                             const Icon = item.icon;
-                            const isActive = location.pathname === item.href;
+                            const to = withLang(item.href);
+                            const isActive = location.pathname.startsWith(to);
+                            const label = t(
+                              `layout.nav.dev.${item.key}`,
+                              DEV_NAV_LABELS[item.key]
+                            );
                             return (
                               <Link
-                                key={item.name}
-                                to={item.href}
+                                key={item.key}
+                                to={to}
                                 className={`ml-8 group flex items-center px-3 py-2.5 text-base font-medium rounded-xl transition-all duration-200 ${
                                   isActive
                                     ? "bg-gradient-to-r from-primary-100 to-primary-200 text-primary-700 shadow-sm dark:from-gray-800 dark:to-gray-900 dark:text-primary-400"
                                     : "text-gray-600 hover:bg-primary-50 hover:text-primary-700 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-primary-400"
                                 }`}
+                                aria-current={isActive ? "page" : undefined}
                               >
                                 <Icon className="mr-3 h-5 w-5" />
-                                {item.name}
+                                {label}
                               </Link>
                             );
                           })}
@@ -206,11 +260,11 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
               {/* Mobile quick actions */}
               <div className="p-4 border-t border-gray-100 dark:border-gray-800">
                 <Link
-                  to="/chatbots/new"
+                  to={withLang("/chatbots/new")}
                   className="flex items-center justify-center w-full px-4 py-2 bg-primary-600 text-white rounded-xl hover:bg-primary-700 transition-colors"
                 >
                   <Plus className="h-4 w-4 mr-2" />
-                  New Chatbot
+                  {t("layout.actions.newChatbot", "New Chatbot")}
                 </Link>
               </div>
             </div>
@@ -224,34 +278,31 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
           <div className="flex flex-col h-0 flex-1 border-r border-gray-100 dark:border-gray-800 bg-white/90 dark:bg-gray-900/90 backdrop-blur-lg shadow-xl rounded-r-2xl">
             <div className="flex-1 flex flex-col pt-8 pb-4 overflow-y-auto">
               <div className="flex items-center px-6 mb-8">
-                {/* Place your logo here */}
-                {/* <img
-                  src="/logo.svg"
-                  alt="ChatterWise"
-                  className="h-9 w-9 drop-shadow"
-                />{" "}
-                <span className="ml-2 text-2xl font-extrabold text-gray-900 dark:text-white tracking-tight font-display">
-                  ChatterWise
-                </span> */}
                 <Logo />
               </div>
               <nav className="flex-1 px-3 space-y-1">
                 {mainNavigation.map((item) => {
                   const Icon = item.icon;
-                  const isActive = location.pathname === item.href;
+                  const to = withLang(item.href);
+                  const isActive = location.pathname.startsWith(to);
+                  const label = t(
+                    `layout.nav.${item.key}`,
+                    MAIN_NAV_LABELS[item.key]
+                  );
                   return (
                     <motion.div
-                      key={item.name}
+                      key={item.key}
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
                     >
                       <Link
-                        to={item.href}
+                        to={to}
                         className={`group flex items-center px-3 py-2.5 text-base font-medium rounded-xl transition-all duration-200 ${
                           isActive
                             ? "bg-gradient-to-r from-primary-100 to-primary-200 text-primary-700 shadow dark:from-gray-800 dark:to-gray-900 dark:text-primary-400"
                             : "text-gray-600 hover:bg-primary-50 hover:text-primary-700 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-primary-400"
                         }`}
+                        aria-current={isActive ? "page" : undefined}
                       >
                         <Icon
                           className={`mr-3 h-5 w-5 ${
@@ -260,7 +311,7 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
                               : "text-gray-400 group-hover:text-primary-500 dark:group-hover:text-primary-400"
                           } transition-colors`}
                         />
-                        {item.name}
+                        {label}
                       </Link>
                     </motion.div>
                   );
@@ -277,17 +328,20 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
                         : "text-gray-600 hover:bg-primary-50 hover:text-primary-700 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-primary-400"
                     }`}
                     onClick={() => setDevOpen(!devOpen)}
+                    aria-expanded={devOpen}
+                    aria-controls="dev-subnav-desktop"
                   >
                     {devOpen ? (
                       <ChevronDown className="mr-3 h-5 w-5" />
                     ) : (
                       <ChevronRight className="mr-3 h-5 w-5" />
                     )}
-                    Developer
+                    {t("layout.nav.developer", "Developer")}
                   </motion.button>
                   <AnimatePresence>
                     {devOpen && (
                       <motion.div
+                        id="dev-subnav-desktop"
                         initial={{ height: 0, opacity: 0 }}
                         animate={{ height: "auto", opacity: 1 }}
                         exit={{ height: 0, opacity: 0 }}
@@ -296,23 +350,29 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
                       >
                         {devNavigation.map((item) => {
                           const Icon = item.icon;
-                          const isActive = location.pathname === item.href;
+                          const to = withLang(item.href);
+                          const isActive = location.pathname.startsWith(to);
+                          const label = t(
+                            `layout.nav.dev.${item.key}`,
+                            DEV_NAV_LABELS[item.key]
+                          );
                           return (
                             <motion.div
-                              key={item.name}
+                              key={item.key}
                               whileHover={{ scale: 1.02 }}
                               whileTap={{ scale: 0.98 }}
                             >
                               <Link
-                                to={item.href}
+                                to={to}
                                 className={`ml-8 group flex items-center px-3 py-2.5 text-base font-medium rounded-xl transition-all duration-200 ${
                                   isActive
                                     ? "bg-gradient-to-r from-primary-100 to-primary-200 text-primary-700 shadow dark:from-gray-800 dark:to-gray-900 dark:text-primary-400"
                                     : "text-gray-600 hover:bg-primary-50 hover:text-primary-700 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-primary-400"
                                 }`}
+                                aria-current={isActive ? "page" : undefined}
                               >
                                 <Icon className="mr-3 h-5 w-5" />
-                                {item.name}
+                                {label}
                               </Link>
                             </motion.div>
                           );
@@ -331,11 +391,13 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
                 whileTap={{ scale: 0.97 }}
               >
                 <Link
-                  to="/chatbots/new"
+                  to={withLang("/chatbots/new")}
                   className="flex items-center justify-center w-full px-4 py-2.5 bg-gradient-to-r from-primary-600 to-primary-500 text-white rounded-xl hover:from-primary-700 hover:to-primary-600 transition-all shadow-md hover:shadow-lg"
                 >
                   <Plus className="h-4 w-4 mr-2" />
-                  <span className="font-medium">New Chatbot</span>
+                  <span className="font-medium">
+                    {t("layout.actions.newChatbot", "New Chatbot")}
+                  </span>
                 </Link>
               </motion.div>
             </div>
@@ -350,7 +412,6 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
           <div className="py-8">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
               {children}
-
               <Outlet />
             </div>
           </div>

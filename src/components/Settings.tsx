@@ -6,16 +6,20 @@ import { ProfileSettings } from "./ProfileSettings";
 import { useDeleteAccount } from "../hooks/useDeleteAccount";
 import { ActionModal } from "./ActionModal";
 import { useBilling } from "../hooks/useBilling";
+import { useTranslation } from "../hooks/useTranslation";
 
 export const Settings = () => {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const deleteAccountMutation = useDeleteAccount();
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const { usage } = useBilling();
+
   const [activeTab, setActiveTab] = useState<
     "profile" | "notifications" | "security" | "danger" | "email"
   >("profile");
+
   // const [showApiKey, setShowApiKey] = useState(false);
   const [settings, setSettings] = useState({
     emailNotifications: true,
@@ -25,22 +29,30 @@ export const Settings = () => {
     marketingEmails: false,
     apiKey: "sk-1234567890abcdef...",
     twoFactorEnabled: false,
-    chatNotifications: true, // Added missing default
+    chatNotifications: true,
   });
 
   const availableTokens = usage?.available_tokens ?? null;
 
   const tabs = [
-    { id: "profile", name: "Profile", icon: User },
-    { id: "notifications", name: "Notifications", icon: Bell },
-    // { id: "email", name: "Email Settings", icon: Mail },
-    // { id: "security", name: "Security", icon: Shield },
-    { id: "danger", name: "Danger Zone", icon: Trash2 },
+    { id: "profile", name: t("settings.tabs.profile", "Profile"), icon: User },
+    {
+      id: "notifications",
+      name: t("settings.tabs.notifications", "Notifications"),
+      icon: Bell,
+    },
+    // { id: "email", name: t("settings.tabs.email", "Email Settings"), icon: Mail },
+    // { id: "security", name: t("settings.tabs.security", "Security"), icon: Shield },
+    {
+      id: "danger",
+      name: t("settings.tabs.danger", "Danger Zone"),
+      icon: Trash2,
+    },
   ];
 
   const handleSave = () => {
     // Save settings logic here
-    console.log("Saving settings:", settings);
+    console.log(t("settings.save.logPrefix", "Saving settings:"), settings);
   };
 
   const handleDeleteConfirmed = async () => {
@@ -48,14 +60,23 @@ export const Settings = () => {
     try {
       await deleteAccountMutation.mutateAsync(user.id);
       // Success is handled by the mutation's onSuccess (optional)
-    } catch (error) {
-      console.error("Failed to delete account:", error);
-      if (error.message.includes("active subscription")) {
+    } catch (error: any) {
+      console.error(
+        t("settings.delete.error.console", "Failed to delete account:"),
+        error
+      );
+      if (error.message?.includes("active subscription")) {
         setDeleteError(
-          "You cannot delete your account while you have an active subscription. Please cancel your subscription first."
+          t(
+            "settings.delete.error.activeSubscription",
+            "You cannot delete your account while you have an active subscription. Please cancel your subscription first."
+          )
         );
       } else {
-        setDeleteError("Failed to delete account: " + error.message);
+        setDeleteError(
+          t("settings.delete.error.generic", "Failed to delete account: ") +
+            (error.message || "")
+        );
       }
       setShowDeleteModal(false);
     }
@@ -66,24 +87,42 @@ export const Settings = () => {
     setShowDeleteModal(true);
   };
 
+  const tokenCountItem =
+    availableTokens !== null
+      ? `${t(
+          "settings.deleteModal.affected.hasTokensPrefix",
+          "You currently have"
+        )} ${availableTokens.toLocaleString()} ${t(
+          "settings.deleteModal.affected.hasTokensSuffix",
+          "unused tokens"
+        )}`
+      : null;
+
   return (
     <div className="space-y-8 dark:bg-gray-900 min-h-screen p-8">
       {/* Header */}
       <div>
         <h1 className="text-3xl font-extrabold text-gray-900 dark:text-white font-display tracking-tight mb-1">
-          Settings
+          {t("settings.header.title", "Settings")}
         </h1>
         <p className="text-gray-600 dark:text-gray-400">
-          Manage your account settings and preferences.
+          {t(
+            "settings.header.subtitle",
+            "Manage your account settings and preferences."
+          )}
         </p>
       </div>
 
       <div className="flex flex-col lg:flex-row gap-8">
         {/* Sidebar */}
         <div className="lg:w-72">
-          <nav className="space-y-1">
+          <nav
+            className="space-y-1"
+            aria-label={t("settings.sidebar.aria", "Settings sections")}
+          >
             {tabs.map((tab) => {
               const Icon = tab.icon;
+              const isActive = activeTab === (tab.id as typeof activeTab);
               return (
                 <button
                   key={tab.id}
@@ -98,10 +137,12 @@ export const Settings = () => {
                     )
                   }
                   className={`w-full flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-colors duration-200 ${
-                    activeTab === tab.id
+                    isActive
                       ? "bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 border-r-2 border-primary-600 dark:border-primary-400"
                       : "text-gray-600 dark:text-gray-400 hover:bg-primary-50 dark:hover:bg-primary-900/10 hover:text-gray-900 dark:hover:text-white"
                   }`}
+                  aria-current={isActive ? "page" : undefined}
+                  aria-label={tab.name}
                 >
                   <Icon className="h-5 w-5 mr-3" />
                   {tab.name}
@@ -123,21 +164,36 @@ export const Settings = () => {
             {activeTab === "notifications" && (
               <div className="p-8">
                 <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-8">
-                  Notification Preferences
+                  {t(
+                    "settings.notifications.title",
+                    "Notification Preferences"
+                  )}
                 </h3>
+
                 <div className="space-y-8">
+                  {/* Email notifications */}
                   <div className="flex items-center justify-between">
                     <div>
                       <h4 className="text-sm font-medium text-gray-900 dark:text-white">
-                        Email Notifications
+                        {t(
+                          "settings.notifications.email.title",
+                          "Email Notifications"
+                        )}
                       </h4>
                       <p className="text-sm text-gray-500 dark:text-gray-400">
-                        Receive email updates about your chatbots
+                        {t(
+                          "settings.notifications.email.desc",
+                          "Receive email updates about your chatbots"
+                        )}
                       </p>
                     </div>
                     <label className="relative inline-flex items-center cursor-pointer">
                       <input
                         type="checkbox"
+                        aria-label={t(
+                          "settings.notifications.email.aria",
+                          "Toggle email notifications"
+                        )}
                         checked={settings.emailNotifications}
                         onChange={(e) =>
                           setSettings({
@@ -151,18 +207,29 @@ export const Settings = () => {
                     </label>
                   </div>
 
+                  {/* Chat notifications */}
                   <div className="flex items-center justify-between">
                     <div>
                       <h4 className="text-sm font-medium text-gray-900 dark:text-white">
-                        Chat Notifications
+                        {t(
+                          "settings.notifications.chat.title",
+                          "Chat Notifications"
+                        )}
                       </h4>
                       <p className="text-sm text-gray-500 dark:text-gray-400">
-                        Get notified when someone chats with your bot
+                        {t(
+                          "settings.notifications.chat.desc",
+                          "Get notified when someone chats with your bot"
+                        )}
                       </p>
                     </div>
                     <label className="relative inline-flex items-center cursor-pointer">
                       <input
                         type="checkbox"
+                        aria-label={t(
+                          "settings.notifications.chat.aria",
+                          "Toggle chat notifications"
+                        )}
                         checked={settings.chatNotifications}
                         onChange={(e) =>
                           setSettings({
@@ -176,18 +243,29 @@ export const Settings = () => {
                     </label>
                   </div>
 
+                  {/* Weekly reports */}
                   <div className="flex items-center justify-between">
                     <div>
                       <h4 className="text-sm font-medium text-gray-900 dark:text-white">
-                        Weekly Reports
+                        {t(
+                          "settings.notifications.weekly.title",
+                          "Weekly Reports"
+                        )}
                       </h4>
                       <p className="text-sm text-gray-500 dark:text-gray-400">
-                        Receive weekly analytics reports
+                        {t(
+                          "settings.notifications.weekly.desc",
+                          "Receive weekly analytics reports"
+                        )}
                       </p>
                     </div>
                     <label className="relative inline-flex items-center cursor-pointer">
                       <input
                         type="checkbox"
+                        aria-label={t(
+                          "settings.notifications.weekly.aria",
+                          "Toggle weekly reports"
+                        )}
                         checked={settings.weeklyReport}
                         onChange={(e) =>
                           setSettings({
@@ -205,9 +283,13 @@ export const Settings = () => {
                     <button
                       onClick={handleSave}
                       className="inline-flex items-center px-5 py-2.5 border border-transparent text-sm font-semibold rounded-xl shadow-card text-white bg-primary-600 hover:bg-primary-700 dark:bg-primary-700 dark:hover:bg-primary-800 transition-colors duration-200"
+                      aria-label={t(
+                        "settings.notifications.save.aria",
+                        "Save notification preferences"
+                      )}
                     >
                       <Save className="h-4 w-4 mr-2" />
-                      Save Preferences
+                      {t("settings.notifications.save", "Save Preferences")}
                     </button>
                   </div>
                 </div>
@@ -219,130 +301,64 @@ export const Settings = () => {
                 <EmailSettings />
               </div>
             )}
-            
-            {/* {activeTab === "security" && (
-              <div className="p-8">
-                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-8">
-                  Security Settings
-                </h3>
-                <div className="space-y-8">
-                  <div>
-                    <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-2">
-                      API Key
-                    </h4>
-                    <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-                      Use this key to integrate with our API
-                    </p>
-                    <div className="flex items-center space-x-3">
-                      <input
-                        type={showApiKey ? "text" : "password"}
-                        value={settings.apiKey}
-                        readOnly
-                        className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-gray-700 font-mono text-sm text-gray-900 dark:text-gray-100"
-                      />
-                      <button
-                        onClick={() => setShowApiKey(!showApiKey)}
-                        className="p-2 border border-gray-300 dark:border-gray-700 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200 text-gray-600 dark:text-gray-300"
-                      >
-                        {showApiKey ? (
-                          <EyeOff className="h-5 w-5" />
-                        ) : (
-                          <Eye className="h-5 w-5" />
-                        )}
-                      </button>
-                      <button className="px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-xl text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200 text-gray-700 dark:text-gray-300">
-                        Regenerate
-                      </button>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h4 className="text-sm font-medium text-gray-900 dark:text-white">
-                        Two-Factor Authentication
-                      </h4>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">
-                        Add an extra layer of security to your account
-                      </p>
-                    </div>
-                    <button
-                      onClick={() =>
-                        setSettings({
-                          ...settings,
-                          twoFactorEnabled: !settings.twoFactorEnabled,
-                        })
-                      }
-                      className={`px-5 py-2 text-sm font-medium rounded-xl transition-colors duration-200 ${
-                        settings.twoFactorEnabled
-                          ? "bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-400 hover:bg-green-200 dark:hover:bg-green-800/30"
-                          : "bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700/70"
-                      }`}
-                    >
-                      {settings.twoFactorEnabled ? "Enabled" : "Enable"}
-                    </button>
-                  </div>
-
-                  <div>
-                    <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-2">
-                      Change Password
-                    </h4>
-                    <div className="space-y-4">
-                      <input
-                        type="password"
-                        placeholder="Current password"
-                        className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-400 dark:focus:ring-primary-600 focus:border-primary-400 dark:focus:border-primary-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                      />
-                      <input
-                        type="password"
-                        placeholder="New password"
-                        className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-400 dark:focus:ring-primary-600 focus:border-primary-400 dark:focus:border-primary-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                      />
-                      <input
-                        type="password"
-                        placeholder="Confirm new password"
-                        className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-400 dark:focus:ring-primary-600 focus:border-primary-400 dark:focus:border-primary-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                      />
-                    </div>
-                    <button className="mt-4 px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-xl text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200 text-gray-700 dark:text-gray-300">
-                      Update Password
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )} */}
 
             {activeTab === "danger" && (
               <div className="p-8">
                 <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-8">
-                  Danger Zone
+                  {t("settings.danger.title", "Danger Zone")}
                 </h3>
+
                 <div className="space-y-6">
+                  {/* Delete account */}
                   <div className="border border-red-200 dark:border-red-800 rounded-xl p-6 bg-red-50 dark:bg-red-900/20">
                     <h4 className="text-sm font-medium text-red-900 dark:text-red-200 mb-3">
-                      Delete Account
+                      {t("settings.danger.delete.title", "Delete Account")}
                     </h4>
                     <p className="text-sm text-red-700 dark:text-red-300 mb-6">
-                      Once you delete your account, there is no going back.
-                      Please be certain.
+                      {t(
+                        "settings.danger.delete.desc",
+                        "Once you delete your account, there is no going back. Please be certain."
+                      )}
                     </p>
                     <button
                       onClick={handleDeleteAccount}
                       className="px-5 py-2.5 bg-red-600 dark:bg-red-700 text-white text-sm font-semibold rounded-xl hover:bg-red-700 dark:hover:bg-red-800 transition-colors duration-200"
+                      aria-label={t(
+                        "settings.danger.delete.aria",
+                        "Delete account"
+                      )}
                     >
-                      Delete Account
+                      {t("settings.danger.delete.button", "Delete Account")}
                     </button>
+                    {deleteError && (
+                      <p
+                        className="mt-3 text-sm text-red-700 dark:text-red-300"
+                        role="alert"
+                      >
+                        {deleteError}
+                      </p>
+                    )}
                   </div>
 
+                  {/* Export data */}
                   <div className="border border-yellow-200 dark:border-yellow-800 rounded-xl p-6 bg-yellow-50 dark:bg-yellow-900/20">
                     <h4 className="text-sm font-medium text-yellow-900 dark:text-yellow-200 mb-3">
-                      Export Data
+                      {t("settings.danger.export.title", "Export Data")}
                     </h4>
                     <p className="text-sm text-yellow-700 dark:text-yellow-300 mb-6">
-                      Download all your data including chatbots, Bot Knowledge,
-                      and chat logs.
+                      {t(
+                        "settings.danger.export.desc",
+                        "Download all your data including chatbots, Bot Knowledge, and chat logs."
+                      )}
                     </p>
-                    <button className="px-5 py-2.5 bg-yellow-600 dark:bg-yellow-700 text-white text-sm font-semibold rounded-xl hover:bg-yellow-700 dark:hover:bg-yellow-800 transition-colors duration-200">
-                      Export Data
+                    <button
+                      className="px-5 py-2.5 bg-yellow-600 dark:bg-yellow-700 text-white text-sm font-semibold rounded-xl hover:bg-yellow-700 dark:hover:bg-yellow-800 transition-colors duration-200"
+                      aria-label={t(
+                        "settings.danger.export.aria",
+                        "Export your data"
+                      )}
+                    >
+                      {t("settings.danger.export.button", "Export Data")}
                     </button>
                   </div>
                 </div>
@@ -356,26 +372,42 @@ export const Settings = () => {
         isOpen={showDeleteModal}
         onClose={() => setShowDeleteModal(false)}
         action={{
-          title: "Delete Account",
-          description:
-            "This action cannot be undone. All associated data will be permanently deleted.",
+          title: t("settings.deleteModal.title", "Delete Account"),
+          description: t(
+            "settings.deleteModal.description",
+            "This action cannot be undone. All associated data will be permanently deleted."
+          ),
           affectedItems: [
-            "Your account and profile information",
-            "All chatbots and their data",
-            "Chat history and analytics",
-            "Connected Bot Knowledge content",
-            "Integration configurations",
-            ...(availableTokens !== null
-              ? [
-                  `You currently have ${availableTokens.toLocaleString()} unused tokens`,
-                ]
-              : []),
+            t(
+              "settings.deleteModal.affected.account",
+              "Your account and profile information"
+            ),
+            t(
+              "settings.deleteModal.affected.chatbots",
+              "All chatbots and their data"
+            ),
+            t(
+              "settings.deleteModal.affected.history",
+              "Chat history and analytics"
+            ),
+            t(
+              "settings.deleteModal.affected.knowledge",
+              "Connected Bot Knowledge content"
+            ),
+            t(
+              "settings.deleteModal.affected.integrations",
+              "Integration configurations"
+            ),
+            ...(tokenCountItem ? [tokenCountItem] : []),
           ],
           onConfirm: handleDeleteConfirmed,
-          actionLabel: "Delete Account",
+          actionLabel: t("settings.deleteModal.confirm", "Delete Account"),
           actionColor: "red",
           requireType: true,
-          confirmationWord: "DELETE",
+          confirmationWord: t(
+            "settings.deleteModal.confirmationWord",
+            "DELETE"
+          ),
           actionIcon: <Trash2 className="h-4 w-4 mr-2" />,
         }}
       />

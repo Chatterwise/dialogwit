@@ -17,6 +17,7 @@ import {
 import { useAuth } from "../hooks/useAuth";
 import { useChatbots } from "../hooks/useChatbots";
 import { useRealTimeAnalytics } from "../hooks/useRealTimeAnalytics";
+import { useTranslation } from "../hooks/useTranslation";
 
 interface MetricCard {
   title: string;
@@ -29,6 +30,7 @@ interface MetricCard {
 }
 
 export const AdvancedAnalytics = () => {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const { data: chatbots = [] } = useChatbots(user?.id || "");
   const [selectedChatbot, setSelectedChatbot] = useState<string>("all");
@@ -59,6 +61,7 @@ export const AdvancedAnalytics = () => {
       setIsExporting(false);
     }
   };
+
   const convertToCSV = (data: any[]) => {
     if (!data.length) return "";
     const headers = Object.keys(data[0]).join(",");
@@ -94,7 +97,7 @@ export const AdvancedAnalytics = () => {
         <div className="flex flex-col items-center">
           <Loader className="h-8 w-8 text-primary-600 dark:text-primary-400 animate-spin mb-4" />
           <p className="text-gray-600 dark:text-gray-400">
-            Loading analytics data...
+            {t("analytics_loading", "Loading analytics data...")}
           </p>
         </div>
       </div>
@@ -103,7 +106,7 @@ export const AdvancedAnalytics = () => {
 
   const metrics: MetricCard[] = [
     {
-      title: "Total Conversations",
+      title: t("analytics_metric_total_conversations", "Total Conversations"),
       value: analytics.totalConversations,
       change: `${analytics.conversationGrowth >= 0 ? "+" : ""}${
         analytics.conversationGrowth
@@ -114,7 +117,7 @@ export const AdvancedAnalytics = () => {
       darkColor: "text-blue-400 bg-blue-900/20",
     },
     {
-      title: "Unique Users",
+      title: t("analytics_metric_unique_users", "Unique Users"),
       value: analytics.uniqueUsers,
       change: `${analytics.userGrowth >= 0 ? "+" : ""}${analytics.userGrowth}%`,
       trend: analytics.userGrowth >= 0 ? "up" : "down",
@@ -123,8 +126,8 @@ export const AdvancedAnalytics = () => {
       darkColor: "text-green-400 bg-green-900/20",
     },
     {
-      title: "Avg Response Time",
-      value: `${analytics.avgResponseTime}ms`,
+      title: t("analytics_metric_avg_response_time", "Avg Response Time"),
+      value: `${analytics.avgResponseTime}${t("analytics_unit_ms", "ms")}`,
       change: `${analytics.responseTimeImprovement >= 0 ? "-" : "+"}${Math.abs(
         analytics.responseTimeImprovement
       )}%`,
@@ -134,7 +137,7 @@ export const AdvancedAnalytics = () => {
       darkColor: "text-purple-400 bg-purple-900/20",
     },
     {
-      title: "Satisfaction Rate",
+      title: t("analytics_metric_satisfaction_rate", "Satisfaction Rate"),
       value: `${analytics.satisfactionRate}%`,
       change: `${analytics.satisfactionGrowth >= 0 ? "+" : ""}${
         analytics.satisfactionGrowth
@@ -145,7 +148,7 @@ export const AdvancedAnalytics = () => {
       darkColor: "text-emerald-400 bg-emerald-900/20",
     },
     {
-      title: "Resolution Rate",
+      title: t("analytics_metric_resolution_rate", "Resolution Rate"),
       value: `${analytics.resolutionRate}%`,
       change: `${analytics.resolutionGrowth >= 0 ? "+" : ""}${
         analytics.resolutionGrowth
@@ -156,9 +159,9 @@ export const AdvancedAnalytics = () => {
       darkColor: "text-orange-400 bg-orange-900/20",
     },
     {
-      title: "Peak Usage Hour",
-      value: analytics.peakHour || "N/A",
-      change: "Most active",
+      title: t("analytics_metric_peak_usage_hour", "Peak Usage Hour"),
+      value: analytics.peakHour || t("analytics_value_na", "N/A"),
+      change: t("analytics_peak_most_active", "Most active"),
       trend: "neutral",
       icon: TrendingUp,
       color: "text-indigo-600 bg-indigo-100",
@@ -172,28 +175,37 @@ export const AdvancedAnalytics = () => {
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
           <h1 className="text-3xl font-extrabold text-gray-900 dark:text-gray-100 font-display tracking-tight mb-1">
-            Advanced Analytics
+            {t("analytics_title", "Advanced Analytics")}
           </h1>
           <p className="text-gray-600 dark:text-gray-400">
-            Comprehensive insights into your chatbot performance and user
-            engagement.
+            {t(
+              "analytics_subtitle",
+              "Comprehensive insights into your chatbot performance and user engagement."
+            )}
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-3">
           <button
             onClick={() => refetch()}
             className="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+            title={t("analytics_refresh", "Refresh")}
+            aria-label={t("analytics_refresh", "Refresh")}
           >
             <RefreshCw className="h-4 w-4 mr-2" />
-            Refresh
+            {t("analytics_refresh", "Refresh")}
           </button>
+
+          {/* Chatbot Filter */}
           <div className="relative">
             <select
               value={selectedChatbot}
               onChange={(e) => setSelectedChatbot(e.target.value)}
               className="appearance-none bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg px-4 py-2 pr-8 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary-500"
+              aria-label={t("analytics_filter_chatbot_label", "Filter by bot")}
             >
-              <option value="all">All Chatbots</option>
+              <option value="all">
+                {t("analytics_filter_all_bots", "All Chatbots")}
+              </option>
               {chatbots.map((bot) => (
                 <option key={bot.id} value={bot.id}>
                   {bot.name}
@@ -202,15 +214,24 @@ export const AdvancedAnalytics = () => {
             </select>
             <Filter className="absolute right-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-gray-600 pointer-events-none" />
           </div>
+
+          {/* Date Range */}
           <div className="relative">
             <select
               value={dateRange}
               onChange={(e) => setDateRange(e.target.value as any)}
               className="appearance-none bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg px-4 py-2 pr-8 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary-500"
+              aria-label={t("analytics_filter_date_label", "Date range")}
             >
-              <option value="7d">Last 7 days</option>
-              <option value="30d">Last 30 days</option>
-              <option value="90d">Last 90 days</option>
+              <option value="7d">
+                {t("analytics_range_7d", "Last 7 days")}
+              </option>
+              <option value="30d">
+                {t("analytics_range_30d", "Last 30 days")}
+              </option>
+              <option value="90d">
+                {t("analytics_range_90d", "Last 90 days")}
+              </option>
             </select>
             <Calendar className="absolute right-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-gray-600 pointer-events-none" />
           </div>
@@ -265,7 +286,7 @@ export const AdvancedAnalytics = () => {
         <div className="bg-white/95 dark:bg-gray-800/95 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-700 p-6">
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">
-              Message Volume
+              {t("analytics_chart_message_volume", "Message Volume")}
             </h3>
             <BarChart3 className="h-5 w-5 text-gray-400 dark:text-gray-600" />
           </div>
@@ -314,13 +335,13 @@ export const AdvancedAnalytics = () => {
                 <div className="text-center">
                   <BarChart3 className="h-12 w-12 text-gray-300 dark:text-gray-600 mx-auto mb-2" />
                   <p className="text-sm text-gray-500 dark:text-gray-400">
-                    No data available
+                    {t("analytics_no_data", "No data available")}
                   </p>
                 </div>
               )}
             </div>
             <p className="text-xs text-center text-gray-400 dark:text-gray-500 mt-1">
-              ← Scroll to see more →
+              {t("analytics_scroll_hint", "← Scroll to see more →")}
             </p>
           </div>
         </div>
@@ -329,7 +350,7 @@ export const AdvancedAnalytics = () => {
         <div className="bg-white/95 dark:bg-gray-800/95 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-700 p-6">
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">
-              User Satisfaction
+              {t("analytics_chart_user_satisfaction", "User Satisfaction")}
             </h3>
             <TrendingUp className="h-5 w-5 text-gray-400 dark:text-gray-600" />
           </div>
@@ -344,7 +365,7 @@ export const AdvancedAnalytics = () => {
                     {analytics.positiveRating}%
                   </p>
                   <p className="text-sm text-gray-500 dark:text-gray-400">
-                    Positive
+                    {t("analytics_positive", "Positive")}
                   </p>
                 </div>
                 <div className="text-center">
@@ -355,7 +376,7 @@ export const AdvancedAnalytics = () => {
                     {analytics.negativeRating}%
                   </p>
                   <p className="text-sm text-gray-500 dark:text-gray-400">
-                    Negative
+                    {t("analytics_negative", "Negative")}
                   </p>
                 </div>
               </div>
@@ -375,10 +396,13 @@ export const AdvancedAnalytics = () => {
         <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
           <div>
             <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">
-              Export Data
+              {t("analytics_export_title", "Export Data")}
             </h3>
             <p className="text-sm text-gray-600 dark:text-gray-400">
-              Download your analytics data and chat logs
+              {t(
+                "analytics_export_sub",
+                "Download your analytics data and chat logs"
+              )}
             </p>
           </div>
           <div className="flex flex-wrap gap-3 mt-4 md:mt-0">
@@ -386,17 +410,21 @@ export const AdvancedAnalytics = () => {
               onClick={() => handleExport("csv")}
               disabled={isExporting || !analytics.exportData.length}
               className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 transition-colors"
+              aria-label={t("analytics_export_csv", "Export CSV")}
+              title={t("analytics_export_csv", "Export CSV")}
             >
               <Download className="h-4 w-4 mr-2" />
-              Export CSV
+              {t("analytics_export_csv", "Export CSV")}
             </button>
             <button
               onClick={() => handleExport("json")}
               disabled={isExporting || !analytics.exportData.length}
               className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg text-sm font-medium text-white bg-primary-600 dark:bg-primary-500 hover:bg-primary-700 dark:hover:bg-primary-600 disabled:opacity-50 transition-colors"
+              aria-label={t("analytics_export_json", "Export JSON")}
+              title={t("analytics_export_json", "Export JSON")}
             >
               <Download className="h-4 w-4 mr-2" />
-              Export JSON
+              {t("analytics_export_json", "Export JSON")}
             </button>
           </div>
         </div>
@@ -405,7 +433,7 @@ export const AdvancedAnalytics = () => {
           <div className="flex items-center justify-center py-4">
             <Loader className="h-6 w-6 text-primary-600 dark:text-primary-400 animate-spin mr-3" />
             <span className="text-sm text-gray-600 dark:text-gray-400">
-              Preparing export...
+              {t("analytics_export_preparing", "Preparing export...")}
             </span>
           </div>
         )}
@@ -414,7 +442,7 @@ export const AdvancedAnalytics = () => {
       {/* Recent Activity */}
       <div className="bg-white/95 dark:bg-gray-800/95 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-700 p-6">
         <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-6">
-          Recent Activity
+          {t("analytics_recent_activity", "Recent Activity")}
         </h3>
         <div className="space-y-4">
           {analytics.recentActivity && analytics.recentActivity.length > 0 ? (
@@ -444,7 +472,10 @@ export const AdvancedAnalytics = () => {
                         : "bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300"
                     }`}
                   >
-                    {activity.type}
+                    {t(
+                      `analytics_activity_type_${activity.type}`,
+                      activity.type
+                    )}
                   </span>
                 </div>
               </div>
@@ -453,7 +484,7 @@ export const AdvancedAnalytics = () => {
             <div className="text-center py-8">
               <MessageCircle className="h-12 w-12 text-gray-300 dark:text-gray-600 mx-auto mb-2" />
               <p className="text-sm text-gray-500 dark:text-gray-400">
-                No recent activity
+                {t("analytics_no_recent", "No recent activity")}
               </p>
             </div>
           )}

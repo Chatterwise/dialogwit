@@ -1,6 +1,6 @@
 import { BarChart3 } from "lucide-react";
 import {
-  BarChart,
+  BarChart as RBarChart,
   Bar,
   XAxis,
   YAxis,
@@ -8,6 +8,7 @@ import {
   ResponsiveContainer,
   CartesianGrid,
 } from "recharts";
+import { useTranslation } from "../hooks/useTranslation";
 
 interface ChartData {
   date: string;
@@ -16,7 +17,7 @@ interface ChartData {
 
 interface AnalyticsChartProps {
   data: ChartData[];
-  title: string;
+  title: string; // pass a translated title from the parent (e.g., t("analytics_chart_message_volume"))
   loading?: boolean;
 }
 
@@ -25,6 +26,8 @@ export const AnalyticsChart = ({
   title,
   loading = false,
 }: AnalyticsChartProps) => {
+  const { t } = useTranslation();
+
   if (loading) {
     return (
       <div className="bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl rounded-2xl shadow-xl border border-gray-200 dark:border-gray-800 p-6 animate-pulse">
@@ -35,7 +38,7 @@ export const AnalyticsChart = ({
           <BarChart3 className="h-6 w-6 text-gray-400 dark:text-gray-500" />
         </div>
         <div className="h-40 flex items-center justify-center text-gray-400 dark:text-gray-600">
-          Loading chart...
+          {t("chart_loading", "Loading chart...")}
         </div>
       </div>
     );
@@ -54,13 +57,13 @@ export const AnalyticsChart = ({
         <div className="text-center py-8">
           <BarChart3 className="h-12 w-12 text-gray-400 dark:text-gray-600 mx-auto mb-2" />
           <p className="text-sm text-gray-500 dark:text-gray-400">
-            No data available yet
+            {t("chart_no_data", "No data available yet")}
           </p>
         </div>
       ) : (
         <div className="h-72">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={data}>
+            <RBarChart data={data}>
               <CartesianGrid strokeDasharray="3 3" strokeOpacity={0.1} />
               <XAxis
                 dataKey="date"
@@ -82,6 +85,10 @@ export const AnalyticsChart = ({
                   border: "1px solid #e5e7eb",
                 }}
                 labelStyle={{ color: "#6b7280" }}
+                formatter={(value: any) => [
+                  value,
+                  t("chart_series_messages", "Messages"),
+                ]}
               />
               <Bar
                 dataKey="messages"
@@ -94,7 +101,7 @@ export const AnalyticsChart = ({
                   <stop offset="100%" stopColor="#818cf8" />
                 </linearGradient>
               </defs>
-            </BarChart>
+            </RBarChart>
           </ResponsiveContainer>
         </div>
       )}

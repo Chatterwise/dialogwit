@@ -17,8 +17,13 @@ import {
 import { ActionModal } from "./ActionModal";
 import { motion } from "framer-motion";
 import * as LucideIcons from "lucide-react";
+import { useTranslation } from "../hooks/useTranslation";
+import { useLanguage } from "../contexts/LanguageContext";
 
 export const ChatbotList = () => {
+  const { t } = useTranslation();
+  const { currentLanguage } = useLanguage();
+
   const { user } = useAuth();
   const userId = user?.id;
   const { data: chatbots = [], isLoading, isFetching } = useChatbots(userId);
@@ -45,7 +50,12 @@ export const ChatbotList = () => {
       await deleteChatbot.mutateAsync(chatbotToDelete.id);
     } catch (error) {
       console.error("Error deleting chatbot:", error);
-      alert("Failed to delete chatbot. Please try again.");
+      alert(
+        t(
+          "chatbotlist_delete_failed",
+          "Failed to delete chatbot. Please try again."
+        )
+      );
     } finally {
       setDeletingId(null);
       setChatbotToDelete(null);
@@ -64,14 +74,17 @@ export const ChatbotList = () => {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-display font-bold text-gray-900 dark:text-white mb-1">
-            Chatbots
+            {t("chatbotlist_title", "Chatbots")}
           </h1>
           <p className="text-gray-600 dark:text-gray-400">
-            Manage and create your AI-powered chatbots.
+            {t(
+              "chatbotlist_subtitle",
+              "Manage and create your AI-powered chatbots."
+            )}
           </p>
         </div>
         <Link
-          to="/chatbots/new"
+          to={`/${currentLanguage}/chatbots/new`}
           className={`inline-flex items-center px-5 py-2.5 rounded-xl text-sm font-semibold shadow-md text-white bg-primary-600 hover:bg-primary-700 transition-colors duration-200 ${
             !canCreateChatbot
               ? "opacity-50 cursor-not-allowed pointer-events-none"
@@ -81,13 +94,16 @@ export const ChatbotList = () => {
             if (!canCreateChatbot) {
               e.preventDefault();
               alert(
-                "You've reached your chatbot limit. Please upgrade your plan to create more chatbots."
+                t(
+                  "chatbotlist_limit_reached",
+                  "You've reached your chatbot limit. Please upgrade your plan to create more chatbots."
+                )
               );
             }
           }}
         >
           <Plus className="h-4 w-4 mr-2" />
-          New Chatbot
+          {t("chatbotlist_new_chatbot", "New Chatbot")}
         </Link>
       </div>
 
@@ -96,7 +112,7 @@ export const ChatbotList = () => {
         <div className="text-center py-16">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mx-auto mb-4"></div>
           <p className="text-sm text-gray-500 dark:text-gray-400">
-            Loading chatbots...
+            {t("chatbotlist_loading", "Loading chatbots...")}
           </p>
         </div>
       ) : chatbots.length === 0 ? (
@@ -107,14 +123,17 @@ export const ChatbotList = () => {
         >
           <Bot className="h-16 w-16 text-gray-400 dark:text-gray-600 mx-auto mb-4" />
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-            No chatbots yet
+            {t("chatbotlist_empty_title", "No chatbots yet")}
           </h3>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
-            Get started by creating your first AI-powered chatbot.
+            {t(
+              "chatbotlist_empty_sub",
+              "Get started by creating your first AI-powered chatbot."
+            )}
           </p>
           <div className="mt-6">
             <Link
-              to="/chatbots/new"
+              to={`/${currentLanguage}/chatbots/new`}
               className={`inline-flex items-center px-5 py-2.5 rounded-xl text-sm font-semibold shadow-md text-white bg-primary-600 hover:bg-primary-700 transition-colors duration-200 ${
                 !canCreateChatbot
                   ? "opacity-50 cursor-not-allowed pointer-events-none"
@@ -122,7 +141,7 @@ export const ChatbotList = () => {
               }`}
             >
               <Plus className="h-4 w-4 mr-2" />
-              Create Chatbot
+              {t("chatbotlist_create_chatbot", "Create Chatbot")}
             </Link>
           </div>
         </motion.div>
@@ -143,11 +162,11 @@ export const ChatbotList = () => {
                     {(() => {
                       const iconName =
                         chatbot?.bot_role_templates?.icon_name || "Bot";
-                      const Icon = LucideIcons[iconName] || Bot;
+                      const Icon = (LucideIcons as any)[iconName] || Bot;
                       return (
                         <Icon className="h-9 w-9 text-primary-600 dark:text-primary-400 drop-shadow" />
                       );
-                    })()}{" "}
+                    })()}
                     <div className="ml-4">
                       <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                         {chatbot.name}
@@ -164,8 +183,14 @@ export const ChatbotList = () => {
                         }`}
                       >
                         {chatbot.status === "deleted"
-                          ? "Scheduled for Deletion"
-                          : chatbot.status}
+                          ? t(
+                              "chatbotlist_status_scheduled",
+                              "Scheduled for Deletion"
+                            )
+                          : t(
+                              `chatbotlist_status_${chatbot.status}`,
+                              chatbot.status
+                            )}
                       </span>
                     </div>
                   </div>
@@ -176,31 +201,38 @@ export const ChatbotList = () => {
                 </p>
 
                 <p className="text-xs text-gray-500 dark:text-gray-400 mb-5">
-                  Role Template:{" "}
+                  {t("chatbotlist_role_template", "Role Template:")}{" "}
                   <span className="font-medium">
-                    {chatbot?.bot_role_templates?.name ?? "None assigned"}
+                    {chatbot?.bot_role_templates?.name ??
+                      t("chatbotlist_role_none", "None assigned")}
                   </span>
                 </p>
 
                 <div className="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400 mb-5">
                   <span>
-                    Created {new Date(chatbot.created_at).toLocaleDateString()}
+                    {t("chatbotlist_created", "Created")}{" "}
+                    {new Date(chatbot.created_at).toLocaleDateString()}
                   </span>
                   <span className="flex items-center">
-                    <MessageCircle className="h-4 w-4 mr-1" />0 messages
+                    <MessageCircle className="h-4 w-4 mr-1" />
+                    {t("chatbotlist_messages_count", "{{count}} messages", {
+                      count: 0,
+                    })}
                   </span>
                 </div>
 
                 <div className="flex space-x-2">
                   <Link
-                    to={`/chatbots/${chatbot.id}`}
+                    to={`/${currentLanguage}/chatbots/${chatbot.id}`}
                     className="flex-1 text-center py-2 px-4 rounded-xl text-sm font-semibold text-white bg-primary-600 hover:bg-primary-700 transition-colors"
                   >
-                    View
+                    {t("chatbotlist_view", "View")}
                   </Link>
                   <Link
-                    to={`/chatbots/${chatbot.id}/settings`}
+                    to={`/${currentLanguage}/chatbots/${chatbot.id}/settings`}
                     className="flex items-center justify-center px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-xl text-blue-500 hover:bg-gray-50 dark:hover:bg-gray-800 transition"
+                    title={t("chatbotlist_settings", "Settings")}
+                    aria-label={t("chatbotlist_settings", "Settings")}
                   >
                     <Settings className="h-4 w-4" />
                   </Link>
@@ -208,7 +240,11 @@ export const ChatbotList = () => {
                     <button
                       onClick={() => restoreChatbot(chatbot.id)}
                       className="flex items-center justify-center px-3 py-2 border border-green-300 dark:border-green-900 text-green-700 dark:text-green-400 rounded-xl hover:bg-green-50 dark:hover:bg-green-900/20 transition"
-                      title={`Restore ${chatbot.name}`}
+                      title={t(
+                        "chatbotlist_restore_title",
+                        "Restore {{name}}",
+                        { name: chatbot.name }
+                      )}
                     >
                       <RotateCcw className="h-4 w-4" />
                     </button>
@@ -216,7 +252,12 @@ export const ChatbotList = () => {
                     <button
                       onClick={() =>
                         chatbot.id === "6db4c04f-0ed7-4f7d-b622-bd003e22bac5"
-                          ? alert("This chatbot cannot be deleted.")
+                          ? alert(
+                              t(
+                                "chatbotlist_demo_cannot_delete",
+                                "This chatbot cannot be deleted."
+                              )
+                            )
                           : handleDeleteClick(chatbot.id, chatbot.name)
                       }
                       disabled={
@@ -226,8 +267,13 @@ export const ChatbotList = () => {
                       className="flex items-center justify-center px-3 py-2 border border-red-300 dark:border-red-900 text-red-600 dark:text-red-400 rounded-xl hover:bg-red-50 dark:hover:bg-red-900/20 transition disabled:opacity-50"
                       title={
                         chatbot.id === "6db4c04f-0ed7-4f7d-b622-bd003e22bac5"
-                          ? "This chatbot cannot be deleted"
-                          : `Delete ${chatbot.name}`
+                          ? t(
+                              "chatbotlist_demo_cannot_delete_title",
+                              "This chatbot cannot be deleted"
+                            )
+                          : t("chatbotlist_delete_title", "Delete {{name}}", {
+                              name: chatbot.name,
+                            })
                       }
                     >
                       {deletingId === chatbot.id ? (
@@ -248,18 +294,32 @@ export const ChatbotList = () => {
         isOpen={showDeleteModal}
         onClose={() => setShowDeleteModal(false)}
         action={{
-          title: "Delete Chatbot",
-          description:
-            "This chatbot will be marked as deleted and scheduled for permanent removal in 30 days. You can recover it at any time before then.",
+          title: t("chatbotlist_modal_delete_title", "Delete Chatbot"),
+          description: t(
+            "chatbotlist_modal_delete_desc",
+            "This chatbot will be marked as deleted and scheduled for permanent removal in 30 days. You can recover it at any time before then."
+          ),
           affectedItems: [
-            "Chatbot settings and configuration",
-            "All chat history and usage analytics",
-            "Linked knowledge base documents",
-            "Integration and API configurations",
+            t(
+              "chatbotlist_modal_affect_settings",
+              "Chatbot settings and configuration"
+            ),
+            t(
+              "chatbotlist_modal_affect_history",
+              "All chat history and usage analytics"
+            ),
+            t("chatbotlist_modal_affect_kb", "Linked knowledge base documents"),
+            t(
+              "chatbotlist_modal_affect_integrations",
+              "Integration and API configurations"
+            ),
           ],
-          note: "After 30 days, all associated data will be permanently deleted and cannot be recovered.",
+          note: t(
+            "chatbotlist_modal_delete_note",
+            "After 30 days, all associated data will be permanently deleted and cannot be recovered."
+          ),
           onConfirm: handleDeleteConfirmed,
-          actionLabel: "Delete Chatbot",
+          actionLabel: t("chatbotlist_modal_delete_action", "Delete Chatbot"),
           actionColor: "red",
           requireType: true,
           confirmationWord: "DELETE",

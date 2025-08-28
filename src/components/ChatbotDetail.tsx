@@ -42,8 +42,12 @@ import BotKnowledgeContent from "./BotKnowledgeContent";
 import { useProcessLargeDocument } from "../hooks/useProcessLargeDocument";
 import { tabs } from "./utils/ChatbotDetailUtils";
 import { KnowledgeItem } from "./utils/types";
+import { useTranslation } from "../hooks/useTranslation";
+import { useLanguage } from "../contexts/LanguageContext";
 
 export const ChatbotDetail = () => {
+  const { t } = useTranslation();
+  const { currentLanguage } = useLanguage();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const location = useLocation();
@@ -146,7 +150,12 @@ export const ChatbotDetail = () => {
 
       const session = (await supabase.auth.getSession()).data.session;
       for (let i = 0; i < pending.length; i++) {
-        setProgressLabel(`Syncing to OpenAI (${i + 1} / ${pending.length})...`);
+        setProgressLabel(
+          t("chatbotdetail_syncing_openai", "Syncing to OpenAI ({{i}} / {{total}})...", {
+            i: i + 1,
+            total: pending.length,
+          })
+        );
         setProgress(40 + Math.round(((i + 1) / pending.length) * 40));
         const r = await fetch(
           `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/sync-kb-to-openai`,
@@ -165,7 +174,7 @@ export const ChatbotDetail = () => {
 
     try {
       if (editingItem) {
-        setProgressLabel("Updating knowledge...");
+        setProgressLabel(t("chatbotdetail_updating_knowledge", "Updating knowledge..."));
         await updateKnowledgeBase.mutateAsync({
           id: editingItem.id,
           updates: {
@@ -177,7 +186,7 @@ export const ChatbotDetail = () => {
           },
         });
       } else {
-        setProgressLabel("Adding knowledge...");
+        setProgressLabel(t("chatbotdetail_adding_knowledge", "Adding knowledge..."));
         await addKnowledgeBase.mutateAsync({
           chatbot_id: id,
           content: data.content,
@@ -189,14 +198,14 @@ export const ChatbotDetail = () => {
       }
 
       setProgress(35);
-      setProgressLabel("Refreshing list...");
+      setProgressLabel(t("chatbotdetail_refreshing_list", "Refreshing list..."));
       await refetchKnowledgeBase();
 
-      setProgressLabel("Syncing to OpenAI...");
+      setProgressLabel(t("chatbotdetail_syncing", "Syncing to OpenAI..."));
       setProgress(40);
       await syncAllPending(id);
 
-      setProgressLabel("Updating UI...");
+      setProgressLabel(t("chatbotdetail_updating_ui", "Updating UI..."));
       await refetchKnowledgeBase();
       setProgress(100);
 
@@ -206,8 +215,8 @@ export const ChatbotDetail = () => {
           detail: {
             type: "success",
             message: editingItem
-              ? "Knowledge item updated & synced"
-              : "Knowledge item added & synced",
+              ? t("chatbotdetail_toast_updated_synced", "Knowledge item updated & synced")
+              : t("chatbotdetail_toast_added_synced", "Knowledge item added & synced"),
           },
         })
       );
@@ -217,7 +226,7 @@ export const ChatbotDetail = () => {
         new CustomEvent("toast", {
           detail: {
             type: "error",
-            message: "Failed to save/sync knowledge item",
+            message: t("chatbotdetail_toast_save_failed", "Failed to save/sync knowledge item"),
           },
         })
       );
@@ -230,11 +239,10 @@ export const ChatbotDetail = () => {
     }
   };
 
-  /** Soft-remove ONE item & unlink from OpenAI via edge function */
   const handleDelete = async (kbId: string) => {
     try {
       setProcessing(true);
-      setProgressLabel("Removing from OpenAI…");
+      setProgressLabel(t("chatbotdetail_removing_openai", "Removing from OpenAI…"));
       setProgress(30);
 
       await removeKbFromOpenAI.mutateAsync(kbId);
@@ -247,7 +255,7 @@ export const ChatbotDetail = () => {
         new CustomEvent("toast", {
           detail: {
             type: "success",
-            message: "Knowledge item removed from OpenAI and hidden.",
+            message: t("chatbotdetail_toast_removed", "Knowledge item removed from OpenAI and hidden."),
           },
         })
       );
@@ -257,7 +265,7 @@ export const ChatbotDetail = () => {
         new CustomEvent("toast", {
           detail: {
             type: "error",
-            message: "Failed to remove knowledge item",
+            message: t("chatbotdetail_toast_remove_failed", "Failed to remove knowledge item"),
           },
         })
       );
@@ -270,13 +278,16 @@ export const ChatbotDetail = () => {
     }
   };
 
-  /** Soft-remove SELECTED items (bulk) via edge function */
   const handleBulkDelete = async () => {
     if (selectedItems.length === 0) return;
 
     try {
       setProcessing(true);
-      setProgressLabel(`Removing ${selectedItems.length} item(s) from OpenAI…`);
+      setProgressLabel(
+        t("chatbotdetail_removing_many", "Removing {{count}} item(s) from OpenAI…", {
+          count: selectedItems.length,
+        })
+      );
       setProgress(25);
 
       const { ok, fail } = await bulkRemoveKb.mutateAsync(selectedItems);
@@ -288,8 +299,9 @@ export const ChatbotDetail = () => {
 
       const msg =
         fail === 0
-          ? `${ok} item(s) removed.`
-          : `${ok} removed, ${fail} failed.`;
+          ? t("chatbotdetail_bulk_removed_all", "{{ok}} item(s) removed.", { ok })
+          : t("chatbotdetail_bulk_removed_partial", "{{ok}} removed, {{fail}} failed.", { ok, fail });
+
       window.dispatchEvent(
         new CustomEvent("toast", {
           detail: { type: fail ? "info" : "success", message: msg },
@@ -301,7 +313,7 @@ export const ChatbotDetail = () => {
         new CustomEvent("toast", {
           detail: {
             type: "error",
-            message: "Failed to remove selected items",
+            message: t("chatbotdetail_bulk_failed", "Failed to remove selected items"),
           },
         })
       );
@@ -337,7 +349,8 @@ export const ChatbotDetail = () => {
     if (!chatbot) return;
     try {
       await deleteChatbot.mutateAsync(chatbot.id);
-      navigate("/chatbots");
+      // keep /:lang
+      navigate(`/${currentLanguage}/chatbots`);
     } catch (error) {
       console.error("Error deleting chatbot:", error);
     }
@@ -356,17 +369,17 @@ export const ChatbotDetail = () => {
       <div className="text-center py-12">
         <Bot className="h-16 w-16 text-gray-400 dark:text-gray-600 mx-auto mb-4" />
         <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-          Chatbot not found
+          {t("chatbotdetail_not_found_title", "Chatbot not found")}
         </h3>
         <p className="text-gray-500 dark:text-gray-400">
-          The chatbot you're looking for doesn't exist.
+          {t("chatbotdetail_not_found_desc", "The chatbot you're looking for doesn't exist.")}
         </p>
         <Link
-          to="/chatbots"
+          to={`/${currentLanguage}/chatbots`}
           className="mt-4 inline-flex items-center text-primary-600 dark:text-primary-400 hover:text-primary-500 dark:hover:text-primary-300"
         >
           <ArrowLeft className="h-4 w-4 mr-2" />
-          Back to Chatbots
+          {t("chatbotdetail_back_to_bots", "Back to Chatbots")}
         </Link>
       </div>
     );
@@ -374,31 +387,31 @@ export const ChatbotDetail = () => {
 
   const stats = [
     {
-      name: "Total Messages",
+      name: t("chatbotdetail_stat_total_messages", "Total Messages"),
       value: analytics?.totalMessages || 0,
       icon: MessageCircle,
       color:
         "text-primary-600 dark:text-primary-400 bg-primary-100 dark:bg-primary-900/20",
-      change: analytics?.totalMessages || 0 > 0 ? "+12%" : "0%",
+      change: (analytics?.totalMessages || 0) > 0 ? "+12%" : "0%",
     },
     {
-      name: "Today's Messages",
+      name: t("chatbotdetail_stat_today", "Today's Messages"),
       value: analytics?.todayMessages || 0,
       icon: Clock,
       color:
         "text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-900/20",
-      change: analytics?.todayMessages || 0 > 0 ? "+5%" : "0%",
+      change: (analytics?.todayMessages || 0) > 0 ? "+5%" : "0%",
     },
     {
-      name: "Avg Response Length",
-      value: `${analytics?.avgResponseLength || 0} chars`,
+      name: t("chatbotdetail_stat_avg_response_len", "Avg Response Length"),
+      value: `${analytics?.avgResponseLength || 0} ${t("chatbotdetail_chars", "chars")}`,
       icon: FileText,
       color:
         "text-purple-600 dark:text-purple-400 bg-purple-100 dark:bg-purple-900/20",
       change: "-2%",
     },
     {
-      name: "Knowledge Items",
+      name: t("chatbotdetail_stat_kb_items", "Knowledge Items"),
       value: knowledgeBase.length,
       icon: FileText,
       color:
@@ -409,22 +422,22 @@ export const ChatbotDetail = () => {
 
   const metrics = [
     {
-      label: "Total Messages",
+      label: t("chatbotdetail_metric_total", "Total Messages"),
       value: analytics?.totalMessages ?? 0,
       icon: Activity,
     },
     {
-      label: "This Week",
+      label: t("chatbotdetail_metric_week", "This Week"),
       value: analytics?.weeklyMessages ?? 0,
       icon: BarChart2,
     },
     {
-      label: "Avg Response",
-      value: `${analytics?.avgResponseLength ?? 0} chars`,
+      label: t("chatbotdetail_metric_avg_resp", "Avg Response"),
+      value: `${analytics?.avgResponseLength ?? 0} ${t("chatbotdetail_chars", "chars")}`,
       icon: FileText,
     },
     {
-      label: "Knowledge Base",
+      label: t("chatbotdetail_metric_kb", "Knowledge Base"),
       value: knowledgeBase.length,
       icon: FileText,
     },
@@ -432,22 +445,22 @@ export const ChatbotDetail = () => {
 
   const trends = [
     {
-      label: "Daily Avg",
-      value: `~${Math.round((analytics?.totalMessages ?? 0) / 7)} msgs`,
+      label: t("chatbotdetail_trend_daily_avg", "Daily Avg"),
+      value: `~${Math.round((analytics?.totalMessages ?? 0) / 7)} ${t("chatbotdetail_msgs", "msgs")}`,
       icon: Clock,
     },
     {
-      label: "Weekly Growth",
+      label: t("chatbotdetail_trend_weekly_growth", "Weekly Growth"),
       value: `+${Math.floor(Math.random() * 15)}%`,
       icon: TrendingUp,
     },
     {
-      label: "Response Time",
+      label: t("chatbotdetail_trend_resp_time", "Response Time"),
       value: `~${Math.floor(Math.random() * 400 + 200)}ms`,
       icon: Zap,
     },
     {
-      label: "Satisfaction",
+      label: t("chatbotdetail_trend_satisfaction", "Satisfaction"),
       value: `${Math.floor(Math.random() * 10 + 85)}%`,
       icon: Smile,
     },
@@ -459,18 +472,23 @@ export const ChatbotDetail = () => {
         isOpen={showDeleteModal}
         onClose={() => setShowDeleteModal(false)}
         action={{
-          title: "Delete Chatbot",
-          description:
-            "This chatbot will be marked as deleted and scheduled for permanent removal in 30 days. You can recover it at any time before then.",
+          title: t("chatbotdetail_modal_delete_title", "Delete Chatbot"),
+          description: t(
+            "chatbotdetail_modal_delete_desc",
+            "This chatbot will be marked as deleted and scheduled for permanent removal in 30 days. You can recover it at any time before then."
+          ),
           affectedItems: [
-            "Chatbot settings and configuration",
-            "All chat history and usage analytics",
-            "Linked knowledge base documents",
-            "Integration and API configurations",
+            t("chatbotdetail_modal_affect_settings", "Chatbot settings and configuration"),
+            t("chatbotdetail_modal_affect_history", "All chat history and usage analytics"),
+            t("chatbotdetail_modal_affect_kb", "Linked knowledge base documents"),
+            t("chatbotdetail_modal_affect_integrations", "Integration and API configurations"),
           ],
-          note: "After 30 days, all associated data will be permanently deleted and cannot be recovered.",
+          note: t(
+            "chatbotdetail_modal_delete_note",
+            "After 30 days, all associated data will be permanently deleted and cannot be recovered."
+          ),
           onConfirm: handleDeleteConfirmed,
-          actionLabel: "Delete Chatbot",
+          actionLabel: t("chatbotdetail_modal_delete_action", "Delete Chatbot"),
           actionColor: "red",
           requireType: true,
           confirmationWord: "DELETE",
@@ -482,8 +500,10 @@ export const ChatbotDetail = () => {
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div className="flex items-center gap-4">
           <Link
-            to="/chatbots"
+            to={`/${currentLanguage}/chatbots`}
             className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200"
+            aria-label={t("chatbotdetail_back_to_bots", "Back to Chatbots")}
+            title={t("chatbotdetail_back_to_bots", "Back to Chatbots")}
           >
             <ArrowLeft className="h-5 w-5" />
           </Link>
@@ -494,7 +514,7 @@ export const ChatbotDetail = () => {
                 {chatbot.name}
               </h1>
               <p className="text-gray-600 dark:text-gray-400">
-                {chatbot.description || "Your AI-powered chatbot"}
+                {chatbot.description || t("chatbotdetail_default_desc", "Your AI-powered chatbot")}
               </p>
             </div>
           </div>
@@ -506,26 +526,27 @@ export const ChatbotDetail = () => {
                 ? "bg-yellow-100 dark:bg-yellow-900/20 text-yellow-800 dark:text-yellow-300"
                 : "bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300"
             }`}
+            title={t("chatbotdetail_status", "Status")}
           >
-            {chatbot.status}
+            {t(`chatbotdetail_status_${chatbot.status}`, chatbot.status)}
           </span>
         </div>
 
         {/* Actions */}
         <div className="flex flex-wrap gap-2">
           <Link
-            to={`/chatbots/${id}/settings`}
+            to={`/${currentLanguage}/chatbots/${id}/settings`}
             className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200"
           >
             <Settings className="h-4 w-4 mr-2" />
-            Settings
+            {t("chatbotdetail_settings", "Settings")}
           </Link>
           <Link
-            to="/integrations"
+            to={`/${currentLanguage}/integrations`}
             className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 dark:bg-primary-500 dark:hover:bg-primary-600 transition-colors duration-200"
           >
             <Code className="h-4 w-4 mr-2" />
-            Get Code
+            {t("chatbotdetail_get_code", "Get Code")}
           </Link>
         </div>
       </div>
@@ -535,6 +556,8 @@ export const ChatbotDetail = () => {
         <nav className="-mb-px flex gap-6">
           {tabs.map((tab) => {
             const Icon = tab.icon;
+            // if tab.name is a key like "overview", translate via namespaced keys
+            const tabLabel = t(`chatbotdetail_tab_${tab.id}`, tab.name);
             return (
               <button
                 key={tab.id}
@@ -551,7 +574,7 @@ export const ChatbotDetail = () => {
               >
                 <div className="flex items-center">
                   <Icon className="h-4 w-4 mr-2" />
-                  {tab.name}
+                  {tabLabel}
                 </div>
               </button>
             );
@@ -572,9 +595,7 @@ export const ChatbotDetail = () => {
                   className="bg-white/90 dark:bg-gray-900/90 backdrop-blur-lg rounded-2xl shadow-xl border border-gray-100 dark:border-gray-800 p-6 flex flex-col justify-between"
                 >
                   <div className="flex items-center">
-                    <div
-                      className={`rounded-xl p-3 ${stat.color} shadow-inner`}
-                    >
+                    <div className={`rounded-xl p-3 ${stat.color} shadow-inner`}>
                       <Icon className="h-7 w-7" />
                     </div>
                     <div className="ml-5">
@@ -599,19 +620,19 @@ export const ChatbotDetail = () => {
             {analyticsLoading ? (
               <AnalyticsChart
                 data={[]}
-                title="Messages Over Time (Last 7 Days)"
+                title={t("chatbotdetail_chart_7d", "Messages Over Time (Last 7 Days)")}
                 loading
               />
             ) : analytics ? (
               <AnalyticsChart
                 data={analytics.chartData}
-                title="Messages Over Time (Last 7 Days)"
+                title={t("chatbotdetail_chart_7d", "Messages Over Time (Last 7 Days)")}
               />
             ) : (
               <div className="bg-white/90 dark:bg-gray-900/90 rounded-2xl p-6 shadow-inner border border-gray-200 dark:border-gray-800 text-center">
                 <BarChart3 className="h-12 w-12 text-gray-400 dark:text-gray-600 mx-auto mb-4" />
                 <p className="text-sm text-gray-500 dark:text-gray-400">
-                  No analytics data available.
+                  {t("chatbotdetail_no_analytics", "No analytics data available.")}
                 </p>
               </div>
             )}
@@ -621,19 +642,19 @@ export const ChatbotDetail = () => {
           <div className="bg-white/90 dark:bg-gray-900/90 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-800">
             <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-800">
               <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">
-                Recent Conversations
+                {t("chatbotdetail_recent_conversations", "Recent Conversations")}
               </h3>
             </div>
             <div className="p-6">
               {messagesLoading ? (
                 <div className="text-center py-6 text-sm text-gray-500 dark:text-gray-400">
-                  Loading messages...
+                  {t("chatbotdetail_loading_messages", "Loading messages...")}
                 </div>
               ) : chatMessages.length === 0 ? (
                 <div className="text-center py-8">
                   <MessageCircle className="h-10 w-10 text-gray-400 dark:text-gray-600 mx-auto mb-2" />
                   <p className="text-gray-500 dark:text-gray-400">
-                    No messages found yet.
+                    {t("chatbotdetail_no_messages", "No messages found yet.")}
                   </p>
                 </div>
               ) : (
@@ -647,12 +668,12 @@ export const ChatbotDetail = () => {
                         {m.message}
                       </p>
                       <p className="text-sm text-gray-600 dark:text-gray-300 mt-1 line-clamp-2">
-                        Response: {m.response}
+                        {t("chatbotdetail_response_prefix", "Response:")} {m.response}
                       </p>
                       <p className="text-xs text-gray-400 mt-1">
                         {m.created_at
                           ? new Date(m.created_at).toLocaleString()
-                          : "Unknown date"}
+                          : t("chatbotdetail_unknown_date", "Unknown date")}
                       </p>
                     </div>
                   ))}
@@ -661,10 +682,10 @@ export const ChatbotDetail = () => {
             </div>
             <div className="px-6 py-4 border-t border-gray-100 dark:border-gray-800 flex justify-center">
               <Link
-                to={`/chatbots/${id}/chat`}
+                to={`/${currentLanguage}/chatbots/${id}/chat`}
                 className="text-sm font-medium text-primary-600 dark:text-primary-400 hover:underline"
               >
-                View all conversations
+                {t("chatbotdetail_view_all_conversations", "View all conversations")}
               </Link>
             </div>
           </div>
@@ -690,7 +711,7 @@ export const ChatbotDetail = () => {
               className="inline-flex items-center px-5 py-2.5 border border-transparent text-sm font-semibold rounded-xl shadow-card text-white bg-primary-600 hover:bg-primary-700 dark:bg-primary-600 dark:hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
             >
               <Plus className="h-4 w-4 mr-2" />
-              Add Knowledge
+              {t("chatbotdetail_add_knowledge", "Add Knowledge")}
             </button>
           </div>
 
@@ -706,7 +727,9 @@ export const ChatbotDetail = () => {
                 <div className="flex items-center justify-between text-sm text-gray-600 dark:text-gray-400">
                   <span>
                     {progressLabel ||
-                      (isKnowledgeLoading ? "Loading..." : "Processing...")}
+                      (isKnowledgeLoading
+                        ? t("chatbotdetail_loading", "Loading...")
+                        : t("chatbotdetail_processing", "Processing..."))}
                   </span>
                   <span>{Math.round(progress)}%</span>
                 </div>
@@ -747,12 +770,12 @@ export const ChatbotDetail = () => {
         <div className="space-y-8">
           <AnalyticsChart
             data={analytics?.chartData || []}
-            title="Daily Message Volume"
+            title={t("chatbotdetail_chart_daily", "Daily Message Volume")}
             loading={analyticsLoading}
           />
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {renderCard("Performance Metrics", metrics)}
-            {renderCard("Usage Trends", trends)}
+            {renderCard(t("chatbotdetail_card_performance", "Performance Metrics"), metrics)}
+            {renderCard(t("chatbotdetail_card_trends", "Usage Trends"), trends)}
           </div>
         </div>
       )}
@@ -786,12 +809,13 @@ export const ChatbotDetail = () => {
                 <div className="flex items-center">
                   <Eye className="h-5 w-5 text-primary-600 dark:text-primary-400 mr-3" />
                   <h3 className="text-lg font-bold text-gray-900 dark:text-white">
-                    {viewingItem.filename || "Knowledge Content"}
+                    {viewingItem.filename || t("chatbotdetail_kb_content", "Knowledge Content")}
                   </h3>
                 </div>
                 <button
                   onClick={() => setViewingItem(null)}
                   className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                  aria-label={t("chatbotdetail_close", "Close")}
                 >
                   <X className="h-5 w-5" />
                 </button>
@@ -806,7 +830,7 @@ export const ChatbotDetail = () => {
                           : "bg-accent-100 dark:bg-accent-900/20 text-accent-700 dark:text-accent-400"
                       }`}
                     >
-                      {viewingItem.content_type}
+                      {t(`chatbotdetail_contenttype_${viewingItem.content_type}`, viewingItem.content_type)}
                     </span>
                     <span
                       className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
@@ -820,14 +844,16 @@ export const ChatbotDetail = () => {
                       ) : (
                         <XCircle className="h-3 w-3 mr-1" />
                       )}
-                      {viewingItem.processed ? "Processed" : "Not Processed"}
+                      {viewingItem.processed
+                        ? t("chatbotdetail_processed", "Processed")
+                        : t("chatbotdetail_not_processed", "Not Processed")}
                     </span>
                   </div>
                   <div className="text-xs text-gray-500 dark:text-gray-400">
-                    Added:{" "}
+                    {t("chatbotdetail_added", "Added:")}{" "}
                     {viewingItem.created_at
                       ? new Date(viewingItem.created_at).toLocaleString()
-                      : "Unknown date"}
+                      : t("chatbotdetail_unknown_date", "Unknown date")}
                   </div>
                 </div>
                 <div className="bg-gray-50 dark:bg-gray-900/50 rounded-xl p-4 border border-gray-200 dark:border-gray-700 whitespace-pre-wrap text-sm text-gray-800 dark:text-gray-200 max-h-[60vh] overflow-y-auto">
@@ -839,7 +865,7 @@ export const ChatbotDetail = () => {
                   onClick={() => setViewingItem(null)}
                   className="px-5 py-2 text-sm font-semibold text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors duration-200"
                 >
-                  Close
+                  {t("chatbotdetail_close", "Close")}
                 </button>
                 <div className="flex space-x-3">
                   <button
@@ -850,14 +876,14 @@ export const ChatbotDetail = () => {
                     className="px-5 py-2 text-sm font-semibold text-white bg-blue-600 dark:bg-blue-700 border border-transparent rounded-xl hover:bg-blue-700 dark:hover:bg-blue-800 transition-colors duration-200"
                   >
                     <Edit className="h-4 w-4 mr-2 inline" />
-                    Edit
+                    {t("chatbotdetail_edit", "Edit")}
                   </button>
                   <button
                     onClick={() => handleDownload(viewingItem)}
                     className="px-5 py-2 text-sm font-semibold text-white bg-green-600 dark:bg-green-700 border border-transparent rounded-xl hover:bg-green-700 dark:hover:bg-green-800 transition-colors duration-200"
                   >
                     <Download className="h-4 w-4 mr-2 inline" />
-                    Download
+                    {t("chatbotdetail_download", "Download")}
                   </button>
                 </div>
               </div>

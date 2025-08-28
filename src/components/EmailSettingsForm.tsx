@@ -3,9 +3,10 @@ import { Mail, Save, AlertTriangle, CheckCircle, Loader } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
 import { useEmail, EmailSettings } from "../hooks/useEmail";
 import { useEmailUsage } from "../hooks/useEmailUsage";
-// import { EmailUsageDisplay } from "./EmailUsageDisplay";
+import { useTranslation } from "../hooks/useTranslation";
 
 export const EmailSettingsForm: React.FC = () => {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const { getEmailSettings, updateEmailSettings, isLoadingSettings } =
     useEmail();
@@ -23,20 +24,17 @@ export const EmailSettingsForm: React.FC = () => {
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Load email settings when component mounts
+  // Check email allowance
   useEffect(() => {
     const checkEmails = async () => {
       if (!user) return;
-
       try {
-        // Check if emails are allowed
         const allowed = await checkEmailAllowed();
         setEmailsAllowed(allowed);
       } catch (err) {
         console.error("Error checking email limits:", err);
       }
     };
-
     checkEmails();
   }, [user]);
 
@@ -54,24 +52,31 @@ export const EmailSettingsForm: React.FC = () => {
     setError(null);
 
     try {
-      // Update email settings
       await updateEmailSettings.mutateAsync(settings);
       setSaveSuccess(true);
-
-      // Reset success message after 3 seconds
-      setTimeout(() => {
-        setSaveSuccess(false);
-      }, 3000);
+      setTimeout(() => setSaveSuccess(false), 3000);
     } catch (err) {
       console.error("Error saving email settings:", err);
-      setError("Failed to save email settings. Please try again.");
+      setError(
+        t(
+          "emailSettings.saveError",
+          "Failed to save email settings. Please try again."
+        )
+      );
     }
   };
 
   if (isLoadingSettings) {
     return (
-      <div className="flex items-center justify-center h-32">
+      <div
+        className="flex items-center justify-center h-32"
+        role="status"
+        aria-live="polite"
+      >
         <Loader className="h-6 w-6 animate-spin text-primary-600" />
+        <span className="sr-only">
+          {t("emailSettings.loading", "Loading…")}
+        </span>
       </div>
     );
   }
@@ -81,9 +86,11 @@ export const EmailSettingsForm: React.FC = () => {
       <div className="flex items-center justify-between">
         <div className="flex items-center">
           <Mail className="h-6 w-6 text-primary-600 mr-3" />
-          <h3 className="text-lg font-bold text-gray-900">Email Settings</h3>
+          <h3 className="text-lg font-bold text-gray-900">
+            {t("emailSettings.title", "Email Settings")}
+          </h3>
         </div>
-        <EmailUsageDisplay showDetails={false} />
+        {/* <EmailUsageDisplay showDetails={false} /> */}
       </div>
 
       {error && (
@@ -103,7 +110,10 @@ export const EmailSettingsForm: React.FC = () => {
             <CheckCircle className="h-5 w-5 text-green-600 mt-0.5 mr-3" />
             <div>
               <p className="text-sm text-green-700">
-                Email settings saved successfully!
+                {t(
+                  "emailSettings.saveSuccess",
+                  "Email settings saved successfully!"
+                )}
               </p>
             </div>
           </div>
@@ -116,17 +126,19 @@ export const EmailSettingsForm: React.FC = () => {
             <AlertTriangle className="h-5 w-5 text-red-600 mt-0.5 mr-3" />
             <div>
               <h4 className="text-sm font-medium text-red-800">
-                Email Limit Reached
+                {t("emailSettings.limitTitle", "Email Limit Reached")}
               </h4>
               <p className="text-sm text-red-700 mt-1">
-                You've reached your email limit for this month. Upgrade your
-                plan to send more emails.
+                {t(
+                  "emailSettings.limitBody",
+                  "You've reached your email limit for this month. Upgrade your plan to send more emails."
+                )}
               </p>
               <a
                 href="/pricing"
                 className="mt-2 inline-flex items-center text-sm font-medium text-red-800 hover:text-red-900"
               >
-                View upgrade options →
+                {t("emailSettings.viewUpgrade", "View upgrade options →")}
               </a>
             </div>
           </div>
@@ -135,13 +147,17 @@ export const EmailSettingsForm: React.FC = () => {
 
       <div className="bg-white rounded-lg shadow border border-gray-200 p-6">
         <div className="space-y-4">
+          {/* Enable notifications */}
           <div className="flex items-center justify-between">
             <div>
               <h4 className="text-sm font-medium text-gray-900">
-                Enable Email Notifications
+                {t("emailSettings.enableTitle", "Enable Email Notifications")}
               </h4>
               <p className="text-sm text-gray-500">
-                Receive important updates and notifications via email
+                {t(
+                  "emailSettings.enableDesc",
+                  "Receive important updates and notifications via email"
+                )}
               </p>
             </div>
             <label className="relative inline-flex items-center cursor-pointer">
@@ -149,10 +165,10 @@ export const EmailSettingsForm: React.FC = () => {
                 type="checkbox"
                 checked={settings.enable_notifications}
                 onChange={(e) =>
-                  setSettings({
-                    ...settings,
+                  setSettings((s) => ({
+                    ...s,
                     enable_notifications: e.target.checked,
-                  })
+                  }))
                 }
                 className="sr-only peer"
                 disabled={emailsAllowed === false}
@@ -161,14 +177,19 @@ export const EmailSettingsForm: React.FC = () => {
             </label>
           </div>
 
+          {/* Sub-options */}
           <div className="pl-6 space-y-4 border-l-2 border-gray-100">
+            {/* Daily Digest */}
             <div className="flex items-center justify-between">
               <div>
                 <h4 className="text-sm font-medium text-gray-900">
-                  Daily Digest
+                  {t("emailSettings.dailyTitle", "Daily Digest")}
                 </h4>
                 <p className="text-sm text-gray-500">
-                  Receive a summary of your chatbot activity each day
+                  {t(
+                    "emailSettings.dailyDesc",
+                    "Receive a summary of your chatbot activity each day"
+                  )}
                 </p>
               </div>
               <label className="relative inline-flex items-center cursor-pointer">
@@ -176,7 +197,10 @@ export const EmailSettingsForm: React.FC = () => {
                   type="checkbox"
                   checked={settings.daily_digest}
                   onChange={(e) =>
-                    setSettings({ ...settings, daily_digest: e.target.checked })
+                    setSettings((s) => ({
+                      ...s,
+                      daily_digest: e.target.checked,
+                    }))
                   }
                   className="sr-only peer"
                   disabled={
@@ -187,13 +211,17 @@ export const EmailSettingsForm: React.FC = () => {
               </label>
             </div>
 
+            {/* Weekly Report */}
             <div className="flex items-center justify-between">
               <div>
                 <h4 className="text-sm font-medium text-gray-900">
-                  Weekly Report
+                  {t("emailSettings.weeklyTitle", "Weekly Report")}
                 </h4>
                 <p className="text-sm text-gray-500">
-                  Receive a weekly summary of your chatbot performance
+                  {t(
+                    "emailSettings.weeklyDesc",
+                    "Receive a weekly summary of your chatbot performance"
+                  )}
                 </p>
               </div>
               <label className="relative inline-flex items-center cursor-pointer">
@@ -201,10 +229,10 @@ export const EmailSettingsForm: React.FC = () => {
                   type="checkbox"
                   checked={settings.weekly_report}
                   onChange={(e) =>
-                    setSettings({
-                      ...settings,
+                    setSettings((s) => ({
+                      ...s,
                       weekly_report: e.target.checked,
-                    })
+                    }))
                   }
                   className="sr-only peer"
                   disabled={
@@ -215,13 +243,17 @@ export const EmailSettingsForm: React.FC = () => {
               </label>
             </div>
 
+            {/* Chatbot Alerts */}
             <div className="flex items-center justify-between">
               <div>
                 <h4 className="text-sm font-medium text-gray-900">
-                  Chatbot Alerts
+                  {t("emailSettings.alertsTitle", "Chatbot Alerts")}
                 </h4>
                 <p className="text-sm text-gray-500">
-                  Get notified when your chatbots need attention
+                  {t(
+                    "emailSettings.alertsDesc",
+                    "Get notified when your chatbots need attention"
+                  )}
                 </p>
               </div>
               <label className="relative inline-flex items-center cursor-pointer">
@@ -229,10 +261,10 @@ export const EmailSettingsForm: React.FC = () => {
                   type="checkbox"
                   checked={settings.chatbot_alerts}
                   onChange={(e) =>
-                    setSettings({
-                      ...settings,
+                    setSettings((s) => ({
+                      ...s,
                       chatbot_alerts: e.target.checked,
-                    })
+                    }))
                   }
                   className="sr-only peer"
                   disabled={
@@ -244,13 +276,17 @@ export const EmailSettingsForm: React.FC = () => {
             </div>
           </div>
 
+          {/* Marketing Emails */}
           <div className="flex items-center justify-between pt-4 border-t border-gray-100">
             <div>
               <h4 className="text-sm font-medium text-gray-900">
-                Marketing Emails
+                {t("emailSettings.marketingTitle", "Marketing Emails")}
               </h4>
               <p className="text-sm text-gray-500">
-                Receive updates about new features and promotions
+                {t(
+                  "emailSettings.marketingDesc",
+                  "Receive updates about new features and promotions"
+                )}
               </p>
             </div>
             <label className="relative inline-flex items-center cursor-pointer">
@@ -258,10 +294,10 @@ export const EmailSettingsForm: React.FC = () => {
                 type="checkbox"
                 checked={settings.marketing_emails}
                 onChange={(e) =>
-                  setSettings({
-                    ...settings,
+                  setSettings((s) => ({
+                    ...s,
                     marketing_emails: e.target.checked,
-                  })
+                  }))
                 }
                 className="sr-only peer"
                 disabled={emailsAllowed === false}
@@ -280,19 +316,17 @@ export const EmailSettingsForm: React.FC = () => {
             {updateEmailSettings.isPending ? (
               <>
                 <Loader className="h-4 w-4 mr-2 animate-spin" />
-                Saving...
+                {t("emailSettings.saving", "Saving...")}
               </>
             ) : (
               <>
                 <Save className="h-4 w-4 mr-2" />
-                Save Settings
+                {t("emailSettings.save", "Save Settings")}
               </>
             )}
           </button>
         </div>
       </div>
-
-      {/* <EmailUsageDisplay /> */}
     </div>
   );
 };
