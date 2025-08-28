@@ -1,5 +1,9 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { getGeoLanguageSuggestion, getStoredPreferredLanguage, setStoredPreferredLanguage } from "../lib/locale";
+import {
+  getGeoLanguageSuggestion,
+  getStoredPreferredLanguage,
+  setStoredPreferredLanguage,
+} from "../lib/locale";
 import { languages } from "../lib/languages";
 import { motion, AnimatePresence } from "framer-motion";
 import { Globe, X } from "lucide-react";
@@ -10,7 +14,10 @@ type Props = {
 };
 
 // Very lightweight modal; uses Tailwind already in project.
-export default function GeoLanguageModal({ currentLanguage, setLanguage }: Props) {
+export default function GeoLanguageModal({
+  currentLanguage,
+  setLanguage,
+}: Props) {
   const [suggested, setSuggested] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
 
@@ -100,9 +107,12 @@ export default function GeoLanguageModal({ currentLanguage, setLanguage }: Props
                   <Globe className="h-5 w-5" />
                 </div>
                 <div className="flex-1">
-                  <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Language suggestion</h2>
+                  <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                    Language suggestion
+                  </h2>
                   <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                    We use IP-based geolocation to suggest a preferred language. Choose what works best for you.
+                    We use IP-based geolocation to suggest a preferred language.
+                    Choose what works best for you.
                   </p>
                 </div>
                 <button
@@ -117,13 +127,26 @@ export default function GeoLanguageModal({ currentLanguage, setLanguage }: Props
 
             <div className="p-5 sm:p-6 space-y-3 text-gray-700 dark:text-gray-300">
               <p className="text-sm">
-                It looks like your region prefers <span className="font-semibold text-gray-900 dark:text-gray-100">{langName}</span>.
+                It looks like your region prefers{" "}
+                <span className="font-semibold text-gray-900 dark:text-gray-100">
+                  {langName}
+                </span>
+                .
               </p>
               <p className="text-sm">
-                Switch from <span className="font-mono uppercase text-gray-900 dark:text-gray-100">{currentLanguage}</span> to <span className="font-mono uppercase text-primary-700 dark:text-primary-400">{suggested}</span>?
+                Switch from{" "}
+                <span className="font-mono uppercase text-gray-900 dark:text-gray-100">
+                  {currentLanguage}
+                </span>{" "}
+                to{" "}
+                <span className="font-mono uppercase text-primary-700 dark:text-primary-400">
+                  {suggested}
+                </span>
+                ?
               </p>
               <p className="text-xs text-gray-500 dark:text-gray-400">
-                We only use your IP location to make this suggestion. Your choice will be saved as a preference.
+                We only use your IP location to make this suggestion. Your
+                choice will be saved as a preference.
               </p>
             </div>
 
