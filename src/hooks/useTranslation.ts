@@ -5,6 +5,8 @@ interface TranslationDictionary {
   [key: string]: string | TranslationDictionary;
 }
 
+// Import all translation files using Vite's glob import
+const translationModules = import.meta.glob('../i18n/*.json');
 export const useTranslation = () => {
   const { currentLanguage } = useLanguage();
   const [translations, setTranslations] = useState<TranslationDictionary>({});
@@ -16,8 +18,15 @@ export const useTranslation = () => {
       setIsLoading(true);
       setError(null);
       try {
-        // Dynamically import the JSON file for the current language
-        const module = await import(`../i18n/${currentLanguage}.json`);
+        // Use the glob import to load the correct translation file
+        const modulePath = `../i18n/${currentLanguage}.json`;
+        const moduleLoader = translationModules[modulePath];
+        
+        if (!moduleLoader) {
+          throw new Error(`Translation file not found for language: ${currentLanguage}`);
+        }
+        
+        const module = await moduleLoader();
         setTranslations(module.default);
       } catch (err) {
         console.error(`Failed to load translations for ${currentLanguage}:`, err);
