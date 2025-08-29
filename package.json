@@ -7,6 +7,7 @@
     "dev": "vite",
     "build": "vite build",
     "prebuild": "node scripts/generate-sitemap.mjs",
+    "ci:check-i18n": "node scripts/check-i18n.mjs",
     "lint": "eslint .",
     "preview": "vite preview",
     "release": "standard-version --skip.commit --skip.changelog",

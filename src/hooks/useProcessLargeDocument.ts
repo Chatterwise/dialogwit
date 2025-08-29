@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "../lib/supabase";
+import { fetchWithRetry } from "../lib/http";
 
 export const useProcessLargeDocument = (chatbotId: string) => {
   const queryClient = useQueryClient();
@@ -8,7 +9,7 @@ export const useProcessLargeDocument = (chatbotId: string) => {
     mutationFn: async (knowledgeBaseId: string) => {
       const session = (await supabase.auth.getSession()).data.session;
 
-      const r = await fetch(
+      const r = await fetchWithRetry(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/sync-kb-to-openai`,
         {
           method: "POST",
@@ -17,6 +18,8 @@ export const useProcessLargeDocument = (chatbotId: string) => {
             Authorization: `Bearer ${session?.access_token}`,
           },
           body: JSON.stringify({ knowledge_base_id: knowledgeBaseId }),
+          timeoutMs: 30000,
+          retries: 1,
         }
       );
 

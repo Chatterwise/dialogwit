@@ -1,15 +1,18 @@
 import { useMutation } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
+import { fetchWithRetry } from '../lib/http';
 
 export const useAuthEmail = () => {
   const sendConfirmationEmail = useMutation({
     mutationFn: async ({ email, confirmUrl }: { email: string, confirmUrl: string }) => {
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/email/confirm-signup`, {
+      const response = await fetchWithRetry(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/email/confirm-signup`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ email, confirmUrl }),
+        timeoutMs: 15000,
+        retries: 1,
       });
 
       if (!response.ok) {
@@ -23,12 +26,14 @@ export const useAuthEmail = () => {
 
   const sendPasswordResetEmail = useMutation({
     mutationFn: async ({ email, resetUrl }: { email: string, resetUrl: string }) => {
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/email/reset-password`, {
+      const response = await fetchWithRetry(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/email/reset-password`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ email, resetUrl }),
+        timeoutMs: 15000,
+        retries: 1,
       });
 
       if (!response.ok) {

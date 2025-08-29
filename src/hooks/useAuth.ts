@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { User, Session, AuthError } from "@supabase/supabase-js";
 import { supabase } from "../lib/supabase";
 import posthog from "posthog-js";
+import { fetchWithRetry } from "../lib/http";
 
 interface AuthState {
   user: User | null;
@@ -127,7 +128,7 @@ export function useAuth() {
   // Handle email confirmation in a separate async function
   const handleEmailConfirmation = async (session: Session) => {
     try {
-      const response = await fetch(
+      const response = await fetchWithRetry(
         `${
           import.meta.env.VITE_SUPABASE_URL
         }/functions/v1/email-confirmation-handler`,
@@ -137,6 +138,8 @@ export function useAuth() {
             Authorization: `Bearer ${session.access_token}`,
             "Content-Type": "application/json",
           },
+          timeoutMs: 15000,
+          retries: 1,
         }
       );
 
@@ -242,7 +245,7 @@ export function useAuth() {
 
       // Send reset password email
       try {
-        const resetResponse = await fetch(
+        const resetResponse = await fetchWithRetry(
           `${
             import.meta.env.VITE_SUPABASE_URL
           }/functions/v1/email-reset-password`,
@@ -255,6 +258,8 @@ export function useAuth() {
               email,
               resetUrl: `${window.location.origin}/auth/reset-password`,
             }),
+            timeoutMs: 15000,
+            retries: 1,
           }
         );
 
@@ -276,7 +281,7 @@ export function useAuth() {
   const resendConfirmation = async (email: string) => {
     try {
       
-      const response = await fetch(
+      const response = await fetchWithRetry(
         `${
           import.meta.env.VITE_SUPABASE_URL
         }/functions/v1/email-confirm-signup`,
@@ -289,6 +294,8 @@ export function useAuth() {
             email,
             confirmUrl: `${window.location.origin}/auth/confirm`,
           }),
+          timeoutMs: 15000,
+          retries: 1,
         }
       );
 

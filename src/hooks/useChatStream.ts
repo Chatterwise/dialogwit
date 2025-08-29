@@ -2,6 +2,8 @@
 import { useRef } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { supabase } from "../lib/supabase";
+import { useToast } from "../lib/toastStore";
+import { fetchEventStream, fetchWithRetry } from "../lib/http";
 
 export type ChatArgs = {
   chatbot_id: string;
@@ -23,6 +25,8 @@ export type ChatResult = {
 
 export function useChatStream() {
   const abortRef = useRef<AbortController | null>(null);
+  const idleTimerRef = useRef<number | null>(null);
+  const toast = useToast();
 
   const mutation = useMutation<ChatResult, Error, ChatArgs>({
     mutationFn: async (args) => {
@@ -42,7 +46,7 @@ export function useChatStream() {
 
       const chatOnce = async () => {
         abortRef.current = new AbortController();
-        return fetch(`${base}/functions/v1/chat-file-search`, {
+        return fetchEventStream(`${base}/functions/v1/chat-file-search`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -51,11 +55,13 @@ export function useChatStream() {
           },
           body: JSON.stringify(reqBody),
           signal: abortRef.current.signal,
+          timeoutMs: 45000,
+          retries: 1,
         });
       };
 
       const ensureAssistant = async () => {
-        const res = await fetch(`${base}/functions/v1/ensure-assistant`, {
+        const res = await fetchWithRetry(`${base}/functions/v1/ensure-assistant`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -63,6 +69,8 @@ export function useChatStream() {
             apikey: anonKey,
           },
           body: JSON.stringify({ chatbot_id: args.chatbot_id }),
+          timeoutMs: 15000,
+          retries: 1,
         });
         if (!res.ok) {
           const txt = await res.text().catch((err) => {
@@ -90,6 +98,10 @@ export function useChatStream() {
           await ensureAssistant();
           res = await chatOnce();
           json = await maybeJson();
+        } else if (res.status >= 500) {
+          // One reconnect attempt on transient server errors
+          res = await chatOnce();
+          json = await maybeJson();
         }
       }
 
@@ -99,6 +111,7 @@ export function useChatStream() {
         const decoder = new TextDecoder();
         let buffer = "";
         let full = "";
+        const MAX_IDLE_MS = 30000; // abort if no frames for 30s
 
         const emitReady = (tid: string) => args.onReady?.(tid);
         const emitDelta = (piece: string) => {
@@ -108,9 +121,17 @@ export function useChatStream() {
         const emitEnd = () => args.onEnd?.(full);
 
         try {
+          const resetIdleTimer = () => {
+            if (idleTimerRef.current) window.clearTimeout(idleTimerRef.current);
+            idleTimerRef.current = window.setTimeout(() => {
+              abortRef.current?.abort();
+            }, MAX_IDLE_MS) as unknown as number;
+          };
+          resetIdleTimer();
           while (true) {
             const { value, done } = await reader.read();
             if (done) break;
+            resetIdleTimer();
             buffer += decoder.decode(value, { stream: true });
 
             let idx: number;
@@ -148,9 +169,12 @@ export function useChatStream() {
           }
         } catch (err) {
           args.onError?.(err);
-          throw new Error(err instanceof Error ? err.message : "Streaming failed");
+          const msg = err instanceof Error ? err.message : "Streaming failed";
+          toast.error(msg);
+          throw new Error(msg);
         }
 
+        if (idleTimerRef.current) window.clearTimeout(idleTimerRef.current);
         return { ok: true, text: full };
       }
 
@@ -159,7 +183,15 @@ export function useChatStream() {
         return {};
       }));
       if (!res.ok || json?.ok === false) {
-        throw new Error(json?.error || `Chat failed (${res.status})`);
+        const errMsg = json?.error || `Chat failed (${res.status})`;
+        if (res.status === 429) {
+          toast.error("You are sending messages too fast. Please wait a moment.");
+        } else if (res.status >= 500) {
+          toast.error("Server error while chatting. Please try again.");
+        } else {
+          toast.error(errMsg);
+        }
+        throw new Error(errMsg);
       }
       return {
         ok: true,

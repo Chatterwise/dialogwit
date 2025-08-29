@@ -25,6 +25,9 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      - name: Check i18n keys
+        run: npm run ci:check-i18n
+
       - name: Typecheck
         run: npx tsc -p tsconfig.json --noEmit
 
