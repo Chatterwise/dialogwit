@@ -8,6 +8,8 @@ import React, {
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { languages, DEFAULT_LANGUAGE } from "../lib/languages";
 import GeoLanguageModal from "../components/GeoLanguageModal";
+import { Helmet } from "react-helmet-async";
+import SeoLangLinks from "../components/SeoLangLinks";
 import {
   detectBrowserLanguage,
   getStoredPreferredLanguage,
@@ -80,6 +82,8 @@ export const LanguageProvider: React.FC<{ children: ReactNode }> = ({
 
   return (
     <LanguageContext.Provider value={{ currentLanguage, setLanguage }}>
+      <Helmet htmlAttributes={{ lang: currentLanguage }} />
+      <SeoLangLinks />
       {children}
       {/* Offer IP-based suggestion when appropriate */}
       <GeoLanguageModal currentLanguage={currentLanguage} setLanguage={setLanguage} />

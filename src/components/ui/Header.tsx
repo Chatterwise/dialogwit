@@ -137,7 +137,7 @@ export const Header = () => {
                   >
                     {t("nav_new_chatbot", "New Chatbot")}
                   </Link>
-                  <Link
+                  {/* <Link
                     to={withLang("/bot-knowledge")}
                     className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
                     onClick={() => {
@@ -146,7 +146,7 @@ export const Header = () => {
                     }}
                   >
                     {t("nav_add_knowledge", "Add Knowledge")}
-                  </Link>
+                  </Link> */}
                   <Link
                     to={withLang("/integrations")}
                     className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
@@ -283,13 +283,6 @@ export const Header = () => {
               onClick={() => setShowMobileMenu(false)}
             >
               {t("nav_new_chatbot", "New Chatbot")}
-            </Link>
-            <Link
-              to={withLang("/bot-knowledge")}
-              className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
-              onClick={() => setShowMobileMenu(false)}
-            >
-              {t("nav_add_knowledge", "Add Knowledge")}
             </Link>
             <Link
               to={withLang("/integrations")}

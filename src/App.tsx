@@ -1,28 +1,24 @@
-import {
-  BrowserRouter as Router,
-  Routes,
-  Route,
-  Navigate,
-} from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import { Suspense, lazy } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { HelmetProvider } from "react-helmet-async";
 import { Layout } from "./components/Layout";
-import { Auth } from "./components/Auth";
-import { Dashboard } from "./components/Dashboard";
-import { ChatbotList } from "./components/ChatbotList";
-import { ChatbotBuilder } from "./components/ChatbotBuilder";
-import { ChatbotDetail } from "./components/ChatbotDetail";
-import { KnowledgeBase } from "./components/KnowledgeBase";
-import { AdvancedAnalytics } from "./components/AdvancedAnalytics";
-import { Integrations } from "./components/Integrations/Integrations";
-import { TemplateGallery } from "./components/TemplateGallery";
-import { InstallationWizard } from "./components/InstallationWizard";
-import { Settings } from "./components/Settings";
-import { PublicChat } from "./components/PublicChat";
-import { ApiEndpoints } from "./components/ApiEndpoints";
-import { SecurityCenter } from "./components/SecurityCenter";
-import { TestingTools } from "./components/TestingTools";
-import { BillingDashboard } from "./components/BillingDashboard";
+const Auth = lazy(() => import("./components/Auth").then(m => ({ default: m.Auth })));
+const Dashboard = lazy(() => import("./components/Dashboard").then(m => ({ default: m.Dashboard })));
+const ChatbotList = lazy(() => import("./components/ChatbotList").then(m => ({ default: m.ChatbotList })));
+const ChatbotBuilder = lazy(() => import("./components/ChatbotBuilder").then(m => ({ default: m.ChatbotBuilder })));
+const ChatbotDetail = lazy(() => import("./components/ChatbotDetail").then(m => ({ default: m.ChatbotDetail })));
+const KnowledgeBase = lazy(() => import("./components/KnowledgeBase").then(m => ({ default: m.KnowledgeBase })));
+const AdvancedAnalytics = lazy(() => import("./components/AdvancedAnalytics").then(m => ({ default: m.AdvancedAnalytics })));
+const Integrations = lazy(() => import("./components/Integrations/Integrations").then(m => ({ default: m.Integrations })));
+const TemplateGallery = lazy(() => import("./components/TemplateGallery").then(m => ({ default: m.TemplateGallery })));
+const InstallationWizard = lazy(() => import("./components/InstallationWizard").then(m => ({ default: m.InstallationWizard })));
+const Settings = lazy(() => import("./components/Settings").then(m => ({ default: m.Settings })));
+const PublicChat = lazy(() => import("./components/PublicChat").then(m => ({ default: m.PublicChat })));
+const ApiEndpoints = lazy(() => import("./components/ApiEndpoints").then(m => ({ default: m.ApiEndpoints })));
+const SecurityCenter = lazy(() => import("./components/SecurityCenter").then(m => ({ default: m.SecurityCenter })));
+const TestingTools = lazy(() => import("./components/TestingTools").then(m => ({ default: m.TestingTools })));
+const BillingDashboard = lazy(() => import("./components/BillingDashboard").then(m => ({ default: m.BillingDashboard })));
 import { useAuth } from "./hooks/useAuth";
 import { ResetPasswordForm } from "./components/ResetPasswordForm";
 import { EmailConfirmationRequired } from "./components/EmailConfirmationRequired";
@@ -33,42 +29,43 @@ import { TokenUsageDashboard } from "./components/TokenUsageDashboard";
 import CancelPage from "./components/CancelPage";
 import PricingPlans from "./components/PricingPlans";
 import SuccessPage from "./components/SuccessPage";
-import LandingPage from "./components/LandingPage";
+const LandingPage = lazy(() => import("./components/LandingPage"));
 import { ChatbotSettings } from "./components/ChatbotSettings";
 import { ToastRenderer } from "./components/ToastRenderer";
-import AboutUsPage from "./pages/AboutUsPage";
-import ApiReferencePage from "./pages/ApiReferencePage";
+const AboutUsPage = lazy(() => import("./pages/AboutUsPage"));
+const ApiReferencePage = lazy(() => import("./pages/ApiReferencePage"));
 // import BlogPage from "./pages/BlogPage";
-import CommunityPage from "./pages/CommunityPage";
-import ContactPage from "./pages/ContactPage";
-import DocumentationPage from "./pages/DocumentationPage";
-import EnterprisePage from "./pages/EnterprisePage";
-import FeaturesPage from "./pages/FeaturesPage";
-import LegalPage from "./pages/LegalPage";
+const CommunityPage = lazy(() => import("./pages/CommunityPage"));
+const ContactPage = lazy(() => import("./pages/ContactPage"));
+const DocumentationPage = lazy(() => import("./pages/DocumentationPage"));
+const EnterprisePage = lazy(() => import("./pages/EnterprisePage"));
+const FeaturesPage = lazy(() => import("./pages/FeaturesPage"));
+const LegalPage = lazy(() => import("./pages/LegalPage"));
 import { WebhookManager } from "./components/WebhookManager";
 
 // Documentation Pages
-import CustomTemplatesPage from "./pages/docs/advanced-features/CustomTemplatesPage";
-import WebhooksPage from "./pages/docs/advanced-features/WebhooksPage";
-import SecurityBestPracticesPage from "./pages/docs/advanced-features/SecurityBestPracticesPage";
-import CustomerSupportBotPage from "./pages/docs/tutorials/CustomerSupportBotPage";
+const CustomTemplatesPage = lazy(() => import("./pages/docs/advanced-features/CustomTemplatesPage"));
+const WebhooksPage = lazy(() => import("./pages/docs/advanced-features/WebhooksPage"));
+const SecurityBestPracticesPage = lazy(() => import("./pages/docs/advanced-features/SecurityBestPracticesPage"));
+const CustomerSupportBotPage = lazy(() => import("./pages/docs/tutorials/CustomerSupportBotPage"));
 
 // Documentation Category Pages
-import GettingStartedPage from "./pages/docs/getting-started/GettingStartedPage";
-import AdvancedFeaturesPage from "./pages/docs/advanced-features/AdvancedFeaturesPage";
-import TutorialsPage from "./pages/docs/tutorials/TutorialsPage";
-import FirstChatbotPage from "./pages/docs/FirstChatbotPage";
-import DiscordIntegrationPage from "./pages/docs/integerations/DiscordIntegrationPage";
-import IntegrationsPage from "./pages/docs/integerations/IntegrationsPage";
-import SlackIntegrationPage from "./pages/docs/integerations/SlackIntegrationPage";
-import WebsiteIntegrationPage from "./pages/docs/integerations/WebsiteIntegrationPage";
-import WordPressIntegrationPage from "./pages/docs/integerations/WordPressIntegrationPage";
-import IntroductionPage from "./pages/docs/IntroductionPage";
-import KnowledgeBasePage from "./pages/docs/KnowledgeBasePage";
-import TrainingChatbotPage from "./pages/docs/TrainingChatbotPage";
-import { BotChatsPage } from "./components/BotChatsPage";
+const GettingStartedPage = lazy(() => import("./pages/docs/getting-started/GettingStartedPage"));
+const AdvancedFeaturesPage = lazy(() => import("./pages/docs/advanced-features/AdvancedFeaturesPage"));
+const TutorialsPage = lazy(() => import("./pages/docs/tutorials/TutorialsPage"));
+const FirstChatbotPage = lazy(() => import("./pages/docs/FirstChatbotPage"));
+const DiscordIntegrationPage = lazy(() => import("./pages/docs/integerations/DiscordIntegrationPage"));
+const IntegrationsPage = lazy(() => import("./pages/docs/integerations/IntegrationsPage"));
+const SlackIntegrationPage = lazy(() => import("./pages/docs/integerations/SlackIntegrationPage"));
+const WebsiteIntegrationPage = lazy(() => import("./pages/docs/integerations/WebsiteIntegrationPage"));
+const WordPressIntegrationPage = lazy(() => import("./pages/docs/integerations/WordPressIntegrationPage"));
+const IntroductionPage = lazy(() => import("./pages/docs/IntroductionPage"));
+const KnowledgeBasePage = lazy(() => import("./pages/docs/KnowledgeBasePage"));
+const TrainingChatbotPage = lazy(() => import("./pages/docs/TrainingChatbotPage"));
+const BotChatsPage = lazy(() => import("./components/BotChatsPage").then(m => ({ default: m.BotChatsPage })));
 import { LanguageProvider } from "./contexts/LanguageContext"; // Import LanguageProvider
 import LanguageRedirect from "./components/LanguageRedirect";
+import LoadingScreen from "./components/LoadingScreen";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -102,9 +99,10 @@ function AppContent() {
       <Route
         path="/:lang/*"
         element={
-          <LanguageProvider>
-            {/* LanguageProvider is now inside the /:lang route */}
-            <Routes>
+          <Suspense fallback={<LoadingScreen />}>
+            <LanguageProvider>
+              {/* LanguageProvider is now inside the /:lang route */}
+              <Routes>
               {/* Public routes */}
               <Route
                 path="/" // This will match /:lang/
@@ -298,8 +296,9 @@ function AppContent() {
                   )
                 }
               />
-            </Routes>
-          </LanguageProvider>
+              </Routes>
+            </LanguageProvider>
+          </Suspense>
         }
       />
     </Routes>

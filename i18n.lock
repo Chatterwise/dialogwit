@@ -776,8 +776,8 @@ checksums:
     layout.actions.closeSidebar: ec0f56ea3b39e28bc1aca998f4321a11
     layout.mobile.overlay: d7f6f038319476b3d8f2c5b358b5db2d
     layout.mobile.sidebar: 0373afd8238db1c49f4be4fa6cdf5cd3
-    integrations.title: b0af4c2869184af8720686eafa951486
-    integrations.subtitle: e4658ffb89e865f75919b939999fbe3e
+    integrations.title: f44d8005574295dd6949629d5e92877b
+    integrations.subtitle: 8f41a8a37109f6b418e66ab9cd35c448
     integrations.chatbotSelect.placeholder: 5faf9222207380ad4ffce3751b5bff8e
     integrations.categories.aria: f47624df5c79dfb3a637f10803cd7c9b
     integrations.categories.all: a607324ae2bd67640bf579f9e4092610
@@ -1056,3 +1056,62 @@ checksums:
     chat.preview.actions.send: 19e7006870c6e407dece25ee8c9d5333
     chat.preview.errors.generic: 41ea0a522036b81e6fc73d1c5adbcd0d
     chat.preview.notice.no_bot: 2437ed576953bead1a0c293b100ebfae
+    integrations.tabs.overview: 30c54e4dc4ce599b87d94be34a8617f5
+    integrations.tabs.platforms: b0af4c2869184af8720686eafa951486
+    integrations.tabs.api: 00e10a3efa54e3a227913ffbf9898243
+    integrations.tabs.templates: a1ad977a9dee194a25efc1dd0bd79ce7
+    integrations.quickstart.title: bc6e7d120fc1680041aac66db2614548
+    integrations.quickstart.platforms: b0af4c2869184af8720686eafa951486
+    integrations.quickstart.platforms_desc: 59bf11924aafd40bb5f31e516d4ab95d
+    integrations.quickstart.templates: dab29e945090b993819f48501bef1cbd
+    integrations.quickstart.templates_desc: 71127b647f13fe7f6b64f69cf99096d4
+    integrations.quickstart.api: 00e10a3efa54e3a227913ffbf9898243
+    integrations.quickstart.api_desc: d34e8dd9eb2c98ded70da5cb1035e0ab
+    integrations.quickstart.wizard: a8a762174fabd7b30c3a96bb5bf5f0ad
+    integrations.quickstart.wizard_desc: d8ae2b0b3398406aa5e912e7a4a81a61
+    integrations.template.modern: 809ffa6b5d1c4bacf30c7e2d6a04dccd
+    integrations.template.modern_desc: 862810e4b9ce101fc986c55039d35843
+    integrations.template.minimal: 99d241a5546ab308ebcbdbd54ca838f1
+    integrations.template.minimal_desc: 8fe35c987e61539fbc684de2eee5f8dd
+    integrations.template.bubble: 34ddbd33d97e0d169d1a9bfc8b9771f2
+    integrations.template.bubble_desc: a557eaec0ebeda2df29fa4c4fa0d62cd
+    integrations.template.professional: 0059ac0aac3f10a46b28c095e697cbbb
+    integrations.template.professional_desc: 637e6fb562b5c63dbd2bb4df1d094c3d
+    integrations.template.corporate: fd294af20930d3bfef10f68206a703e9
+    integrations.template.corporate_desc: 38611eb83390d92f4118a6c9ba1f9ca7
+    integrations.template.healthcare: 8a64f4431b261644d2b6a0b7c535123e
+    integrations.template.healthcare_desc: 69d0243d5b5b27f829181b3d593a5cfc
+    integrations.template.education: 1d665434a064b431a7c0f59a9c4d1544
+    integrations.template.education_desc: b121b556a8ae6cce67212f763e00860d
+    integrations.template.retail: f71e4c936e1155eed22a55da475c6876
+    integrations.template.retail_desc: 1a8e2890a5d2061abdce940abff2ffdd
+    integrations.template.gaming: 18b1563dee415337be7c4eb91da2514b
+    integrations.template.gaming_desc: c717411fc510855685aa58e624e8d3fd
+    integrations.template.elegant: 6bf89606c90c66a0ec0c53b518cef6a2
+    integrations.template.elegant_desc: bf69141f044aa665bb74b41e83d0df10
+    integrations.prod.title: 03545bc4934eb94efebe8d28a0965008
+    integrations.prod.subtitle: 7f1697d1befeec1c1fe18c9b3b405aee
+    integrations.prod.responsive: edb15457acadee336574543c0260fdb9
+    integrations.prod.mobile: 48ec1c6cb24ee7f413c0852cb52a31b3
+    integrations.prod.theme: 2bc15f3e8bddd43490b551483f5e8c8d
+    integrations.prod.performance: 204a660b6cb60b461f86f00953904419
+    integrations.docs.title: de2c057273e7727560de36e4dbc86248
+    integrations.docs.templates: 909787719c25756b29c41796ec5f648c
+    integrations.docs.templates_desc: c083459cdae421a225a470d2a3210f20
+    integrations.docs.api: db334795446f17fc54eb91d91064a7ec
+    integrations.docs.api_desc: 1dbbfdc5595dade2217750961b6f1e2a
+    integrations.docs.wizard: a8a762174fabd7b30c3a96bb5bf5f0ad
+    integrations.docs.wizard_desc: 094bd618a219305cd37212b10a1ff92c
+    auth_hero.assistant_title: 30a8b9d635a88b0226419e0670d4ca88
+    auth_hero.status_online: b988abd1b05f72282fabef5c5cd5794e
+    auth_hero.signup.msg1: b700a210dffed985c3f91aaea89d420c
+    auth_hero.signup.msg2: 66b42fe44c82da3ad389a63a0c4019ad
+    auth_hero.signup.msg3: 0887be9dbc5d3a17f1dbb8fd6d3d9972
+    auth_hero.login.msg1: c355feb5a5b177382fb8a2246e3fc6a9
+    auth_hero.login.msg2: f5f1111399edfb25b14987423aac05fc
+    auth_hero.login.msg3: 30b32177569d4b0f28f16ee094bbd9b2
+    auth_hero.user.signup_prompt: 6e3ff0f916693c9bfd749009d7b122c5
+    auth_hero.user.login_prompt: 62cf08cbe3a3e556a77458a68f0aee61
+    auth_hero.chip.docs: 55fea190a0c0fb32acd3dc986cd3cc91
+    auth_hero.chip.embed: 61837ea9c7b814b23d6a22bbe0f5ba51
+    auth_hero.chip.analytics: ec67586974cc78f25959d47bb36683a7

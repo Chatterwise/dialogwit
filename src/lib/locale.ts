@@ -120,9 +120,15 @@ export async function getGeoLanguageSuggestion(): Promise<string | null> {
     // ipwho.is is a free, no-auth endpoint. You may swap as needed.
     const res = await fetch("https://ipwho.is/?fields=country_code,languages");
     if (!res.ok) return null;
-    const data: any = await res.json();
+    type IpWhoResponse = {
+      country_code?: string;
+      languages?: { code?: string } | Array<{ code?: string }>;
+    };
+    const data: IpWhoResponse = await res.json();
     // Prefer language list if provided, else infer from country.
-    const langs: string | undefined = data?.languages?.code ?? data?.languages?.[0]?.code;
+    const langs: string | undefined = Array.isArray(data?.languages)
+      ? data.languages[0]?.code
+      : (data?.languages as { code?: string } | undefined)?.code;
     if (langs) {
       const supported = toSupportedLanguageOrNull(String(langs));
       if (supported) return supported;

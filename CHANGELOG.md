@@ -6,6 +6,41 @@ All notable changes to this project will be documented in this file. See [standa
 
 ### Fixed
 
+- i18n: Persist language preference; auto-detect via browser/IP with consent modal (localStorage + cookie) (lang)
+- Templates: Add premium Glass Dock and Messenger templates with quick replies, reactions, day separators, scroll-to-bottom pill (templates)
+- Builder: Simplify chatbot creation — remove role templates; add General Info fields (name, description, welcome, fallback, placeholder) (builder)
+- Auth: Replace left panel graphic with animated on-brand mini chat preview (auth)
+- SEO: Add html lang via Helmet and dynamic hreflang/canonical links (seo)
+- Reliability: Add top-level ErrorBoundary (core)
+- Bug Fixes
+- i18n: Correct “Español” label and make ChatPreview translation-safe/reactive (i18n)
+- Routing: Fix locale-aware links for Billing (analytics/pricing) and Integrations (templates/api/wizard) (routing)
+- UI: Improve dark-mode readability for bot bubbles in premium templates (ui)
+- Meta: Fix corrupted meta description text (seo)
+- Geo: Expand Spanish-speaking country mapping for better IP-based suggestions (geo)
+- Performance Improvements
+- Code splitting: Convert major routes to React.lazy with Suspense fallback; add LoadingScreen skeleton (perf)
+- Security
+- CSP/Headers: Add strict security headers (HSTS, X-Content-Type-Options, X-Frame-Options, Referrer-Policy, Permissions-Policy) and hardened CSP; remove inline GA and externalize Iubenda  config (security)
+- Build System
+- GA: Initialize via code (VITE_GA_MEASUREMENT_ID) instead of inline scripts (build)
+- Supabase: Fail fast when VITE_SUPABASE_URL or VITE_SUPABASE_ANON_KEY are missing; remove defaults (build)
+- Stripe: Move billing portal URL to env (VITE_STRIPE_BILLING_PORTAL_URL) (build)
+- Sitemap: Generate language-aware sitemap during build (prebuild script) (build)
+
+
+### Added
+
+- Add GitHub Actions workflow (install, lint, typecheck, build) using VITE_* secrets (ci)
+
+### Fixed
+
+- chatbot delition, chatbot status to the metadata **[NO-TICKET]**
+
+### 1.1.2 (2025-08-28)
+
+### Fixed
+
 - chatbot delition, chatbot status to the metadata **[CHAT-30]**
 - Adding translations to the site **[CHAT-37]**
 ### 1.1.1 (2025-08-27)

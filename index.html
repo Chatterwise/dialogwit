@@ -1,24 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <!-- Google tag (gtag.js) -->
-    <script
-      async
-      src="https://www.googletagmanager.com/gtag/js?id=G-TTBEB98BNPL"
-    ></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag() {
-        dataLayer.push(arguments);
-      }
-      gtag("js", new Date());
-      gtag("config", "G-TTBEB98BNPL");
-    </script>
+    <!-- Google tag (gtag.js) loaded by app (no inline) -->
 
     <meta charset="UTF-8" />
     <meta
       name="description"
-      content="Build, train, and launch AI chatbots with your own data—no coding required. Start for free, no credit card needed. Power your business, improve customer service, increase sales, and empower internal teams with ChatterWise."
+      content="Build, train, and launch AI chatbots with your own data — no coding required. Start for free. Power your business, improve customer service, increase sales, and empower internal teams with ChatterWise."
     />
     <meta
       name="keywords"
@@ -26,45 +14,16 @@
     />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <!-- Iubenda Cookie Solution -->
-    <script type="text/javascript">
-      var _iub = _iub || [];
-      _iub.csConfiguration = {
-        siteId: 4122415,
-        floatingPreferencesButtonDisplay: false,
-        cookiePolicyId: 16849142,
-        lang: "en",
-        storage: { useSiteId: true },
-      };
-    </script>
-    <script
-      type="text/javascript"
-      src="https://cs.iubenda.com/autoblocking/4122415.js"
-    ></script>
-    <script
-      type="text/javascript"
-      src="//cdn.iubenda.com/cs/gpp/stub.js"
-    ></script>
-    <script
-      type="text/javascript"
-      src="//cdn.iubenda.com/cs/iubenda_cs.js"
-      charset="UTF-8"
-      async
-    ></script>
+    <!-- Iubenda Cookie Solution (config moved to external file to avoid inline scripts) -->
+    <script src="/iubenda-config.js"></script>
+    <script type="text/javascript" src="https://cs.iubenda.com/autoblocking/4122415.js"></script>
+    <script type="text/javascript" src="//cdn.iubenda.com/cs/gpp/stub.js"></script>
+    <script type="text/javascript" src="//cdn.iubenda.com/cs/iubenda_cs.js" charset="UTF-8" async></script>
 
     <!-- Open Graph / Social Media Meta Tags -->
-    <meta
-      property="og:title"
-      content="ChatterWise: No-Code AI Chatbot Builder for Teams & Customers"
-    />
-    <meta
-      property="og:description"
-      content="Build and deploy AI-powered chatbots with ease. Upload your knowledge base and let AI handle the rest."
-    />
-    <meta
-      property="og:image"
-      content="https://bpzfivbuhgjpkngcjpzc.supabase.co/storage/v1/object/public/public-assets//chatterwise_page.jpg"
-    />
+    <meta property="og:title" content="ChatterWise: No-Code AI Chatbot Builder for Teams & Customers" />
+    <meta property="og:description" content="Build and deploy AI-powered chatbots with ease. Upload your knowledge base and let AI handle the rest." />
+    <meta property="og:image" content="https://bpzfivbuhgjpkngcjpzc.supabase.co/storage/v1/object/public/public-assets//chatterwise_page.jpg" />
     <meta property="og:url" content="https://chatterwise.io" />
     <meta property="og:type" content="website" />
 
@@ -72,24 +31,22 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="shortcut icon" href="/favicon.ico" />
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
-    <meta name="apple-mobile-web-app-title" content="MyWebSite" />
+    <meta name="apple-mobile-web-app-title" content="ChatterWise" />
     <link rel="manifest" href="/site.webmanifest" />
     <title>ChatBot Builder - AI-Powered Chatbot Platform</title>
 
+    <!-- Performance: preconnects for external services -->
+    <link rel="preconnect" href="https://bpzfivbuhgjpkngcjpzc.supabase.co" crossorigin />
+    <link rel="preconnect" href="https://www.googletagmanager.com" />
+    <link rel="preconnect" href="https://www.google-analytics.com" />
+    <link rel="preconnect" href="https://app.posthog.com" />
+    <link rel="preconnect" href="https://flagcdn.com" />
+
     <!-- Twitter Card Meta Tags -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta
-      name="twitter:title"
-      content="ChatterWise: No-Code AI Chatbot Builder for Teams & Customers"
-    />
-    <meta
-      name="twitter:description"
-      content="Build and deploy AI-powered chatbots with ease. Upload your knowledge base and let AI handle the rest."
-    />
-    <meta
-      name="twitter:image"
-      content="https://bpzfivbuhgjpkngcjpzc.supabase.co/storage/v1/object/public/public-assets//chatterwise_page.jpg"
-    />
+    <meta name="twitter:title" content="ChatterWise: No-Code AI Chatbot Builder for Teams & Customers" />
+    <meta name="twitter:description" content="Build and deploy AI-powered chatbots with ease. Upload your knowledge base and let AI handle the rest." />
+    <meta name="twitter:image" content="https://bpzfivbuhgjpkngcjpzc.supabase.co/storage/v1/object/public/public-assets//chatterwise_page.jpg" />
 
     <!-- Canonical URL -->
     <link rel="canonical" href="https://chatterwise.io" />
@@ -98,4 +55,4 @@
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
-</html>
+  </html>

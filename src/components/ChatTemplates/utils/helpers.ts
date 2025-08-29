@@ -8,6 +8,8 @@ import { MinimalChat } from "../MinimalChat";
 import { ModernChat } from "../ModernChat";
 import { ProfessionalChat } from "../ProfessionalChat";
 import { RetailChat } from "../RetailChat";
+import { GlassDockChat } from "../Premium/GlassDockChat";
+import { MessengerChat } from "../Premium/MessengerChat";
 
 export   const templates = [
     {
@@ -18,6 +20,24 @@ export   const templates = [
       preview: 'bg-gradient-to-r from-blue-500 to-purple-500',
       features: ['Gradient backgrounds', 'Smooth animations', 'Modern typography'],
       category: 'General'
+    },
+    {
+      id: 'glassdock',
+      name: 'Glass Dock',
+      description: 'Premium glassmorphism dock with quick actions',
+      component: GlassDockChat,
+      preview: 'bg-gradient-to-r from-blue-600 to-indigo-600',
+      features: ['Glass blur', 'Quick replies', 'Scroll-to-bottom pill'],
+      category: 'Premium'
+    },
+    {
+      id: 'messenger',
+      name: 'Messenger',
+      description: 'Messenger-style conversational UI',
+      component: MessengerChat,
+      preview: 'bg-gray-200',
+      features: ['Grouped bubbles', 'Reactions', 'Read indicators'],
+      category: 'Premium'
     },
     {
       id: 'minimal',

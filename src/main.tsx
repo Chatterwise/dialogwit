@@ -3,7 +3,9 @@ import { createRoot } from "react-dom/client";
 import { HelmetProvider } from "react-helmet-async";
 import { PostHogProvider } from 'posthog-js/react';
 import App from "./App.tsx";
+import { ErrorBoundary } from "./components/ErrorBoundary";
 import "./index.css";
+import { initGA } from "./third-party/ga";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
@@ -16,8 +18,13 @@ createRoot(document.getElementById("root")!).render(
       }}
     >
       <HelmetProvider>
-        <App />
+        <ErrorBoundary>
+          <App />
+        </ErrorBoundary>
       </HelmetProvider>
     </PostHogProvider>
   </StrictMode>
 );
+
+// Initialize Google Analytics without inline scripts
+initGA();
