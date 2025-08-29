@@ -13,11 +13,22 @@ import {
   Settings,
   MessageSquare,
 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { PlatformIntegrations } from "../PlatformIntegrations";
 import { motion } from "framer-motion";
+import { useTranslation } from "../../hooks/useTranslation";
 
 export const Integrations = () => {
+  const { t } = useTranslation();
+  // Locale-aware path helper (keep /:lang prefix)
+  const { pathname } = useLocation();
+  const match = pathname.match(/^\/([A-Za-z-]{2,5})(?=\/|$)/);
+  const locale = match?.[1] ?? "en";
+  const localePath = (to: string) => {
+    const normalized = to.startsWith("/") ? to : `/${to}`;
+    if (normalized === `/${locale}` || normalized.startsWith(`/${locale}/`)) return normalized;
+    return `/${locale}${normalized}`;
+  };
   const [activeTab, setActiveTab] = useState<
     "overview" | "platforms" | "api" | "templates"
   >("overview");
@@ -341,27 +352,23 @@ export const ${
   }
 
   const templates = [
-    { id: "modern", name: "Modern", description: "Sleek gradient design" },
-    { id: "minimal", name: "Minimal", description: "Clean and simple" },
-    { id: "bubble", name: "Bubble", description: "Playful bubble style" },
-    {
-      id: "professional",
-      name: "Professional",
-      description: "Corporate focused",
-    },
-    { id: "corporate", name: "Corporate", description: "Enterprise grade" },
-    { id: "healthcare", name: "Healthcare", description: "Medical focused" },
-    { id: "education", name: "Education", description: "Learning focused" },
-    { id: "retail", name: "Retail", description: "E-commerce focused" },
-    { id: "gaming", name: "Gaming", description: "Gaming inspired" },
-    { id: "elegant", name: "Elegant", description: "Sophisticated design" },
+    { id: "modern", name: t("integrations.template.modern", "Modern"), description: t("integrations.template.modern_desc", "Sleek gradient design") },
+    { id: "minimal", name: t("integrations.template.minimal", "Minimal"), description: t("integrations.template.minimal_desc", "Clean and simple") },
+    { id: "bubble", name: t("integrations.template.bubble", "Bubble"), description: t("integrations.template.bubble_desc", "Playful bubble style") },
+    { id: "professional", name: t("integrations.template.professional", "Professional"), description: t("integrations.template.professional_desc", "Corporate focused") },
+    { id: "corporate", name: t("integrations.template.corporate", "Corporate"), description: t("integrations.template.corporate_desc", "Enterprise grade") },
+    { id: "healthcare", name: t("integrations.template.healthcare", "Healthcare"), description: t("integrations.template.healthcare_desc", "Medical focused") },
+    { id: "education", name: t("integrations.template.education", "Education"), description: t("integrations.template.education_desc", "Learning focused") },
+    { id: "retail", name: t("integrations.template.retail", "Retail"), description: t("integrations.template.retail_desc", "E-commerce focused") },
+    { id: "gaming", name: t("integrations.template.gaming", "Gaming"), description: t("integrations.template.gaming_desc", "Gaming inspired") },
+    { id: "elegant", name: t("integrations.template.elegant", "Elegant"), description: t("integrations.template.elegant_desc", "Sophisticated design") },
   ];
 
   const tabs = [
-    { id: "overview", name: "Overview", icon: Globe },
-    { id: "platforms", name: "Platform Integrations", icon: MessageSquare },
-    { id: "api", name: "API & Webhooks", icon: Code },
-    { id: "templates", name: "Templates & Widgets", icon: Palette },
+    { id: "overview", name: t("integrations.tabs.overview", "Overview"), icon: Globe },
+    { id: "platforms", name: t("integrations.tabs.platforms", "Platform Integrations"), icon: MessageSquare },
+    { id: "api", name: t("integrations.tabs.api", "API & Webhooks"), icon: Code },
+    { id: "templates", name: t("integrations.tabs.templates", "Templates & Widgets"), icon: Palette },
   ];
 
   return (
@@ -374,11 +381,10 @@ export const ${
       {/* Header */}
       <div className="space-y-2 mb-8">
         <h1 className="text-3xl font-extrabold text-gray-900 dark:text-white font-display tracking-tight">
-          Integrations & Templates
+          {t("integrations.title", "Integrations & Templates")}
         </h1>
         <p className="text-base text-gray-600 dark:text-gray-400">
-          Complete integration solution with beautiful, production-ready chat
-          templates and platform connectors.
+          {t("integrations.subtitle", "Complete integration solution with beautiful, production-ready chat templates and platform connectors.")}
         </p>
       </div>
 
@@ -423,7 +429,7 @@ export const ${
             className="bg-gradient-to-r from-primary-50 via-white to-accent-50 dark:from-primary-900/20 dark:via-gray-900/90 dark:to-accent-900/20 border border-primary-100 dark:border-primary-800 rounded-2xl p-6 shadow-card"
           >
             <h3 className="text-lg font-semibold text-primary-800 dark:text-primary-200 mb-3">
-              Quick Start Options
+              {t("integrations.quickstart.title", "Quick Start Options")}
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               <motion.button
@@ -435,11 +441,11 @@ export const ${
                 <div className="flex items-center mb-2">
                   <MessageSquare className="h-5 w-5 text-primary-500 dark:text-primary-400 mr-2" />
                   <h4 className="font-semibold text-primary-800 dark:text-primary-200">
-                    Platform Integrations
+                    {t("integrations.quickstart.platforms", "Platform Integrations")}
                   </h4>
                 </div>
                 <p className="text-sm text-primary-700 dark:text-primary-300">
-                  Connect with Slack, Discord, WordPress, Shopify & more
+                  {t("integrations.quickstart.platforms_desc", "Connect with Slack, Discord, WordPress, Shopify & more")}
                 </p>
               </motion.button>
               <motion.div
@@ -447,15 +453,15 @@ export const ${
                 whileTap={{ scale: 0.98 }}
                 className="p-4 bg-white dark:bg-gray-800/90 border border-primary-100 dark:border-gray-700 rounded-xl hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors group shadow-subtle"
               >
-                <Link to="/templates" className="block">
+                <Link to={localePath('/templates')} className="block">
                   <div className="flex items-center mb-2">
                     <Palette className="h-5 w-5 text-primary-500 dark:text-primary-400 mr-2" />
                     <h4 className="font-semibold text-primary-800 dark:text-primary-200">
-                      Browse Templates
+                      {t("integrations.quickstart.templates", "Browse Templates")}
                     </h4>
                   </div>
                   <p className="text-sm text-primary-700 dark:text-primary-300">
-                    Explore our template gallery with live previews
+                    {t("integrations.quickstart.templates_desc", "Explore our template gallery with live previews")}
                   </p>
                 </Link>
               </motion.div>
@@ -468,11 +474,11 @@ export const ${
                 <div className="flex items-center mb-2">
                   <Code className="h-5 w-5 text-primary-500 dark:text-primary-400 mr-2" />
                   <h4 className="font-semibold text-primary-800 dark:text-primary-200">
-                    API & Webhooks
+                    {t("integrations.quickstart.api", "API & Webhooks")}
                   </h4>
                 </div>
                 <p className="text-sm text-primary-700 dark:text-primary-300">
-                  Programmatic access and webhook integrations
+                  {t("integrations.quickstart.api_desc", "Programmatic access and webhook integrations")}
                 </p>
               </motion.button>
               <motion.div
@@ -480,15 +486,15 @@ export const ${
                 whileTap={{ scale: 0.98 }}
                 className="p-4 bg-white dark:bg-gray-800/90 border border-primary-100 dark:border-gray-700 rounded-xl hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors group shadow-subtle"
               >
-                <Link to="/wizard" className="block">
+                <Link to={localePath('/wizard')} className="block">
                   <div className="flex items-center mb-2">
                     <Zap className="h-5 w-5 text-primary-500 dark:text-primary-400 mr-2" />
                     <h4 className="font-semibold text-primary-800 dark:text-primary-200">
-                      Setup Wizard
+                      {t("integrations.quickstart.wizard", "Setup Wizard")}
                     </h4>
                   </div>
                   <p className="text-sm text-primary-700 dark:text-primary-300">
-                    Step-by-step integration guide
+                    {t("integrations.quickstart.wizard_desc", "Step-by-step integration guide")}
                   </p>
                 </Link>
               </motion.div>
@@ -1063,27 +1069,27 @@ export const ${
               </div>
               <div className="ml-3">
                 <h3 className="text-lg font-semibold text-primary-800 dark:text-primary-200">
-                  Production Ready Features
+                  {t("integrations.prod.title", "Production Ready Features")}
                 </h3>
                 <p className="text-primary-700 dark:text-primary-300 mt-1 mb-4">
-                  All templates and integrations are built for production use.
+                  {t("integrations.prod.subtitle", "All templates and integrations are built for production use.")}
                 </p>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm text-primary-600 dark:text-primary-400">
                   <div className="flex items-center">
                     <Monitor className="h-4 w-4 mr-2" />
-                    Responsive Design
+                    {t("integrations.prod.responsive", "Responsive Design")}
                   </div>
                   <div className="flex items-center">
                     <Smartphone className="h-4 w-4 mr-2" />
-                    Mobile Optimized
+                    {t("integrations.prod.mobile", "Mobile Optimized")}
                   </div>
                   <div className="flex items-center">
                     <Palette className="h-4 w-4 mr-2" />
-                    Theme Support
+                    {t("integrations.prod.theme", "Theme Support")}
                   </div>
                   <div className="flex items-center">
                     <Zap className="h-4 w-4 mr-2" />
-                    Performance Optimized
+                    {t("integrations.prod.performance", "Performance Optimized")}
                   </div>
                 </div>
               </div>
@@ -1097,7 +1103,7 @@ export const ${
           >
             <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-700">
               <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
-                Documentation & Support
+                {t("integrations.docs.title", "Documentation & Support")}
               </h3>
             </div>
             <div className="px-6 py-6">
@@ -1106,16 +1112,15 @@ export const ${
                   whileHover={{ scale: 1.02 }}
                   className="p-6 border border-gray-100 dark:border-gray-700 rounded-lg hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors duration-200 group"
                 >
-                  <Link to="/templates" className="block">
+                  <Link to={localePath('/templates')} className="block">
                     <div className="flex items-center mb-3">
                       <Palette className="h-6 w-6 text-primary-500 dark:text-primary-400 mr-3 group-hover:text-primary-700" />
                       <h4 className="text-lg font-medium text-gray-900 dark:text-white">
-                        Template Gallery
+                        {t("integrations.docs.templates", "Template Gallery")}
                       </h4>
                     </div>
                     <p className="text-sm text-gray-600 dark:text-gray-400">
-                      Browse and preview all available chat templates with live
-                      demos
+                      {t("integrations.docs.templates_desc", "Browse and preview all available chat templates with live demos")}
                     </p>
                   </Link>
                 </motion.div>
@@ -1124,15 +1129,15 @@ export const ${
                   whileHover={{ scale: 1.02 }}
                   className="p-6 border border-gray-100 dark:border-gray-700 rounded-lg hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors duration-200 group"
                 >
-                  <Link to="/api" className="block">
+                  <Link to={localePath('/api')} className="block">
                     <div className="flex items-center mb-3">
                       <Code className="h-6 w-6 text-green-600 dark:text-green-400 mr-3 group-hover:text-green-700" />
                       <h4 className="text-lg font-medium text-gray-900 dark:text-white">
-                        API Documentation
+                        {t("integrations.docs.api", "API Documentation")}
                       </h4>
                     </div>
                     <p className="text-sm text-gray-600 dark:text-gray-400">
-                      Complete API reference and integration guidelines
+                      {t("integrations.docs.api_desc", "Complete API reference and integration guidelines")}
                     </p>
                   </Link>
                 </motion.div>
@@ -1141,15 +1146,15 @@ export const ${
                   whileHover={{ scale: 1.02 }}
                   className="p-6 border border-gray-100 dark:border-gray-700 rounded-lg hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors duration-200 group"
                 >
-                  <Link to="/wizard" className="block">
+                  <Link to={localePath('/wizard')} className="block">
                     <div className="flex items-center mb-3">
                       <ExternalLink className="h-6 w-6 text-accent-500 dark:text-accent-400 mr-3 group-hover:text-accent-700" />
                       <h4 className="text-lg font-medium text-gray-900 dark:text-white">
-                        Setup Wizard
+                        {t("integrations.docs.wizard", "Setup Wizard")}
                       </h4>
                     </div>
                     <p className="text-sm text-gray-600 dark:text-gray-400">
-                      Step-by-step integration guide for all platforms
+                      {t("integrations.docs.wizard_desc", "Step-by-step integration guide for all platforms")}
                     </p>
                   </Link>
                 </motion.div>

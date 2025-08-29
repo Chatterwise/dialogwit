@@ -14,12 +14,21 @@ import {
   AlertCircle,
   Bot,
 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { useBilling } from "../hooks/useBilling";
 import SubscriptionStatus from "./SubscriptionStatus";
 import { useTranslation } from "../hooks/useTranslation";
 
 export const BillingDashboard: React.FC = () => {
+  // Locale-aware path helper (same logic used elsewhere)
+  const { pathname } = useLocation();
+  const match = pathname.match(/^\/([A-Za-z-]{2,5})(?=\/|$)/);
+  const locale = match?.[1] ?? "en";
+  const localePath = (to: string) => {
+    const normalized = to.startsWith("/") ? to : `/${to}`;
+    if (normalized === `/${locale}` || normalized.startsWith(`/${locale}/`)) return normalized;
+    return `/${locale}${normalized}`;
+  };
   const { t } = useTranslation();
   const { subscription, invoices, usage, isLoading } = useBilling();
   const [activeTab, setActiveTab] = useState<"overview" | "invoices" | "usage">(
@@ -302,7 +311,7 @@ export const BillingDashboard: React.FC = () => {
                   )}
                 </div>
                 <Link
-                  to="analytics"
+                  to={localePath('/analytics')}
                   className="text-primary-600 dark:text-primary-400 font-medium text-sm hover:text-primary-700 dark:hover:text-primary-300 flex items-center"
                 >
                   {t(
@@ -591,7 +600,7 @@ export const BillingDashboard: React.FC = () => {
                         whileTap={{ scale: 0.95 }}
                       >
                         <Link
-                          to="pricing"
+                          to={localePath('/pricing')}
                           className="inline-flex items-center px-4 py-2 bg-primary-600 dark:bg-primary-700 text-white rounded-lg font-medium shadow-md hover:shadow-lg transition-all"
                         >
                           <Zap className="w-4 h-4 mr-2" />
