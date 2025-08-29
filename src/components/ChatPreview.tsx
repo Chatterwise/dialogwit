@@ -22,19 +22,10 @@ type ChatbotSettings = {
 
 export const ChatPreview = ({ botId }: { botId?: string }) => {
   // Localized defaults
-  const { t } = useTranslation();
-
-  const DEFAULT_WELCOME = t("chat.preview.defaults.welcome");
+  const { t, isLoading, language } = useTranslation();
 
   const [botSettings, setBotSettings] = useState<ChatbotSettings | null>(null);
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: "initial",
-      text: DEFAULT_WELCOME,
-      sender: "bot",
-      timestamp: new Date(),
-    },
-  ]);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState("");
   const [threadId, setThreadId] = useState<string | null>(null);
   const [isSending, setIsSending] = useState(false);
@@ -49,6 +40,22 @@ export const ChatPreview = ({ botId }: { botId?: string }) => {
     (async () => {
       if (!botId) {
         setBotSettings(null);
+        if (!isLoading) {
+          const fallback = t(
+            "chat.preview.defaults.welcome",
+            "Hi! I’m your bot. Ask me anything about your knowledge base."
+          );
+          if (!cancelled) {
+            setMessages([
+              {
+                id: "initial",
+                text: fallback,
+                sender: "bot",
+                timestamp: new Date(),
+              },
+            ]);
+          }
+        }
         return;
       }
       const { data, error } = await supabase
@@ -66,7 +73,10 @@ export const ChatPreview = ({ botId }: { botId?: string }) => {
       setBotSettings(data as ChatbotSettings);
       const welcome =
         (data?.welcome_message && data.welcome_message.trim()) ||
-        t("chat.preview.defaults.welcome");
+        t(
+          "chat.preview.defaults.welcome",
+          "Hi! I’m your bot. Ask me anything about your knowledge base."
+        );
 
       setMessages([
         { id: "initial", text: welcome, sender: "bot", timestamp: new Date() },
@@ -76,7 +86,23 @@ export const ChatPreview = ({ botId }: { botId?: string }) => {
     return () => {
       cancelled = true;
     };
-  }, [botId]);
+  }, [botId, isLoading, t]);
+
+  useEffect(() => {
+    if (botId) return;
+    if (isLoading) return;
+    setMessages([
+      {
+        id: "initial",
+        text: t(
+          "chat.preview.defaults.welcome",
+          "Hi! I’m your bot. Ask me anything about your knowledge base."
+        ),
+        sender: "bot",
+        timestamp: new Date(),
+      },
+    ]);
+  }, [language, isLoading, t, botId]);
 
   const handleSend = async () => {
     if (!inputValue.trim() || !botId || isSending) return;
@@ -159,7 +185,10 @@ export const ChatPreview = ({ botId }: { botId?: string }) => {
           m.id === botMsgId
             ? {
                 ...m,
-                text: t("chat.preview.errors.generic"),
+                text: t(
+                  "chat.preview.errors.generic",
+                  "Sorry, I couldn’t process that request. Please try again."
+                ),
                 isLoading: false,
               }
             : m
@@ -172,7 +201,7 @@ export const ChatPreview = ({ botId }: { botId?: string }) => {
 
   const placeholder =
     (botSettings?.placeholder && botSettings.placeholder.trim()) ||
-    t("chat.preview.input.placeholder");
+    t("chat.preview.input.placeholder", "Type your message...");
 
   return (
     <div className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-lg rounded-2xl shadow-xl border border-gray-100 dark:border-gray-800 h-96 flex flex-col">
@@ -182,7 +211,10 @@ export const ChatPreview = ({ botId }: { botId?: string }) => {
             {botSettings?.bot_avatar ? (
               <img
                 src={botSettings.bot_avatar}
-                alt={botSettings.name ?? t("chat.preview.header.bot_alt")}
+                alt={
+                  botSettings.name ??
+                  t("chat.preview.header.bot_alt", "Bot avatar")
+                }
                 className="h-6 w-6 rounded-full mr-3 object-cover"
               />
             ) : (
@@ -193,13 +225,13 @@ export const ChatPreview = ({ botId }: { botId?: string }) => {
                 ? t("chat.preview.header.title_named", {
                     name: botSettings.name,
                   })
-                : t("chat.preview.header.title")}
+                : t("chat.preview.header.title", "Chat Preview")}
             </h3>
           </div>
           <div className="flex items-center">
             <div className="h-2 w-2 bg-green-500 rounded-full mr-2" />
             <span className="text-xs text-gray-600 dark:text-gray-400">
-              {t("chat.preview.status.online")}
+              {t("chat.preview.status.online", "Online")}
             </span>
           </div>
         </div>
@@ -225,7 +257,10 @@ export const ChatPreview = ({ botId }: { botId?: string }) => {
                   (botSettings?.bot_avatar ? (
                     <img
                       src={botSettings.bot_avatar}
-                      alt={botSettings.name ?? t("chat.preview.header.bot_alt")}
+                      alt={
+                        botSettings.name ??
+                        t("chat.preview.header.bot_alt", "Bot avatar")
+                      }
                       className="h-4 w-4 mr-2 mt-0.5 rounded-full object-cover flex-shrink-0"
                     />
                   ) : (
@@ -242,7 +277,7 @@ export const ChatPreview = ({ botId }: { botId?: string }) => {
                       <div className="flex items-center space-x-2">
                         <Loader className="h-4 w-4 animate-spin" />
                         <span className="text-sm">
-                          {t("chat.preview.status.thinking")}
+                          {t("chat.preview.status.thinking", "Thinking...")}
                         </span>
                       </div>
                     )
@@ -293,13 +328,13 @@ export const ChatPreview = ({ botId }: { botId?: string }) => {
               }
             }}
             placeholder={placeholder}
-            aria-label={t("chat.preview.input.aria_message")}
+            aria-label={t("chat.preview.input.aria_message", "Message input")}
             className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-primary-400 transition"
             disabled={isSending || !botId}
           />
           <button
             onClick={handleSend}
-            aria-label={t("chat.preview.actions.send")}
+            aria-label={t("chat.preview.actions.send", "Send")}
             disabled={!inputValue.trim() || isSending || !botId}
             className="p-2.5 bg-primary-600 text-white rounded-xl hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
           >
@@ -312,7 +347,10 @@ export const ChatPreview = ({ botId }: { botId?: string }) => {
         </div>
         {!botId && (
           <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-            {t("chat.preview.notice.no_bot")}
+            {t(
+              "chat.preview.notice.no_bot",
+              "No bot selected. Choose a bot to start chatting."
+            )}
           </p>
         )}
       </div>
