@@ -118,11 +118,12 @@ const SubscriptionStatus: React.FC = () => {
   };
 
   const handleManageBilling = async () => {
-    // Replace with portal session when available
-    window.open(
-      "https://billing.stripe.com/p/login/test_28E5kFgpg9pg3ZD8uQ7kc00",
-      "_blank"
-    );
+    const url = import.meta.env.VITE_STRIPE_BILLING_PORTAL_URL as string | undefined;
+    if (!url) {
+      console.warn("Missing VITE_STRIPE_BILLING_PORTAL_URL env var");
+      return;
+    }
+    window.open(url, "_blank");
   };
 
   if (isLoading) {
