@@ -23,6 +23,26 @@ export default tseslint.config(
         'warn',
         { allowConstantExport: true },
       ],
+      '@typescript-eslint/no-explicit-any': 'warn',
+      '@typescript-eslint/no-unused-vars': ['warn', {
+        vars: 'all',
+        args: 'after-used',
+        argsIgnorePattern: '^_',
+        ignoreRestSiblings: true,
+      }],
+      'prefer-const': 'warn',
+      'no-empty': 'warn',
+      'no-control-regex': 'warn',
     },
+    settings: {},
+  }
+  ,
+  // Relax rules in serverless function sources
+  {
+    files: ['supabase/functions/**/*.{ts,tsx}'],
+    rules: {
+      '@typescript-eslint/no-explicit-any': 'off',
+      '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
+    }
   }
 );

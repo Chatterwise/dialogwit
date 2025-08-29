@@ -1,5 +1,14 @@
-export function initGA() {
-  const id = (import.meta as any).env?.VITE_GA_MEASUREMENT_ID as string | undefined;
+declare global {
+  interface Window {
+    dataLayer: unknown[];
+    gtag: (...args: unknown[]) => void;
+  }
+}
+
+export function initGA(): void {
+  const id = (import.meta as unknown as { env?: Record<string, unknown> })?.env?.[
+    'VITE_GA_MEASUREMENT_ID'
+  ] as string | undefined;
   if (!id) return;
   // Load the gtag library
   const script = document.createElement('script');
@@ -8,12 +17,11 @@ export function initGA() {
   document.head.appendChild(script);
 
   // Configure GA
-  (window as any).dataLayer = (window as any).dataLayer || [];
-  function gtag(...args: any[]) {
-    (window as any).dataLayer.push(args);
+  window.dataLayer = window.dataLayer || [];
+  function gtag(...args: unknown[]) {
+    window.dataLayer.push(args);
   }
-  (window as any).gtag = gtag;
+  window.gtag = gtag;
   gtag('js', new Date());
   gtag('config', id);
 }
-

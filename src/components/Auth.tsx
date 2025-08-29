@@ -205,13 +205,12 @@ export function Auth() {
   };
 
   // Map backend errors to friendly messages
+  type ErrorLike = { message?: unknown } | null | undefined;
   const getErrorMessage = (err: unknown): string => {
+    const maybe = err as ErrorLike;
     const message =
-      typeof err === "object" &&
-      err !== null &&
-      "message" in err &&
-      typeof (err as any).message === "string"
-        ? (err as any).message
+      maybe && typeof maybe === "object" && typeof maybe.message === "string"
+        ? maybe.message
         : "";
 
     if (message.includes("Invalid login credentials") || message.includes("invalid_credentials"))

@@ -142,7 +142,7 @@ export const BillingDashboard: React.FC = () => {
           ].map((tab) => (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id as any)}
+              onClick={() => setActiveTab(tab.id as typeof activeTab)}
               className={`py-2 px-1 border-b-2 font-medium text-sm flex items-center space-x-2 transition-colors ${
                 activeTab === tab.id
                   ? "border-primary-500 text-primary-600 dark:text-primary-400"

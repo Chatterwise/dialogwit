@@ -34,7 +34,6 @@ export const Integrations = () => {
   >("overview");
   const [copiedReact, setCopiedReact] = useState(false);
   const [copiedScript, setCopiedScript] = useState(false);
-  const [copiedWidget, setCopiedWidget] = useState(false);
   const [copiedTemplate, setCopiedTemplate] = useState(false);
   const [selectedBotId, setSelectedBotId] = useState("your-bot-id-here");
   const [selectedTemplate, setSelectedTemplate] = useState("modern");
