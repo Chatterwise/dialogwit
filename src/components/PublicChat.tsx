@@ -352,6 +352,5 @@ export const PublicChat = () => {
         </p>
       </div>
     </div>
-import { fetchWithRetry } from "../lib/http";
   );
 };
