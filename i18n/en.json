@@ -1328,5 +1328,18 @@
 
   "auth_hero.chip.docs": "Docs",
   "auth_hero.chip.embed": "Embed",
-  "auth_hero.chip.analytics": "Analytics"
+  "auth_hero.chip.analytics": "Analytics",
+
+  "i18n.modal.title": "Language suggestion",
+  "i18n.modal.subtitle": "We use IP-based geolocation to suggest a preferred language. Choose what works best for you.",
+  "common.close": "Close",
+  "i18n.modal.prefers": "It looks like your region prefers",
+  "i18n.modal.switch": "Switch from",
+  "i18n.modal.to": "to",
+  "i18n.modal.privacy": "We only use your IP location to make this suggestion. Your choice will be saved as a preference.",
+  "i18n.modal.keep": "Keep",
+  "i18n.modal.switchTo": "Switch to",
+  "installationWizard.templates.elegant.desc": "Sophisticated design",
+  "language.select": "Select language",
+  "language.list": "Languages"
 }
