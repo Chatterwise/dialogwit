@@ -30,7 +30,9 @@ interface ChatTemplateProps {
     | "corporate"
     | "healthcare"
     | "education"
-    | "retail";
+    | "retail"
+    | "glassdock"
+    | "messenger";
   theme?: "light" | "dark" | "auto";
   primaryColor?: string;
   // botName?: string;
@@ -60,6 +62,9 @@ export const ChatTemplate = ({
   const [isLoading, setIsLoading] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [showScrollDown, setShowScrollDown] = useState(false);
+  const [reactions, setReactions] = useState<Record<string, string>>({});
   const [botMetadata, setBotMetadata] = useState<BotMetadata>({
     name: "",
     welcome_message: "",
@@ -114,6 +119,28 @@ export const ChatTemplate = ({
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const onScroll = () => {
+      const atBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 120;
+      setShowScrollDown(!atBottom);
+    };
+    el.addEventListener("scroll", onScroll);
+    return () => el.removeEventListener("scroll", onScroll);
+  }, []);
+
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const onScroll = () => {
+      const atBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 120;
+      setShowScrollDown(!atBottom);
+    };
+    el.addEventListener("scroll", onScroll);
+    return () => el.removeEventListener("scroll", onScroll);
+  }, []);
 
   const sendMessage = async () => {
     if (!inputValue.trim() || isLoading) return;
@@ -337,6 +364,34 @@ export const ChatTemplate = ({
           } rounded-2xl border`,
         },
       },
+      glassdock: {
+        container: `rounded-3xl shadow-2xl ${
+          theme === "dark" ? "bg-white/5" : "bg-white/70"
+        } backdrop-blur-xl border ${
+          theme === "dark" ? "border-white/10" : "border-gray-200/60"
+        }`,
+        header: `bg-gradient-to-r from-primary-600/90 to-blue-600/90 text-white rounded-t-3xl`,
+        message: {
+          user: `bg-primary-600 text-white rounded-2xl shadow`,
+          bot: `${
+            theme === "dark"
+              ? "bg-gray-800/70 border-gray-700"
+              : "bg-white/80 border-gray-200"
+          } rounded-2xl border backdrop-blur`,
+        },
+      },
+      messenger: {
+        container: `rounded-2xl shadow-xl ${
+          theme === "dark" ? "bg-gray-900" : "bg-white"
+        } border ${theme === "dark" ? "border-gray-800" : "border-gray-200"}`,
+        header: `${theme === "dark" ? "bg-gray-800" : "bg-gray-50"} text-gray-900 dark:text-white rounded-t-2xl border-b ${
+          theme === "dark" ? "border-gray-700" : "border-gray-200"
+        }`,
+        message: {
+          user: `bg-blue-600 text-white rounded-2xl`,
+          bot: `${theme === "dark" ? "bg-gray-800 text-gray-100" : "bg-gray-100 text-gray-900"} rounded-2xl`,
+        },
+      },
     };
 
     return templates[template];
@@ -418,41 +473,91 @@ export const ChatTemplate = ({
         {!isMinimized && (
           <>
             {/* Messages */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-4">
-              {messages.map((message) => (
-                <div
-                  key={message.id}
-                  className={`flex ${
-                    message.sender === "user" ? "justify-end" : "justify-start"
-                  }`}
-                >
+            <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-4 relative">
+              {messages.map((message, idx) => {
+                const prev = messages[idx - 1];
+                const next = messages[idx + 1];
+                const sameAsPrev = prev && prev.sender === message.sender;
+                const sameAsNext = next && next.sender === message.sender;
+                const isMessenger = template === "messenger";
+                const isNewDay = !prev || new Date(prev.timestamp).toDateString() !== new Date(message.timestamp).toDateString();
+                const extraRound = isMessenger
+                  ? `${
+                      message.sender === "user"
+                        ? `${sameAsPrev ? "rounded-tr-md" : ""} ${
+                            sameAsNext ? "rounded-br-md" : ""
+                          }`
+                        : `${sameAsPrev ? "rounded-tl-md" : ""} ${
+                            sameAsNext ? "rounded-bl-md" : ""
+                          }`
+                    }`
+                  : "";
+                const bubbleClass = `max-w-xs lg:max-w-sm px-4 py-2 ${styles.message[message.sender]} ${extraRound}`;
+                return (
                   <div
-                    className={`max-w-xs lg:max-w-sm px-4 py-2 ${
-                      styles.message[message.sender]
+                    key={message.id}
+                    className={`group flex ${
+                      message.sender === "user" ? "justify-end" : "justify-start"
                     }`}
                   >
-                    {message.isLoading ? (
-                      <div className="flex items-center space-x-2">
-                        <Loader className="w-4 h-4 animate-spin" />
-                        <span className="text-sm">Thinking...</span>
-                      </div>
-                    ) : (
-                      <>
-                        <p className="text-sm whitespace-pre-wrap">
-                          {message.text}
-                        </p>
-                        <span className="text-xs opacity-75 mt-1 block">
-                          {message.timestamp.toLocaleTimeString([], {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          })}
+                    {isNewDay && (
+                      <div className="w-full text-center mb-1">
+                        <span className="inline-block text-[11px] text-gray-600 dark:text-gray-400 bg-white/70 dark:bg-gray-900/70 px-2 py-0.5 rounded-full backdrop-blur">
+                          {new Date(message.timestamp).toLocaleDateString([], { year: 'numeric', month: 'short', day: 'numeric' })}
                         </span>
-                      </>
+                      </div>
                     )}
+                    <div className={bubbleClass}>
+                      {message.isLoading ? (
+                        <div className="flex items-center space-x-2">
+                          <Loader className="w-4 h-4 animate-spin" />
+                          <span className="text-sm">Thinking...</span>
+                        </div>
+                      ) : (
+                        <>
+                          <p className="text-sm whitespace-pre-wrap">
+                            {message.text}
+                          </p>
+                          <span className="text-xs opacity-75 mt-1 block">
+                            {message.timestamp.toLocaleTimeString([], {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
+                          </span>
+                          {template === "messenger" && (
+                            <div className="mt-1 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                              {["👍", "❤️", "👎"].map((r) => (
+                                <button
+                                  key={r}
+                                  onClick={() => setReactions((prev) => ({ ...prev, [message.id]: r }))}
+                                  className={`text-[11px] px-1 rounded hover:bg-black/10 dark:hover:bg-white/10 ${
+                                    reactions[message.id] === r ? "bg-black/10 dark:bg-white/10" : ""
+                                  }`}
+                                  aria-label={`React ${r}`}
+                                >
+                                  {r}
+                                </button>
+                              ))}
+                              {reactions[message.id] && (
+                                <span className="ml-1 text-[11px] opacity-70">{reactions[message.id]}</span>
+                              )}
+                            </div>
+                          )}
+                        </>
+                      )}
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
               <div ref={messagesEndRef} />
+              {(template === "glassdock" || template === "messenger") && showScrollDown && (
+                <button
+                  onClick={() => messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })}
+                  className="absolute bottom-3 left-1/2 -translate-x-1/2 px-3 py-1.5 rounded-full bg-black/60 text-white text-xs backdrop-blur hover:bg-black/70"
+                >
+                  New messages ↓
+                </button>
+              )}
             </div>
 
             {/* Input */}
@@ -478,7 +583,9 @@ export const ChatTemplate = ({
                 <button
                   onClick={sendMessage}
                   disabled={!inputValue.trim() || isLoading}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  className={`px-4 py-2 text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors ${
+                    template === "glassdock" ? "bg-primary-600 hover:bg-primary-700 shadow" : "bg-blue-600 hover:bg-blue-700"
+                  }`}
                 >
                   {isLoading ? (
                     <Loader className="w-4 h-4 animate-spin" />
@@ -487,6 +594,19 @@ export const ChatTemplate = ({
                   )}
                 </button>
               </div>
+              {(template === "glassdock" || template === "messenger") && (
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {["What can you do?", "Summarize our pricing", "How to integrate?"].map((q) => (
+                    <button
+                      key={q}
+                      onClick={() => setInputValue(q)}
+                      className="px-2.5 py-1 text-xs rounded-full border border-gray-300/70 dark:border-gray-700/70 hover:bg-gray-50 dark:hover:bg-gray-800"
+                    >
+                      {q}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           </>
         )}
