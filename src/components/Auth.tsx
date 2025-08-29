@@ -21,26 +21,120 @@ import { useTranslation } from "../hooks/useTranslation";
 const leftBgLight = "bg-gradient-to-br from-primary-500 to-accent-500";
 const leftBgDark = "bg-gradient-to-br from-gray-900 to-primary-900";
 
-const rocketVector = (
-  <svg
-    width="160"
-    height="160"
-    fill="none"
-    viewBox="0 0 160 160"
-    className="mx-auto mb-8"
-  >
-    <circle cx="80" cy="80" r="80" fill="white" fillOpacity="0.05" />
-    <path
-      d="M80 40l10 40h-20l10-40z"
-      fill="none"
-      stroke="white"
-      strokeWidth="3"
-    />
-    <circle cx="80" cy="110" r="6" fill="white" fillOpacity="0.2" />
-    <circle cx="60" cy="100" r="3" fill="white" fillOpacity="0.2" />
-    <circle cx="100" cy="100" r="3" fill="white" fillOpacity="0.2" />
-  </svg>
-);
+// On-brand animated mini chat preview
+function HeroPreview({ mode, theme }: { mode: "login" | "signup"; theme: "light" | "dark" }) {
+  const { t } = useTranslation();
+
+  const sequences: Record<string, string[]> = {
+    signup: [
+      t("auth_hero.signup.msg1", "Hi! I turn your docs into an AI assistant."),
+      t("auth_hero.signup.msg2", "Connect Slack/Discord or embed in minutes."),
+      t("auth_hero.signup.msg3", "Ready to create your first bot?"),
+    ],
+    login: [
+      t("auth_hero.login.msg1", "Welcome back! Your bots missed you."),
+      t("auth_hero.login.msg2", "New: better analytics and source citations."),
+      t("auth_hero.login.msg3", "Pick up where you left off."),
+    ],
+  };
+
+  const msgs = sequences[mode] ?? sequences.signup;
+  const [index, setIndex] = useState(0);
+  const [typing, setTyping] = useState(true);
+
+  useEffect(() => {
+    let mounted = true;
+    setIndex(0);
+    setTyping(true);
+    const tick = (i: number) => {
+      if (!mounted) return;
+      setTyping(true);
+      const typeMs = 700 + Math.random() * 600;
+      const holdMs = 1400 + Math.random() * 800;
+      setTimeout(() => {
+        if (!mounted) return;
+        setTyping(false);
+        setIndex(i);
+        setTimeout(() => {
+          if (!mounted) return;
+          if (i + 1 < msgs.length) tick(i + 1);
+        }, holdMs);
+      }, typeMs);
+    };
+    tick(0);
+    return () => {
+      mounted = false;
+    };
+  }, [mode]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const isDark = theme === "dark";
+  return (
+    <div className="mx-auto mb-8 w-full max-w-xs">
+      <div className="rounded-2xl bg-white/15 backdrop-blur-lg border border-white/20 shadow-lg overflow-hidden">
+        <div className="px-4 py-3 flex items-center justify-between bg-white/10">
+          <div className="flex items-center gap-2 text-white/90">
+            <div className="w-6 h-6 rounded-full bg-white/30 flex items-center justify-center">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="opacity-90"><path d="M12 12c2.21 0 4-1.343 4-3s-1.79-3-4-3-4 1.343-4 3 1.79 3 4 3Z"/><path d="M6 19v-1a6 6 0 0 1 12 0v1"/></svg>
+            </div>
+            <span className="text-sm font-semibold">
+              {t("auth_hero.assistant_title", "Assistant")}
+            </span>
+          </div>
+          <span className="text-[10px] text-white/70">
+            {t("auth_hero.status_online", "Online")}
+          </span>
+        </div>
+        <div className="p-4 space-y-3">
+          {/* Bot 1 */}
+          <div className={`max-w-[85%] ${isDark ? "bg-white/80 text-gray-900" : "bg-white/90 text-gray-900"} rounded-2xl rounded-bl-md px-3 py-2 text-xs`}>
+            {msgs[0]}
+          </div>
+          {/* User */}
+          <div className="flex justify-end">
+            <div className="max-w-[85%] bg-primary-600 text-white rounded-2xl rounded-br-md px-3 py-2 text-xs shadow">
+              {mode === "signup"
+                ? t("auth_hero.user.signup_prompt", "How do I embed it?")
+                : t("auth_hero.user.login_prompt", "Show me analytics")}
+            </div>
+          </div>
+          {/* Bot 2 or typing */}
+          {index >= 1 ? (
+            <div className={`max-w-[85%] ${isDark ? "bg-white/80 text-gray-900" : "bg-white/90 text-gray-900"} rounded-2xl rounded-bl-md px-3 py-2 text-xs`}>
+              {msgs[1]}
+            </div>
+          ) : typing ? (
+            <div className={`max-w-[85%] ${isDark ? "bg-white/70" : "bg-white/80"} rounded-2xl rounded-bl-md px-3 py-2 text-xs flex items-center gap-1`}>
+              <span className="w-1.5 h-1.5 bg-gray-500 rounded-full animate-bounce [animation-delay:-0.2s]" />
+              <span className="w-1.5 h-1.5 bg-gray-500 rounded-full animate-bounce [animation-delay:-0.1s]" />
+              <span className="w-1.5 h-1.5 bg-gray-500 rounded-full animate-bounce" />
+            </div>
+          ) : null}
+          {/* Bot 3 */}
+          {index >= 2 && (
+            <div className={`max-w-[85%] ${isDark ? "bg-white/80 text-gray-900" : "bg-white/90 text-gray-900"} rounded-2xl rounded-bl-md px-3 py-2 text-xs`}>
+              {msgs[2]}
+            </div>
+          )}
+          {/* fun chips */}
+          <div className="flex flex-wrap gap-2 pt-1">
+            {[
+              t("auth_hero.chip.docs", "Docs"),
+              t("auth_hero.chip.embed", "Embed"),
+              t("auth_hero.chip.analytics", "Analytics"),
+            ].map((chip, i) => (
+              <span
+                key={chip}
+                className={`text-[10px] px-2 py-1 rounded-full border ${isDark ? "border-white/30 text-white/80" : "border-white/60 text-white/90"} bg-white/10 backdrop-blur ${i === index % 3 ? "ring-1 ring-white/40" : ""}`}
+              >
+                {chip}
+              </span>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export function Auth() {
   const { t } = useTranslation();
@@ -60,8 +154,7 @@ export function Auth() {
   const [error, setError] = useState("");
   const { signInWithGitHub, signInWithDiscord } = useAuth();
   const [showEmailConfirmation, setShowEmailConfirmation] = useState(false);
-  const { user, emailConfirmed, loading, signUp, signIn, resetPassword } =
-    useAuth();
+  const { user, emailConfirmed, loading, signUp, signIn, resetPassword } = useAuth();
   const { theme } = useTheme();
   const location = useLocation();
   const navigate = useNavigate();
@@ -105,15 +198,9 @@ export function Auth() {
     if (mode === "signup" && form.name.trim().length < 2)
       errs.name = t("auth_error_name_required", "Enter your full name");
     if (form.password.length < 6)
-      errs.password = t(
-        "auth_error_password_length",
-        "Password must be at least 6 characters"
-      );
+      errs.password = t("auth_error_password_length", "Password must be at least 6 characters");
     if (mode === "signup" && form.password !== form.confirm)
-      errs.confirm = t(
-        "auth_error_password_mismatch",
-        "Passwords do not match"
-      );
+      errs.confirm = t("auth_error_password_mismatch", "Passwords do not match");
     return errs;
   };
 
@@ -127,10 +214,7 @@ export function Auth() {
         ? (err as any).message
         : "";
 
-    if (
-      message.includes("Invalid login credentials") ||
-      message.includes("invalid_credentials")
-    )
+    if (message.includes("Invalid login credentials") || message.includes("invalid_credentials"))
       return t(
         "auth_error_invalid_credentials",
         "The email or password you entered is incorrect. Please check your credentials and try again."
@@ -146,29 +230,14 @@ export function Auth() {
         "No account found with this email address. Please check your email or sign up for a new account."
       );
     if (message.includes("Password should be at least"))
-      return t(
-        "auth_error_password_length",
-        "Password must be at least 6 characters"
-      );
+      return t("auth_error_password_length", "Password must be at least 6 characters");
     if (message.includes("Unable to validate email address"))
-      return t(
-        "auth_error_invalid_email",
-        "Please enter a valid email address."
-      );
+      return t("auth_error_invalid_email", "Please enter a valid email address.");
     if (message.includes("Email rate limit exceeded"))
-      return t(
-        "auth_error_rate_limit",
-        "Too many email attempts. Please wait a few minutes before trying again."
-      );
+      return t("auth_error_rate_limit", "Too many email attempts. Please wait a few minutes before trying again.");
     if (message.includes("Signup is disabled"))
-      return t(
-        "auth_error_signup_disabled",
-        "Account registration is currently disabled. Please contact support."
-      );
-    return (
-      message ||
-      t("auth_error_generic", "An unexpected error occurred. Please try again.")
-    );
+      return t("auth_error_signup_disabled", "Account registration is currently disabled. Please contact support.");
+    return message || t("auth_error_generic", "An unexpected error occurred. Please try again.");
   };
 
   // Submit handler
@@ -186,24 +255,14 @@ export function Auth() {
         const { error } = await resetPassword(form.email);
         if (error) setError(getErrorMessage(error));
         else {
-          setSuccess(
-            t(
-              "auth_reset_sent",
-              "Password reset email sent! Check your inbox and spam folder."
-            )
-          );
+          setSuccess(t("auth_reset_sent", "Password reset email sent! Check your inbox and spam folder."));
           setIsResetPassword(false);
         }
       } else if (mode === "signup") {
         const { error } = await signUp(form.email, form.password, form.name);
         if (error) setError(getErrorMessage(error));
         else {
-          setSuccess(
-            t(
-              "auth_signup_success",
-              "Account created! Please check your email to confirm your account."
-            )
-          );
+          setSuccess(t("auth_signup_success", "Account created! Please check your email to confirm your account."));
           setShowEmailConfirmation(true);
         }
       } else {
@@ -216,12 +275,7 @@ export function Auth() {
         }
       }
     } catch {
-      setError(
-        t(
-          "auth_error_generic",
-          "An unexpected error occurred. Please try again."
-        )
-      );
+      setError(t("auth_error_generic", "An unexpected error occurred. Please try again."));
     } finally {
       setSubmitting(false);
     }
@@ -258,7 +312,7 @@ export function Auth() {
             transition={{ duration: 0.4 }}
             className="text-center text-white max-w-lg mx-auto"
           >
-            {rocketVector}
+            <HeroPreview mode={mode} theme={theme === "dark" ? "dark" : "light"} />
             <h2 className="text-4xl font-bold mb-6 font-display tracking-tight">
               {isResetPassword
                 ? t("auth_left_title_reset", "Reset Password")
@@ -268,10 +322,7 @@ export function Auth() {
             </h2>
             <p className="text-lg leading-relaxed">
               {isResetPassword
-                ? t(
-                    "auth_left_desc_reset",
-                    "Enter your email to receive a password reset link."
-                  )
+                ? t("auth_left_desc_reset", "Enter your email to receive a password reset link.")
                 : mode === "signup"
                 ? t(
                     "auth_left_desc_signup",
@@ -287,7 +338,7 @@ export function Auth() {
       </div>
 
       {/* Right Side */}
-      <div className="w/full min-h-screen flex flex-col justify-center items-center bg-white dark:bg-gray-900 transition-colors duration-500 p-6">
+      <div className="w-full min-h-screen flex flex-col justify-center items-center bg-white dark:bg-gray-900 transition-colors duration-500 p-6">
         <div className="w-full max-w-md mx-auto">
           {/* Logo */}
           <div className="flex justify-between items-center mb-8">
@@ -366,19 +417,12 @@ export function Auth() {
                       value={form.name}
                       onChange={handleInputChange}
                       className={`w-full pl-10 pr-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-400 transition ${
-                        errors.name
-                          ? "border-red-400"
-                          : "border-gray-300 dark:border-gray-700"
+                        errors.name ? "border-red-400" : "border-gray-300 dark:border-gray-700"
                       }`}
-                      placeholder={t(
-                        "auth_placeholder_full_name",
-                        "Enter your full name"
-                      )}
+                      placeholder={t("auth_placeholder_full_name", "Enter your full name")}
                     />
                   </div>
-                  {errors.name && (
-                    <p className="mt-1 text-xs text-red-600">{errors.name}</p>
-                  )}
+                  {errors.name && <p className="mt-1 text-xs text-red-600">{errors.name}</p>}
                 </div>
               )}
 
@@ -394,19 +438,12 @@ export function Auth() {
                     value={form.email}
                     onChange={handleInputChange}
                     className={`w-full pl-10 pr-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-400 transition ${
-                      errors.email
-                        ? "border-red-400"
-                        : "border-gray-300 dark:border-gray-700"
+                      errors.email ? "border-red-400" : "border-gray-300 dark:border-gray-700"
                     }`}
-                    placeholder={t(
-                      "auth_placeholder_email",
-                      "Enter your e-mail address"
-                    )}
+                    placeholder={t("auth_placeholder_email", "Enter your e-mail address")}
                   />
                 </div>
-                {errors.email && (
-                  <p className="mt-1 text-xs text-red-600">{errors.email}</p>
-                )}
+                {errors.email && <p className="mt-1 text-xs text-red-600">{errors.email}</p>}
               </div>
 
               {!isResetPassword && (
@@ -427,40 +464,21 @@ export function Auth() {
                       value={form.password}
                       onChange={handleInputChange}
                       className={`w-full pl-10 pr-12 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-400 transition ${
-                        errors.password
-                          ? "border-red-400"
-                          : "border-gray-300 dark:border-gray-700"
+                        errors.password ? "border-red-400" : "border-gray-300 dark:border-gray-700"
                       }`}
-                      placeholder={t(
-                        "auth_placeholder_password",
-                        "Enter your password"
-                      )}
+                      placeholder={t("auth_placeholder_password", "Enter your password")}
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword((v) => !v)}
                       className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700"
-                      aria-label={t(
-                        "auth_toggle_password",
-                        "Toggle password visibility"
-                      )}
-                      title={t(
-                        "auth_toggle_password",
-                        "Toggle password visibility"
-                      )}
+                      aria-label={t("auth_toggle_password", "Toggle password visibility")}
+                      title={t("auth_toggle_password", "Toggle password visibility")}
                     >
-                      {showPassword ? (
-                        <EyeOff className="w-5 h-5" />
-                      ) : (
-                        <Eye className="w-5 h-5" />
-                      )}
+                      {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                     </button>
                   </div>
-                  {errors.password && (
-                    <p className="mt-1 text-xs text-red-600">
-                      {errors.password}
-                    </p>
-                  )}
+                  {errors.password && <p className="mt-1 text-xs text-red-600">{errors.password}</p>}
                 </div>
               )}
 
@@ -477,50 +495,27 @@ export function Auth() {
                       value={form.confirm}
                       onChange={handleInputChange}
                       className={`w-full pl-10 pr-12 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-400 transition ${
-                        errors.confirm
-                          ? "border-red-400"
-                          : "border-gray-300 dark:border-gray-700"
+                        errors.confirm ? "border-red-400" : "border-gray-300 dark:border-gray-700"
                       }`}
-                      placeholder={t(
-                        "auth_placeholder_confirm_password",
-                        "Confirm your password"
-                      )}
+                      placeholder={t("auth_placeholder_confirm_password", "Confirm your password")}
                     />
                     <button
                       type="button"
                       onClick={() => setShowConfirmPassword((v) => !v)}
                       className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700"
-                      aria-label={t(
-                        "auth_toggle_confirm_password",
-                        "Toggle confirm password visibility"
-                      )}
-                      title={t(
-                        "auth_toggle_confirm_password",
-                        "Toggle confirm password visibility"
-                      )}
+                      aria-label={t("auth_toggle_confirm_password", "Toggle confirm password visibility")}
+                      title={t("auth_toggle_confirm_password", "Toggle confirm password visibility")}
                     >
-                      {showConfirmPassword ? (
-                        <EyeOff className="w-5 h-5" />
-                      ) : (
-                        <Eye className="w-5 h-5" />
-                      )}
+                      {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                     </button>
                   </div>
-                  {errors.confirm && (
-                    <p className="mt-1 text-xs text-red-600">
-                      {errors.confirm}
-                    </p>
-                  )}
+                  {errors.confirm && <p className="mt-1 text-xs text-red-600">{errors.confirm}</p>}
                 </div>
               )}
 
               {mode === "signup" && !isResetPassword && (
                 <div className="flex items-center mt-2">
-                  <input
-                    type="checkbox"
-                    required
-                    className="mr-2 accent-primary-600 rounded"
-                  />
+                  <input type="checkbox" required className="mr-2 accent-primary-600 rounded" />
                   <span className="text-xs text-gray-600 dark:text-gray-400">
                     {t("auth_terms_prefix", "By signing up you agree")}{" "}
                     <a href="#" className="underline">
@@ -544,9 +539,7 @@ export function Auth() {
                 ) : (
                   t("auth_cta_signin", "Sign In")
                 )}
-                {!submitting && !isResetPassword && (
-                  <ArrowRight className="ml-2 w-4 h-4" />
-                )}
+                {!submitting && !isResetPassword && <ArrowRight className="ml-2 w-4 h-4" />}
               </button>
             </motion.form>
           </AnimatePresence>

@@ -1310,5 +1310,23 @@
   "integrations.docs.api": "API Documentation",
   "integrations.docs.api_desc": "Complete API reference and integration guidelines",
   "integrations.docs.wizard": "Setup Wizard",
-  "integrations.docs.wizard_desc": "Step-by-step integration guide for all platforms"
+  "integrations.docs.wizard_desc": "Step-by-step integration guide for all platforms",
+
+  "auth_hero.assistant_title": "Assistant",
+  "auth_hero.status_online": "Online",
+
+  "auth_hero.signup.msg1": "Hi! I turn your docs into an AI assistant.",
+  "auth_hero.signup.msg2": "Connect Slack/Discord or embed in minutes.",
+  "auth_hero.signup.msg3": "Ready to create your first bot?",
+
+  "auth_hero.login.msg1": "Welcome back! Your bots missed you.",
+  "auth_hero.login.msg2": "New: better analytics and source citations.",
+  "auth_hero.login.msg3": "Pick up where you left off.",
+
+  "auth_hero.user.signup_prompt": "How do I embed it?",
+  "auth_hero.user.login_prompt": "Show me analytics",
+
+  "auth_hero.chip.docs": "Docs",
+  "auth_hero.chip.embed": "Embed",
+  "auth_hero.chip.analytics": "Analytics"
 }

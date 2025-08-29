@@ -1102,3 +1102,16 @@ checksums:
     integrations.docs.api_desc: 1dbbfdc5595dade2217750961b6f1e2a
     integrations.docs.wizard: a8a762174fabd7b30c3a96bb5bf5f0ad
     integrations.docs.wizard_desc: 094bd618a219305cd37212b10a1ff92c
+    auth_hero.assistant_title: 30a8b9d635a88b0226419e0670d4ca88
+    auth_hero.status_online: b988abd1b05f72282fabef5c5cd5794e
+    auth_hero.signup.msg1: b700a210dffed985c3f91aaea89d420c
+    auth_hero.signup.msg2: 66b42fe44c82da3ad389a63a0c4019ad
+    auth_hero.signup.msg3: 0887be9dbc5d3a17f1dbb8fd6d3d9972
+    auth_hero.login.msg1: c355feb5a5b177382fb8a2246e3fc6a9
+    auth_hero.login.msg2: f5f1111399edfb25b14987423aac05fc
+    auth_hero.login.msg3: 30b32177569d4b0f28f16ee094bbd9b2
+    auth_hero.user.signup_prompt: 6e3ff0f916693c9bfd749009d7b122c5
+    auth_hero.user.login_prompt: 62cf08cbe3a3e556a77458a68f0aee61
+    auth_hero.chip.docs: 55fea190a0c0fb32acd3dc986cd3cc91
+    auth_hero.chip.embed: 61837ea9c7b814b23d6a22bbe0f5ba51
+    auth_hero.chip.analytics: ec67586974cc78f25959d47bb36683a7

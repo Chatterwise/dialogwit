@@ -1099,5 +1099,18 @@
   "integrations.docs.api": "API-Dokumentation",
   "integrations.docs.api_desc": "Vollständige API-Referenz und Integrationsrichtlinien",
   "integrations.docs.wizard": "Einrichtungsassistent",
-  "integrations.docs.wizard_desc": "Schrittweise Integrationsanleitung für alle Plattformen"
+  "integrations.docs.wizard_desc": "Schrittweise Integrationsanleitung für alle Plattformen",
+  "auth_hero.assistant_title": "Assistent",
+  "auth_hero.status_online": "Online",
+  "auth_hero.signup.msg1": "Hallo! Ich verwandle deine Dokumente in einen KI-Assistenten.",
+  "auth_hero.signup.msg2": "Verbinde Slack/Discord oder bette ihn in Minuten ein.",
+  "auth_hero.signup.msg3": "Bereit, deinen ersten Bot zu erstellen?",
+  "auth_hero.login.msg1": "Willkommen zurück! Deine Bots haben dich vermisst.",
+  "auth_hero.login.msg2": "Neu: bessere Analytik und Quellenangaben.",
+  "auth_hero.login.msg3": "Mach da weiter, wo du aufgehört hast.",
+  "auth_hero.user.signup_prompt": "Wie kann ich ihn einbetten?",
+  "auth_hero.user.login_prompt": "Zeig mir die Analytik",
+  "auth_hero.chip.docs": "Dokumente",
+  "auth_hero.chip.embed": "Einbetten",
+  "auth_hero.chip.analytics": "Analytik"
 }
