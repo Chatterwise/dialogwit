@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Send, Bot, Loader, X, Minimize2, Maximize2 } from "lucide-react";
+import { useHttp } from "../../lib/http";
 
 interface Message {
   id: string;
@@ -74,20 +75,21 @@ export const ChatTemplate = ({
     light: "bg-white text-gray-900",
     dark: "bg-gray-900 text-white",
   };
+  const { fetchJson } = useHttp();
 
   useEffect(() => {
     async function fetchBotMetadata() {
       try {
-        const response = await fetch(
-          `${apiUrl}/bot-metadata?chatbot_id=${botId}`,
-          {
-            headers: {
-              "Content-Type": "application/json",
-              ...(apiKey && { Authorization: `Bearer ${apiKey}` }),
-            },
-          }
-        );
-        const data = await response.json();
+        const data = await fetchJson<{
+          name?: string;
+          welcome_message?: string;
+          placeholder?: string;
+          bot_avatar?: string;
+        }>(`${apiUrl}/bot-metadata?chatbot_id=${botId}`, {
+          headers: apiKey ? { Authorization: `Bearer ${apiKey}` } : undefined,
+          timeoutMs: 10000,
+          retries: 1,
+        });
         if (data?.name) {
           setBotMetadata({
             name: data.name,
@@ -97,11 +99,11 @@ export const ChatTemplate = ({
           });
         }
       } catch (err) {
-        console.error("Failed to fetch bot metadata", err);
+        // toast via useHttp already
       }
     }
     fetchBotMetadata();
-  }, [botId]);
+  }, [botId, apiUrl, apiKey, fetchJson]);
 
   useEffect(() => {
     if (messages.length === 0 && botMetadata?.welcome_message !== "") {

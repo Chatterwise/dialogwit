@@ -22,6 +22,7 @@ import { Header } from "./ui/Header";
 import { motion, AnimatePresence } from "framer-motion";
 import { Logo } from "./ui/Logo";
 import { useTranslation } from "../hooks/useTranslation";
+import { Helmet } from "react-helmet-async";
 
 // Navigation config (labels are translated at render time)
 const mainNavigation = [
@@ -101,6 +102,9 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
 
   return (
     <div className="flex h-screen bg-gradient-to-br from-primary-50 via-white to-accent-50 font-sans dark:bg-gradient-to-br dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 transition-colors duration-300">
+      <Helmet>
+        <meta name="robots" content="noindex, nofollow" />
+      </Helmet>
       {/* Mobile sidebar overlay */}
       <AnimatePresence>
         {sidebarOpen && (

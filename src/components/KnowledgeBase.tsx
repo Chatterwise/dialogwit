@@ -18,6 +18,7 @@ import { ChatbotSelector } from "./ChatbotSelector";
 import { KnowledgeEditorModal } from "./KnowledgeEditorModal";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "../lib/supabase";
+import { fetchWithRetry } from "../lib/http";
 import BotKnowledgeContent from "./BotKnowledgeContent";
 import { useProcessLargeDocument } from "../hooks/useProcessLargeDocument";
 import { KnowledgeItem } from "./utils/types";
@@ -123,7 +124,7 @@ export const KnowledgeBase = () => {
 
         // 3) Mirror to OpenAI Vector Store
         const session = (await supabase.auth.getSession()).data.session;
-        const r = await fetch(
+        const r = await fetchWithRetry(
           `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/sync-kb-to-openai`,
           {
             method: "POST",
@@ -132,6 +133,8 @@ export const KnowledgeBase = () => {
               Authorization: `Bearer ${session?.access_token}`,
             },
             body: JSON.stringify({ knowledge_base_id: kb.id }),
+            timeoutMs: 20000,
+            retries: 1,
           }
         );
 
@@ -172,7 +175,7 @@ export const KnowledgeBase = () => {
           );
 
         const session = (await supabase.auth.getSession()).data.session;
-        const r = await fetch(
+        const r = await fetchWithRetry(
           `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/sync-kb-to-openai`,
           {
             method: "POST",
@@ -181,6 +184,8 @@ export const KnowledgeBase = () => {
               Authorization: `Bearer ${session?.access_token}`,
             },
             body: JSON.stringify({ knowledge_base_id: kb.id }),
+            timeoutMs: 20000,
+            retries: 1,
           }
         );
 

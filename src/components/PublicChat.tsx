@@ -14,6 +14,7 @@ import { useChatStream } from "../hooks/useChatStream";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { readSSE } from "./utils/sse";
+import { fetchEventStream } from "../lib/http";
 
 interface Message {
   id: string;
@@ -86,12 +87,11 @@ export const PublicChat = () => {
       const base = import.meta.env.VITE_SUPABASE_URL as string;
       const anon = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
 
-      const res = await fetch(`${base}/functions/v1/chat-file-search`, {
+      const res = await fetchEventStream(`${base}/functions/v1/chat-file-search`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           apikey: anon,
-          Accept: "text/event-stream",
         },
         cache: "no-store",
         body: JSON.stringify({
@@ -99,6 +99,8 @@ export const PublicChat = () => {
           message: userMessage.text,
           stream: true,
         }),
+        timeoutMs: 20000,
+        retries: 1,
       });
 
       let full = "";

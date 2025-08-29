@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Helmet } from "react-helmet-async";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import { useBilling } from "../hooks/useBilling";
@@ -125,6 +126,24 @@ const PricingPlans: React.FC = () => {
 
   return (
     <div className="relative min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 dark:from-gray-900 dark:to-gray-800">
+      <Helmet>
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Product",
+            name: "ChatterWise Plans",
+            description: "AI chatbot platform pricing plans",
+            brand: { "@type": "Brand", name: "ChatterWise" },
+            offers: stripeConfig.products.map(p => ({
+              "@type": "Offer",
+              price: String(p.price),
+              priceCurrency: "USD",
+              category: p.name,
+              availability: "https://schema.org/InStock",
+            }))
+          })}
+        </script>
+      </Helmet>
       {/* Subtle background accents (optional) */}
       <div className="absolute inset-0 opacity-20 dark:opacity-10" aria-hidden>
         <div className="absolute top-20 left-10 w-64 h-64 bg-primary-400/10 dark:bg-primary-400/5 rounded-full blur-3xl"></div>

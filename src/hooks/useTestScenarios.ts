@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '../lib/supabase'
+import { fetchWithRetry } from '../lib/http'
 
 export interface TestMessage {
   id: string
@@ -149,7 +150,7 @@ export const useRunTestScenario = () => {
         
         try {
           // Call the chat endpoint
-          const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat`, {
+          const response = await fetchWithRetry(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -159,7 +160,9 @@ export const useRunTestScenario = () => {
               botId: chatbotId,
               message: testMessage.message,
               userIp: 'test-scenario'
-            })
+            }),
+            timeoutMs: 20000,
+            retries: 1,
           })
 
           const responseTime = Date.now() - startTime

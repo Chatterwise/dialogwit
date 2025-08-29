@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { supabase } from "../lib/supabase";
+import { fetchWithRetry } from "../lib/http";
 
 export const useStripe = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -18,7 +19,7 @@ export const useStripe = () => {
       const lang = segments[0] || "en";
       const base = `${window.location.origin}/${lang}`;
 
-      const response = await fetch(
+      const response = await fetchWithRetry(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/stripe-checkout`,
         {
           method: "POST",
@@ -37,6 +38,8 @@ export const useStripe = () => {
             success_url: `${base}/success?session_id={CHECKOUT_SESSION_ID}`,
             cancel_url: `${base}/cancel`,
           }),
+          timeoutMs: 15000,
+          retries: 1,
         }
       );
 
@@ -67,7 +70,7 @@ export const useStripe = () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) throw new Error("You must be logged in");
 
-      const response = await fetch(
+      const response = await fetchWithRetry(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/stripe-cancel-subscription`,
         {
           method: "POST",
@@ -77,6 +80,8 @@ export const useStripe = () => {
             // apikey: import.meta.env.VITE_SUPABASE_ANON_KEY as string,
             // Accept: "application/json",
           },
+          timeoutMs: 15000,
+          retries: 1,
         }
       );
 

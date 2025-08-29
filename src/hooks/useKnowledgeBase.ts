@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "../lib/supabase";
+import { fetchWithRetry } from "../lib/http";
 
 /** Knowledge base row type (minimal, extend if you have generated types) */
 export type KnowledgeBaseRow = {
@@ -164,7 +165,7 @@ export const useRemoveKnowledgeBaseFromOpenAI = () => {
       const { data: sessionData } = await supabase.auth.getSession();
       const token = sessionData?.session?.access_token;
 
-      const r = await fetch(
+      const r = await fetchWithRetry(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/remove-kb-from-openai`,
         {
           method: "POST",
@@ -174,6 +175,8 @@ export const useRemoveKnowledgeBaseFromOpenAI = () => {
             ...(token ? { Authorization: `Bearer ${token}` } : {}),
           },
           body: JSON.stringify({ knowledge_base_id: id }),
+          timeoutMs: 20000,
+          retries: 1,
         }
       );
 

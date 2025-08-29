@@ -1112,5 +1112,17 @@
   "auth_hero.user.login_prompt": "Muéstrame las analíticas",
   "auth_hero.chip.docs": "Documentos",
   "auth_hero.chip.embed": "Integrar",
-  "auth_hero.chip.analytics": "Analíticas"
+  "auth_hero.chip.analytics": "Analíticas",
+  "i18n.modal.title": "Sugerencia de idioma",
+  "i18n.modal.subtitle": "Utilizamos geolocalización basada en IP para sugerir un idioma preferido. Elige lo que mejor funcione para ti.",
+  "common.close": "Cerrar",
+  "i18n.modal.prefers": "Parece que tu región prefiere",
+  "i18n.modal.switch": "Cambiar de",
+  "i18n.modal.to": "a",
+  "i18n.modal.privacy": "Solo usamos la ubicación de tu IP para hacer esta sugerencia. Tu elección se guardará como preferencia.",
+  "i18n.modal.keep": "Mantener",
+  "i18n.modal.switchTo": "Cambiar a",
+  "installationWizard.templates.elegant.desc": "Diseño sofisticado",
+  "language.select": "Seleccionar idioma",
+  "language.list": "Idiomas"
 }

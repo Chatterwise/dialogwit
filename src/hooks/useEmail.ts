@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "../lib/supabase";
+import { fetchWithRetry } from "../lib/http";
 import { useAuth } from "./useAuth";
 
 interface SendEmailOptions {
@@ -33,7 +34,7 @@ export const useEmail = () => {
         throw new Error("No active session");
       }
 
-      const response = await fetch(
+      const response = await fetchWithRetry(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/email/send`,
         {
           method: "POST",
@@ -42,6 +43,8 @@ export const useEmail = () => {
             Authorization: `Bearer ${session.access_token}`,
           },
           body: JSON.stringify(options),
+          timeoutMs: 15000,
+          retries: 1,
         }
       );
 
@@ -64,7 +67,7 @@ export const useEmail = () => {
         throw new Error("No active session");
       }
 
-      const response = await fetch(
+      const response = await fetchWithRetry(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/email/welcome`,
         {
           method: "POST",
@@ -72,6 +75,8 @@ export const useEmail = () => {
             "Content-Type": "application/json",
             Authorization: `Bearer ${session.access_token}`,
           },
+          timeoutMs: 15000,
+          retries: 1,
         }
       );
 
@@ -100,7 +105,7 @@ export const useEmail = () => {
         throw new Error("No active session");
       }
 
-      const response = await fetch(
+      const response = await fetchWithRetry(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/email/new-chatbot`,
         {
           method: "POST",
@@ -109,6 +114,8 @@ export const useEmail = () => {
             Authorization: `Bearer ${session.access_token}`,
           },
           body: JSON.stringify({ chatbotId, chatbotName }),
+          timeoutMs: 15000,
+          retries: 1,
         }
       );
 
@@ -136,13 +143,15 @@ export const useEmail = () => {
         throw new Error("No active session");
       }
 
-      const response = await fetch(
+      const response = await fetchWithRetry(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/email-settings`,
         {
           method: "GET",
           headers: {
             Authorization: `Bearer ${session.access_token}`,
           },
+          timeoutMs: 15000,
+          retries: 1,
         }
       );
 
@@ -167,7 +176,7 @@ export const useEmail = () => {
         throw new Error("No active session");
       }
 
-      const response = await fetch(
+      const response = await fetchWithRetry(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/email-settings`,
         {
           method: "PUT",
@@ -176,6 +185,8 @@ export const useEmail = () => {
             Authorization: `Bearer ${session.access_token}`,
           },
           body: JSON.stringify(settings),
+          timeoutMs: 15000,
+          retries: 1,
         }
       );
 

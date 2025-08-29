@@ -2,6 +2,7 @@ import { useMutation } from "@tanstack/react-query";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "./useAuth";
 import { useToast } from "../lib/toastStore";
+import { fetchWithRetry } from "../lib/http";
 
 export const useDeleteAccount = () => {
   const { signOut } = useAuth();
@@ -11,7 +12,7 @@ export const useDeleteAccount = () => {
     mutationFn: async () => {
       const session = (await supabase.auth.getSession()).data.session;
 
-      const response = await fetch(
+      const response = await fetchWithRetry(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/delete-account`,
         {
           method: "POST",
@@ -19,6 +20,8 @@ export const useDeleteAccount = () => {
             "Content-Type": "application/json",
             Authorization: `Bearer ${session?.access_token}`,
           },
+          timeoutMs: 15000,
+          retries: 1,
         }
       );
 

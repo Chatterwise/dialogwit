@@ -300,7 +300,7 @@ const LandingPage: React.FC = () => {
               ) : (
                 <Moon className="h-5 w-5 mr-2" />
               )}
-              {t("toggle_theme")}
+              {t("header_toggle_theme")}
             </button>
             <Link
               to="pricing"

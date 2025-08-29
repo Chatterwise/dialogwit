@@ -1112,5 +1112,17 @@
   "auth_hero.user.login_prompt": "Mutasd az elemzéseket",
   "auth_hero.chip.docs": "Dokumentumok",
   "auth_hero.chip.embed": "Beágyazás",
-  "auth_hero.chip.analytics": "Elemzés"
+  "auth_hero.chip.analytics": "Elemzés",
+  "i18n.modal.title": "Nyelvi javaslat",
+  "i18n.modal.subtitle": "IP-alapú földrajzi helymeghatározást használunk a preferált nyelv javaslásához. Válaszd ki, ami számodra a legjobban működik.",
+  "common.close": "Bezárás",
+  "i18n.modal.prefers": "Úgy tűnik, a régiódban preferált nyelv:",
+  "i18n.modal.switch": "Váltás innen:",
+  "i18n.modal.to": "ide:",
+  "i18n.modal.privacy": "Az IP-címed helyzetét csak erre a javaslatra használjuk. Választásod preferenciáként mentjük el.",
+  "i18n.modal.keep": "Megtartás",
+  "i18n.modal.switchTo": "Váltás erre:",
+  "installationWizard.templates.elegant.desc": "Kifinomult dizájn",
+  "language.select": "Nyelv kiválasztása",
+  "language.list": "Nyelvek"
 }

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { Send, Bot, User, Loader } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { readSSE } from "./utils/sse";
+import { fetchWithRetry } from "../lib/http";
 import { MarkdownMessage } from "./MarkdownMessage";
 import { useTranslation } from "../hooks/useTranslation";
 
@@ -135,7 +136,7 @@ export const ChatPreview = ({ botId }: { botId?: string }) => {
       const { data: sessionData } = await supabase.auth.getSession();
       const bearer = sessionData.session?.access_token ?? anon;
 
-      const res = await fetch(`${base}/functions/v1/chat-file-search`, {
+      const res = await fetchWithRetry(`${base}/functions/v1/chat-file-search`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -150,6 +151,8 @@ export const ChatPreview = ({ botId }: { botId?: string }) => {
           ...(threadId ? { thread_id: threadId } : {}),
           stream: true,
         }),
+        timeoutMs: 20000,
+        retries: 1,
       });
 
       let full = "";

@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '../lib/supabase'
+import { fetchWithRetry } from '../lib/http'
 
 export interface Webhook {
   id: string
@@ -113,13 +114,15 @@ export const useDeleteWebhook = () => {
 export const useTestWebhook = () => {
   return useMutation({
     mutationFn: async (webhookId: string) => {
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/webhooks/test`, {
+      const response = await fetchWithRetry(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/webhooks/test`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`
         },
-        body: JSON.stringify({ webhook_id: webhookId })
+        body: JSON.stringify({ webhook_id: webhookId }),
+        timeoutMs: 15000,
+        retries: 1,
       })
 
       if (!response.ok) {

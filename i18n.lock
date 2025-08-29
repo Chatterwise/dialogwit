@@ -1115,3 +1115,15 @@ checksums:
     auth_hero.chip.docs: 55fea190a0c0fb32acd3dc986cd3cc91
     auth_hero.chip.embed: 61837ea9c7b814b23d6a22bbe0f5ba51
     auth_hero.chip.analytics: ec67586974cc78f25959d47bb36683a7
+    i18n.modal.title: 1a9da79e5400d1553c9ccc8dc49a21f5
+    i18n.modal.subtitle: d13f05118f07e5e6d5ff9dc89947875a
+    common.close: 2c2e22f8424a1031de89063bd0022e16
+    i18n.modal.prefers: 940e87126851fd87bbd709f01b5849b6
+    i18n.modal.switch: 405cd0ddd28468eba135c747c7e01dd5
+    i18n.modal.to: 81f480a4c52ff7185e42b4b5c00376a7
+    i18n.modal.privacy: 3161aa49c0b85017071bc430b52ac92c
+    i18n.modal.keep: e5dd61d1a3cb2bff31458703153fd794
+    i18n.modal.switchTo: f58062ac569060f756021e99e8ecf683
+    installationWizard.templates.elegant.desc: bf69141f044aa665bb74b41e83d0df10
+    language.select: 7fa8806eeb911aa9ba9f013b274a2e47
+    language.list: 2d2a54a7cbbf640ba2aff643a8a3c7c1
