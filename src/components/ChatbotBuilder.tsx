@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Bot, ChevronRight } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
-import { useCreateChatbot, useRoleTemplates } from "../hooks/useChatbots";
+import { useCreateChatbot } from "../hooks/useChatbots";
 import { useEmail } from "../hooks/useEmail";
 import { useTranslation } from "../hooks/useTranslation";
 import { useLanguage } from "../contexts/LanguageContext";
@@ -14,12 +14,12 @@ export const ChatbotBuilder = () => {
   const { user } = useAuth();
   const createChatbot = useCreateChatbot();
   const { sendNewChatbotEmail } = useEmail();
-  const { data: templates } = useRoleTemplates();
-
   const [formData, setFormData] = useState({
     name: "",
     description: "",
-    bot_role_template_id: null as string | null,
+    welcome_message: "",
+    fallback_message: "",
+    placeholder: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -29,18 +29,15 @@ export const ChatbotBuilder = () => {
     setIsSubmitting(true);
 
     try {
-      const selectedTemplate = templates?.find(
-        (t) => t.id === formData.bot_role_template_id
-      );
       const chatbot = await createChatbot.mutateAsync({
         name: formData.name,
         description: formData.description,
         user_id: user.id,
-        bot_role_template_id: formData.bot_role_template_id,
+        welcome_message: formData.welcome_message || null,
+        fallback_message: formData.fallback_message || null,
         placeholder:
-          selectedTemplate?.placeholder ??
-          t("builder_placeholder_default", "Ask me anything..."),
-        bot_avatar: selectedTemplate?.bot_avatar ?? null,
+          formData.placeholder || t("builder_placeholder_default", "Ask me anything..."),
+        bot_avatar: null,
         status: "processing",
       });
 
@@ -69,7 +66,7 @@ export const ChatbotBuilder = () => {
           <p className="mt-2 text-gray-600 dark:text-gray-400">
             {t(
               "builder_subtitle",
-              "Give your chatbot a name, role and description."
+              "Give your chatbot a name and basic messages."
             )}
           </p>
         </div>
@@ -97,34 +94,21 @@ export const ChatbotBuilder = () => {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              {t("builder_field_template_label", "Role Template")}
+              {t("cb_settings_label_welcome", "Welcome Message")}
             </label>
-            <select
-              value={formData.bot_role_template_id ?? ""}
+            <input
+              type="text"
+              value={formData.welcome_message}
               onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  bot_role_template_id: e.target.value || null,
-                })
+                setFormData({ ...formData, welcome_message: e.target.value })
               }
               className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-primary-400 transition"
-              aria-label={t("builder_field_template_label", "Role Template")}
-            >
-              <option value="">
-                {t("builder_field_template_none", "No role template")}
-              </option>
-              {templates?.map((template) => (
-                <option key={template.id} value={template.id}>
-                  {template.name}
-                </option>
-              ))}
-            </select>
-            <p className="text-xs text-gray-500 mt-1">
-              {t(
-                "builder_field_template_help",
-                "Select a predefined chatbot behavior."
+              placeholder={t(
+                "cb_settings_ph_welcome",
+                "Hello! How can I help you today?"
               )}
-            </p>
+              aria-label={t("cb_settings_label_welcome", "Welcome Message")}
+            />
           </div>
 
           <div>
@@ -145,6 +129,56 @@ export const ChatbotBuilder = () => {
               required
               aria-label={t("builder_field_description_label", "Description")}
             />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              {t("cb_settings_label_fallback", "Fallback (No-answer) Message")}
+            </label>
+            <input
+              type="text"
+              value={formData.fallback_message}
+              onChange={(e) =>
+                setFormData({ ...formData, fallback_message: e.target.value })
+              }
+              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-primary-400 transition"
+              placeholder={t(
+                "cb_settings_ph_fallback",
+                "Sorry, I don’t have that information yet."
+              )}
+              aria-label={t(
+                "cb_settings_label_fallback",
+                "Fallback (No-answer) Message"
+              )}
+            />
+            <p className="text-xs text-gray-500 mt-1">
+              {t(
+                "cb_settings_help_fallback",
+                "Used when the bot can’t find the answer in its knowledge files."
+              )}
+            </p>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              {t("cb_settings_label_placeholder", "Input Placeholder")}
+            </label>
+            <input
+              type="text"
+              value={formData.placeholder}
+              onChange={(e) =>
+                setFormData({ ...formData, placeholder: e.target.value })
+              }
+              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-primary-400 transition"
+              placeholder={t("cb_settings_ph_placeholder", "Type your message...")}
+              aria-label={t("cb_settings_label_placeholder", "Input Placeholder")}
+            />
+            <p className="text-xs text-gray-500 mt-1">
+              {t(
+                "cb_settings_help_placeholder",
+                "Text shown in the input field before the user types"
+              )}
+            </p>
           </div>
 
           <button
