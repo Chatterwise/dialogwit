@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file. See [standa
 
 ## [Unreleased]
 
+### 1.1.3 (2025-08-29)
+
 ### Fixed
 
 - i18n: Persist language preference; auto-detect via browser/IP with consent modal (localStorage + cookie) (lang)
