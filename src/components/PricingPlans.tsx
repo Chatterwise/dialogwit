@@ -176,12 +176,12 @@ const PricingPlans: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
           {stripeConfig.products.map((plan, idx) => {
             const isCurrentPlan = user
-              ? plan.name
+              ? t(plan.name)
                   .toLowerCase()
-                  .includes(subscription?.plan_name || "") ||
-                plan.price ===
-                  (subscription?.subscription_plans?.price_monthly || 0)
+                  .includes(subscription?.plan_name?.toLowerCase() || "") ||
+                plan.price === (subscription?.subscription_plans?.price_monthly || 0)
               : false;
+          
             const isFreePlan = user ? plan.price === 0 : false;
 
             return (
@@ -208,10 +208,10 @@ const PricingPlans: React.FC = () => {
                   {/* Plan Header */}
                   <div className="text-center mb-6">
                     <div className="flex justify-center mb-4">
-                      {getPlanIcon(plan.name)}
+                      {getPlanIcon(t(plan.name))}
                     </div>
                     <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
-                      {plan.name.replace("Chatterwise ", "")}
+                      {t(plan.name)}
                     </h3>
                     <div className="mb-4">
                       <span className="text-4xl font-bold text-gray-9 dark:text-white">
@@ -222,7 +222,7 @@ const PricingPlans: React.FC = () => {
                       </span>
                     </div>
                     <p className="text-gray-600 dark:text-gray-300 text-sm">
-                      {plan.description}
+                      {t(plan.description)}
                     </p>
                   </div>
 
@@ -232,7 +232,7 @@ const PricingPlans: React.FC = () => {
                       <div key={index} className="flex items-start">
                         <Check className="w-5 h-5 text-green-500 dark:text-green-400 mr-3 mt-0.5 flex-shrink-0" />
                         <span className="text-gray-7 dark:text-gray-300 text-sm">
-                          {feature}
+                          {t(feature)}
                         </span>
                       </div>
                     ))}

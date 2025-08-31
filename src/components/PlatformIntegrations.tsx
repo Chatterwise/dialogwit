@@ -364,11 +364,11 @@ export const PlatformIntegrations = () => {
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
           <h1 className="text-3xl font-extrabold text-gray-900 dark:text-white font-display tracking-tight mb-1">
-            {t("integrations.title", "Platform Integrations")}
+            {t("platform.integrations.title", "Platform Integrations")}
           </h1>
           <p className="text-gray-600 dark:text-gray-400">
             {t(
-              "integrations.subtitle",
+              "platform.integrations.subtitle",
               "Connect your chatbots with popular platforms and services."
             )}
           </p>
@@ -402,7 +402,11 @@ export const PlatformIntegrations = () => {
       </div>
 
       {/* Category Filter */}
-      <div className="flex flex-wrap gap-2" role="tablist" aria-label={t("integrations.categories.aria", "Filter by category")}>
+      <div
+        className="flex flex-wrap gap-2"
+        role="tablist"
+        aria-label={t("integrations.categories.aria", "Filter by category")}
+      >
         {categories.map((category) => (
           <motion.button
             key={category.id}
@@ -432,7 +436,10 @@ export const PlatformIntegrations = () => {
             <AlertCircle className="h-5 w-5 text-yellow-600 dark:text-yellow-400 mt-0.5 mr-3" />
             <div>
               <h4 className="text-sm font-medium text-yellow-800 dark:text-yellow-300">
-                {t("integrations.warning.noChatbot.title", "No Chatbot Selected")}
+                {t(
+                  "integrations.warning.noChatbot.title",
+                  "No Chatbot Selected"
+                )}
               </h4>
               <p className="text-sm text-yellow-700 dark:text-yellow-400 mt-1">
                 {t(
@@ -620,7 +627,10 @@ export const PlatformIntegrations = () => {
                 <div>
                   <div className="flex items-center justify-between mb-4">
                     <h4 className="text-lg font-semibold text-gray-900 dark:text-white">
-                      {t("integrations.modal.configTitle", "Configuration Example")}
+                      {t(
+                        "integrations.modal.configTitle",
+                        "Configuration Example"
+                      )}
                     </h4>
                     <button
                       onClick={() =>
@@ -669,7 +679,10 @@ export const PlatformIntegrations = () => {
                     )}
                   >
                     <Download className="h-4 w-4 mr-2" />
-                    {t("integrations.modal.actions.downloadGuide", "Download Guide")}
+                    {t(
+                      "integrations.modal.actions.downloadGuide",
+                      "Download Guide"
+                    )}
                   </button>
                   <button
                     disabled={!selectedChatbot}
@@ -783,7 +796,10 @@ export const PlatformIntegrations = () => {
             whileTap={{ scale: 0.97 }}
             href="#"
             className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
-            aria-label={t("integrations.help.webhooks.title", "Webhook Testing")}
+            aria-label={t(
+              "integrations.help.webhooks.title",
+              "Webhook Testing"
+            )}
           >
             <div className="flex items-center mb-2">
               <Webhook className="h-5 w-5 text-green-600 dark:text-green-400 mr-2" />

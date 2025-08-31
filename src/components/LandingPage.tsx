@@ -169,7 +169,7 @@ const LandingPage: React.FC = () => {
         unitText: "monthly subscription",
       },
     },
-    description: t("schema_description"),
+    description: t("landing.schema_description"),
     aggregateRating: {
       "@type": "AggregateRating",
       ratingValue: "4.8",
@@ -196,7 +196,7 @@ const LandingPage: React.FC = () => {
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white dark:from-gray-900 dark:to-gray-800 overflow-hidden">
       <SEO
         title={t("seo_title")}
-        description={t("seo_desc")}
+        description={t("landing.seo_desc")}
         canonicalUrl="/"
         ogImage="https://bpzfivbuhgjpkngcjpzc.supabase.co/storage/v1/object/public/public-assets//chatterwise_page.jpg"
         schemaType="WebPage"
@@ -234,7 +234,7 @@ const LandingPage: React.FC = () => {
               <button
                 onClick={toggleTheme}
                 className="p-2 rounded-full bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 transition-colors"
-                title={t("toggle_theme")}
+                title={t("header_toggle_theme")}
               >
                 {theme === "dark" ? (
                   <Sun className="h-5 w-5" />

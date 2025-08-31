@@ -45,10 +45,6 @@ checksums:
     usecase_3_desc: 353adb214e8eb9f3e22df36b463fccbb
     pricing_headline: 680c1228bc4b023acee47a10a944b718
     pricing_subheading: f1cbd7a337ff1e0e9b225b83db44cbe7
-    plan_free: 1a35349d0a3bf673842103574d7f9b96
-    plan_starter: 1561d17a37e3148c501a4a66ec11ec50
-    plan_growth: 2f3e6385e01ae3a7393c6a7f4d8b2644
-    plan_business: 0819ff343031b2b90021d36aaeb14982
     cta_headline: 4a67655ace46ad59240d1bdafe32a438
     cta_desc: 4822ded5cf726c3c3b0bf2cf5110791f
     start_building_free: 1d36b5196498f72607bf119ce244e0f3
@@ -101,22 +97,30 @@ checksums:
     actionmodal_placeholder: 20f898e88e84e0a3e54e5255c63fa9be
     actionmodal_cancel: 2e2a849c2223911717de8caa2c71bade
     actionmodal_processing: 4d21e725093ba79328dcedc0f092ab3f
+    plan_free: 1a35349d0a3bf673842103574d7f9b96
+    plan_free_desc: e6f93fd8add93779f15190b537fe3319
     plan_free_1: df556db7af5be8d8520f6226ab2dce94
     plan_free_2: 9f9cf1cbd8ec50fc2023b1e318175d05
     plan_free_3: a309698980e2c0d356865f2c39de0ac7
     plan_free_4: 7d6e8763a664c739e4b1b17dcf6b3d24
     plan_free_5: 811983d4faf3b7fda6470163040fbd90
+    plan_starter: 1561d17a37e3148c501a4a66ec11ec50
+    plan_starter_desc: 3c0296dfd0e6627f9f7f33a519039bc9
     plan_starter_1: de70beeeff3e060f08d37db44ba7e7c6
     plan_starter_2: 7d6e8763a664c739e4b1b17dcf6b3d24
     plan_starter_3: 7df3061b96c8faaf0c532db0d41065af
     plan_starter_4: 678538c912a770b1e1416ecdb8e299b1
     plan_starter_5: 811983d4faf3b7fda6470163040fbd90
-    plan_growth_1: fd223ac58dcde312e9010655bdb70314
+    plan_growth: 2f3e6385e01ae3a7393c6a7f4d8b2644
+    plan_growth_desc: 425c2887e68f13c91be789d9a933b109
+    plan_growth_1: b988fac66eb772a601316b0feb6c8c6d
     plan_growth_2: 39ec20108a869f9f00a9eaa217bfd876
     plan_growth_3: bb9f62c1cd0601e0b3fae13f7685c81d
     plan_growth_4: fd6a8fb9d8f188fc4ba193562272726e
     plan_growth_5: 811983d4faf3b7fda6470163040fbd90
-    plan_business_1: b41bad66ed44bbe1a1ba3da4556dd7e5
+    plan_business: 0819ff343031b2b90021d36aaeb14982
+    plan_business_desc: 3594f01b5124921f85773c9688d8f20d
+    plan_business_1: 314eb8b046e062b9d20004fdca3fc898
     plan_business_2: 4ec8735a6346a2d502e33be879ba5871
     plan_business_3: 327a00b49e8a8ccd16914a805549689b
     plan_business_4: 28a57ff95b08e633d4078feba035b368
@@ -776,8 +780,8 @@ checksums:
     layout.actions.closeSidebar: ec0f56ea3b39e28bc1aca998f4321a11
     layout.mobile.overlay: d7f6f038319476b3d8f2c5b358b5db2d
     layout.mobile.sidebar: 0373afd8238db1c49f4be4fa6cdf5cd3
-    integrations.title: f44d8005574295dd6949629d5e92877b
-    integrations.subtitle: 8f41a8a37109f6b418e66ab9cd35c448
+    platform.integrations.title: b0af4c2869184af8720686eafa951486
+    platform.integrations.subtitle: e4658ffb89e865f75919b939999fbe3e
     integrations.chatbotSelect.placeholder: 5faf9222207380ad4ffce3751b5bff8e
     integrations.categories.aria: f47624df5c79dfb3a637f10803cd7c9b
     integrations.categories.all: a607324ae2bd67640bf579f9e4092610
@@ -1056,6 +1060,8 @@ checksums:
     chat.preview.actions.send: 19e7006870c6e407dece25ee8c9d5333
     chat.preview.errors.generic: 41ea0a522036b81e6fc73d1c5adbcd0d
     chat.preview.notice.no_bot: 2437ed576953bead1a0c293b100ebfae
+    integrations.title: f44d8005574295dd6949629d5e92877b
+    integrations.subtitle: 8f41a8a37109f6b418e66ab9cd35c448
     integrations.tabs.overview: 30c54e4dc4ce599b87d94be34a8617f5
     integrations.tabs.platforms: b0af4c2869184af8720686eafa951486
     integrations.tabs.api: 00e10a3efa54e3a227913ffbf9898243
@@ -1127,3 +1133,6 @@ checksums:
     installationWizard.templates.elegant.desc: bf69141f044aa665bb74b41e83d0df10
     language.select: 7fa8806eeb911aa9ba9f013b274a2e47
     language.list: 2d2a54a7cbbf640ba2aff643a8a3c7c1
+    landing.schema_description: b3d169735f77408a1b91aac10fcea5dc
+    key: 34b0eaa85808b15cbc4be94c64d0146b
+    landing.seo_desc: 4958286b1d08040797a862bc426bf953

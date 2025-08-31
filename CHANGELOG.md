@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file. See [standa
 
 ## [Unreleased]
 
+* Fixed plans section in the landing page to ensure it captures i18n configuration. **[CHAT-40]**
+* All plans translations are now in place and arranged in block for easy access. **[CHAT-40]**
+* PricingPlans component now users language configuration and is consistent with values shown in the landing page. **[CHAT-40]**
+* Added missing translations **[CHAT-40]**
+
 ### 1.1.3 (2025-08-29)
 
 ### Fixed
@@ -30,7 +35,6 @@ All notable changes to this project will be documented in this file. See [standa
 - Stripe: Move billing portal URL to env (VITE_STRIPE_BILLING_PORTAL_URL) (build)
 - Sitemap: Generate language-aware sitemap during build (prebuild script) (build)
 
-
 ### Added
 
 - Add GitHub Actions workflow (install, lint, typecheck, build) using VITE_* secrets (ci)
@@ -45,6 +49,7 @@ All notable changes to this project will be documented in this file. See [standa
 
 - chatbot delition, chatbot status to the metadata **[CHAT-30]**
 - Adding translations to the site **[CHAT-37]**
+
 ### 1.1.1 (2025-08-27)
 
 ### Changed
