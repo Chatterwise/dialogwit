@@ -100,37 +100,37 @@
   "actionmodal_cancel": "Cancel",
   "actionmodal_processing": "Processing...",
 
-  "plan_free": "Chatterwise Free", 
-  "plan_free_desc": "Get started with building AI-powered chatbots at no cost. Ideal for experimenting and testing.", 
-  "plan_free_1": "20,000 tokens per month", 
-  "plan_free_2": "Basic support", 
-  "plan_free_3": "Basic analytics", 
-  "plan_free_4": "Email support", 
-  "plan_free_5": "Community access", 
-  
-  "plan_starter": "Chatterwise Starter", 
-  "plan_starter_desc": "Great for individuals or small teams starting out.", 
-  "plan_starter_1": "200,000 tokens per month", 
+  "plan_free": "Chatterwise Free",
+  "plan_free_desc": "Get started with building AI-powered chatbots at no cost. Ideal for experimenting and testing.",
+  "plan_free_1": "20,000 tokens per month",
+  "plan_free_2": "Basic support",
+  "plan_free_3": "Basic analytics",
+  "plan_free_4": "Email support",
+  "plan_free_5": "Community access",
+
+  "plan_starter": "Chatterwise Starter",
+  "plan_starter_desc": "Great for individuals or small teams starting out.",
+  "plan_starter_1": "200,000 tokens per month",
   "plan_starter_2": "Email support",
-  "plan_starter_3": "Standard analytics", 
-  "plan_starter_4": "Priority email support", 
-  "plan_starter_5": "Community access", 
-  
-  "plan_growth": "Chatterwise Growth", 
-  "plan_growth_desc": "Designed for growing teams needing additional capacity and support.", 
-  "plan_growth_1": "1,000,000 tokens per month", 
+  "plan_starter_3": "Standard analytics",
+  "plan_starter_4": "Priority email support",
+  "plan_starter_5": "Community access",
+
+  "plan_growth": "Chatterwise Growth",
+  "plan_growth_desc": "Designed for growing teams needing additional capacity and support.",
+  "plan_growth_1": "1,000,000 tokens per month",
   "plan_growth_2": "20 chatbots",
-  "plan_growth_3": "Advanced analytics", 
-  "plan_growth_4": "Phone & email support", 
-  "plan_growth_5": "Community access", 
-  
-  "plan_business": "Chatterwise Business", 
-  "plan_business_desc": "Enterprise-grade chatbot infrastructure offering advanced customization and dedicated support.", 
-  "plan_business_1": "5,000,000 tokens per month", 
-  "plan_business_2": "Unlimited chatbots", 
-  "plan_business_3": "Enterprise analytics", 
-  "plan_business_4": "Dedicated support", 
-  "plan_business_5": "Custom integrations", 
+  "plan_growth_3": "Advanced analytics",
+  "plan_growth_4": "Phone & email support",
+  "plan_growth_5": "Community access",
+
+  "plan_business": "Chatterwise Business",
+  "plan_business_desc": "Enterprise-grade chatbot infrastructure offering advanced customization and dedicated support.",
+  "plan_business_1": "5,000,000 tokens per month",
+  "plan_business_2": "Unlimited chatbots",
+  "plan_business_3": "Enterprise analytics",
+  "plan_business_4": "Dedicated support",
+  "plan_business_5": "Custom integrations",
   "plan_business_contact": "Contact us for pricing",
 
   "analytics_title": "Advanced Analytics",
@@ -911,8 +911,8 @@
   "layout.mobile.overlay": "Close menu overlay",
   "layout.mobile.sidebar": "Navigation",
 
-  "integrations.title": "Platform Integrations",
-  "integrations.subtitle": "Connect your chatbots with popular platforms and services.",
+  "platform.integrations.title": "Platform Integrations",
+  "platform.integrations.subtitle": "Connect your chatbots with popular platforms and services.",
 
   "integrations.chatbotSelect.placeholder": "Select Chatbot",
 
@@ -1345,5 +1345,8 @@
   "i18n.modal.switchTo": "Switch to",
   "installationWizard.templates.elegant.desc": "Sophisticated design",
   "language.select": "Select language",
-  "language.list": "Languages"
+  "language.list": "Languages",
+  "landing.schema_description": "AI-powered chatbot platform for businesses. Build and deploy intelligent chatbots in minutes.",
+  "key": "Value",
+  "landing.seo_desc": "Build, train, and launch AI chatbots with your own data—no coding required. Start free, no credit card needed. Boost sales, customer service, and empower internal teams with ChatterWise."
 }

@@ -95,7 +95,6 @@
   "actionmodal_placeholder": "Írd be a következőt: {{word}} a megerősítéshez",
   "actionmodal_cancel": "Mégse",
   "actionmodal_processing": "Feldolgozás...",
-  
   "plan_free": "Chatterwise Ingyenes",
   "plan_free_desc": "Kezdd el az AI-alapú chatbotok építését ingyen. Ideális kísérletezéshez és teszteléshez.",
   "plan_free_1": "20 000 token havonta",
@@ -103,7 +102,6 @@
   "plan_free_3": "Alap analitika",
   "plan_free_4": "E-mail támogatás",
   "plan_free_5": "Közösségi hozzáférés",
-
   "plan_starter": "Chatterwise Kezdő",
   "plan_starter_desc": "Nagyszerű választás egyéneknek vagy kisebb csapatoknak a kezdeti lépésekhez.",
   "plan_starter_1": "200 000 token havonta",
@@ -111,7 +109,6 @@
   "plan_starter_3": "Standard analitika",
   "plan_starter_4": "Elsőbbségi e-mail támogatás",
   "plan_starter_5": "Közösségi hozzáférés",
-
   "plan_growth": "Chatterwise Növekedés",
   "plan_growth_desc": "Növekvő csapatok számára, akiknek több kapacitásra és támogatásra van szükségük.",
   "plan_growth_1": "1 000 000 token havonta",
@@ -119,7 +116,6 @@
   "plan_growth_3": "Fejlett analitika",
   "plan_growth_4": "Telefonos és e-mail támogatás",
   "plan_growth_5": "Közösségi hozzáférés",
-
   "plan_business": "Chatterwise Üzleti",
   "plan_business_desc": "Vállalati szintű chatbot-infrastruktúra fejlett testreszabási lehetőségekkel és dedikált támogatással.",
   "plan_business_1": "5 000 000 token havonta",
@@ -128,7 +124,6 @@
   "plan_business_4": "Dedikált támogatás",
   "plan_business_5": "Egyedi integrációk",
   "plan_business_contact": "Lépjen kapcsolatba velünk az árakért",
-  
   "analytics_title": "Fejlett analitika",
   "analytics_subtitle": "Átfogó betekintés a chatbot teljesítményébe és a felhasználói aktivitásba.",
   "analytics_loading": "Analitikai adatok betöltése...",
@@ -783,8 +778,8 @@
   "layout.actions.closeSidebar": "Menü bezárása",
   "layout.mobile.overlay": "Menü overlay bezárása",
   "layout.mobile.sidebar": "Navigáció",
-  "integrations.title": "Integrációk és sablonok",
-  "integrations.subtitle": "Teljes integrációs megoldás gyönyörű, gyártásra kész csevegési sablonokkal és platform csatlakozókkal.",
+  "platform.integrations.title": "Platform integrációk",
+  "platform.integrations.subtitle": "Csatlakoztasd chatbotjaidat népszerű platformokhoz és szolgáltatásokhoz.",
   "integrations.chatbotSelect.placeholder": "Chatbot kiválasztása",
   "integrations.categories.aria": "Szűrés kategória szerint",
   "integrations.categories.all": "Összes integráció",
@@ -1063,6 +1058,8 @@
   "chat.preview.actions.send": "Üzenet küldése",
   "chat.preview.errors.generic": "Sajnálom, hiba történt. Kérlek, próbáld újra.",
   "chat.preview.notice.no_bot": "A csevegés előnézet csak mentett chatbotok esetén érhető el",
+  "integrations.title": "Integrációk és sablonok",
+  "integrations.subtitle": "Teljes integrációs megoldás gyönyörű, gyártásra kész csevegési sablonokkal és platform csatlakozókkal.",
   "integrations.tabs.overview": "Áttekintés",
   "integrations.tabs.platforms": "Platform integrációk",
   "integrations.tabs.api": "API és webhookok",
@@ -1133,5 +1130,8 @@
   "i18n.modal.switchTo": "Váltás erre:",
   "installationWizard.templates.elegant.desc": "Kifinomult dizájn",
   "language.select": "Nyelv kiválasztása",
-  "language.list": "Nyelvek"
+  "language.list": "Nyelvek",
+  "landing.schema_description": "Mesterséges intelligenciával működő chatbot platform vállalkozások számára. Építs és telepíts intelligens chatbotokat percek alatt.",
+  "key": "Érték",
+  "landing.seo_desc": "Építs, taníts és indíts AI chatbotokat saját adatokkal—kódolás nélkül. Kezdd ingyen, bankkártya nélkül. Növeld az értékesítést, az ügyfélszolgálatot, és támogasd a belső csapatokat a ChatterWise segítségével."
 }

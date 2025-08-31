@@ -95,7 +95,6 @@
   "actionmodal_placeholder": "{{word}} zur Bestätigung eingeben",
   "actionmodal_cancel": "Abbrechen",
   "actionmodal_processing": "Wird verarbeitet...",
-  
   "plan_free": "Chatterwise Free",
   "plan_free_desc": "Beginne kostenlos mit dem Erstellen von KI-gestützten Chatbots. Ideal zum Experimentieren und Testen.",
   "plan_free_1": "20.000 Tokens pro Monat",
@@ -103,7 +102,6 @@
   "plan_free_3": "Einfache Analysen",
   "plan_free_4": "E-Mail-Support",
   "plan_free_5": "Zugang zur Community",
-
   "plan_starter": "Chatterwise Starter",
   "plan_starter_desc": "Ideal für Einzelpersonen oder kleine Teams, die gerade erst anfangen.",
   "plan_starter_1": "200.000 Tokens pro Monat",
@@ -111,24 +109,21 @@
   "plan_starter_3": "Standard-Analysen",
   "plan_starter_4": "Priorisierter E-Mail-Support",
   "plan_starter_5": "Zugang zur Community",
-
   "plan_growth": "Chatterwise Growth",
   "plan_growth_desc": "Entwickelt für wachsende Teams, die mehr Kapazität und Support benötigen.",
-  "plan_growth_1": "1.000.000 Tokens pro Monat",
+  "plan_growth_1": "1.000.000 Token pro Monat",
   "plan_growth_2": "20 Chatbots",
   "plan_growth_3": "Erweiterte Analysen",
   "plan_growth_4": "Telefon- und E-Mail-Support",
   "plan_growth_5": "Zugang zur Community",
-
   "plan_business": "Chatterwise Business",
   "plan_business_desc": "Unternehmensgerechte Chatbot-Infrastruktur mit erweiterten Anpassungsmöglichkeiten und dediziertem Support.",
-  "plan_business_1": "5.000.000 Tokens pro Monat",
+  "plan_business_1": "5.000.000 Token pro Monat",
   "plan_business_2": "Unbegrenzte Chatbots",
   "plan_business_3": "Unternehmensanalysen",
   "plan_business_4": "Dedizierter Support",
   "plan_business_5": "Individuelle Integrationen",
   "plan_business_contact": "Kontaktieren Sie uns für Preise",
-  
   "analytics_title": "Erweiterte Analysen",
   "analytics_subtitle": "Umfassende Einblicke in die Leistung Ihres Chatbots und das Nutzerengagement.",
   "analytics_loading": "Analysedaten werden geladen...",
@@ -783,8 +778,8 @@
   "layout.actions.closeSidebar": "Menü schließen",
   "layout.mobile.overlay": "Menü-Overlay schließen",
   "layout.mobile.sidebar": "Navigation",
-  "integrations.title": "Integrationen & Vorlagen",
-  "integrations.subtitle": "Komplette Integrationslösung mit schönen, produktionsreifen Chat-Vorlagen und Plattform-Konnektoren.",
+  "platform.integrations.title": "Plattform-Integrationen",
+  "platform.integrations.subtitle": "Verbinden Sie Ihre Chatbots mit beliebten Plattformen und Diensten.",
   "integrations.chatbotSelect.placeholder": "Chatbot auswählen",
   "integrations.categories.aria": "Nach Kategorie filtern",
   "integrations.categories.all": "Alle Integrationen",
@@ -1063,6 +1058,8 @@
   "chat.preview.actions.send": "Nachricht senden",
   "chat.preview.errors.generic": "Entschuldigung, ich bin auf einen Fehler gestoßen. Bitte versuche es erneut.",
   "chat.preview.notice.no_bot": "Chat-Vorschau ist nur für gespeicherte Chatbots verfügbar",
+  "integrations.title": "Integrationen & Vorlagen",
+  "integrations.subtitle": "Komplette Integrationslösung mit schönen, produktionsreifen Chat-Vorlagen und Plattform-Konnektoren.",
   "integrations.tabs.overview": "Übersicht",
   "integrations.tabs.platforms": "Plattform-Integrationen",
   "integrations.tabs.api": "API & Webhooks",
@@ -1133,5 +1130,8 @@
   "i18n.modal.switchTo": "Wechseln zu",
   "installationWizard.templates.elegant.desc": "Anspruchsvolles Design",
   "language.select": "Sprache auswählen",
-  "language.list": "Sprachen"
+  "language.list": "Sprachen",
+  "landing.schema_description": "KI-gestützte Chatbot-Plattform für Unternehmen. Erstellen und implementieren Sie intelligente Chatbots in Minuten.",
+  "key": "Value",
+  "landing.seo_desc": "Erstellen, trainieren und starten Sie KI-Chatbots mit Ihren eigenen Daten – ohne Programmierung erforderlich. Starten Sie kostenlos, keine Kreditkarte nötig. Steigern Sie Verkäufe, verbessern Sie den Kundenservice und stärken Sie interne Teams mit ChatterWise."
 }

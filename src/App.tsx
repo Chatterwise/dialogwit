@@ -152,6 +152,8 @@ import LanguageRedirect from "./components/LanguageRedirect";
 import LoadingScreen from "./components/LoadingScreen";
 
 import * as progress from "./lib/progress";
+import React from "react";
+import { AnimatedSuspense } from "./components/utils/AnimatedSuspense";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -194,7 +196,6 @@ function AppContent() {
       </div>
     );
   }
-
   return (
     <Routes>
       {/* Redirect root to best language based on storage/browser */}
@@ -204,7 +205,7 @@ function AppContent() {
       <Route
         path="/:lang/*"
         element={
-          <Suspense fallback={<LoadingScreen />}>
+          <AnimatedSuspense fallback={<LoadingScreen />}>
             <LanguageProvider>
               {/* LanguageProvider is now inside the /:lang route */}
               <Routes>
@@ -437,7 +438,7 @@ function AppContent() {
                 />
               </Routes>
             </LanguageProvider>
-          </Suspense>
+          </AnimatedSuspense>
         }
       />
     </Routes>
