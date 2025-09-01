@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file. See [standa
 
 ## [Unreleased]
 
+* Updated Content-Security-Policy in netlify.toml file. **[CHAT-39]**
 * Fixed plans section in the landing page to ensure it captures i18n configuration. **[CHAT-40]**
 * All plans translations are now in place and arranged in block for easy access. **[CHAT-40]**
 * PricingPlans component now users language configuration and is consistent with values shown in the landing page. **[CHAT-40]**
