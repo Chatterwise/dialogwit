@@ -117,7 +117,7 @@
         https://cs.iubenda.com
         https://cdn.iubenda.com
         https://app.posthog.com
-        https://eu-assets.t.posthog.com;
+        https://eu-assets.t.posthog.com
         https://eu-assets.i.posthog.com;
       style-src
         'self' 'unsafe-inline'

@@ -6,7 +6,7 @@ import packageJson from './package.json';
 export default defineConfig({
   plugins: [react()],
   optimizeDeps: {
-    exclude: ['lucide-react'],
+    include: ['lucide-react'],
   },
   define: {
     __APP_VERSION__: JSON.stringify(packageJson.version)

@@ -18,6 +18,7 @@ import { Link, useLocation } from "react-router-dom";
 import { useBilling } from "../hooks/useBilling";
 import SubscriptionStatus from "./SubscriptionStatus";
 import { useTranslation } from "../hooks/useTranslation";
+import { stripeConfig } from "../stripe-config";
 
 export const BillingDashboard: React.FC = () => {
   // Locale-aware path helper (same logic used elsewhere)
@@ -29,6 +30,7 @@ export const BillingDashboard: React.FC = () => {
     if (normalized === `/${locale}` || normalized.startsWith(`/${locale}/`)) return normalized;
     return `/${locale}${normalized}`;
   };
+
   const { t } = useTranslation();
   const { subscription, invoices, usage, isLoading } = useBilling();
   const [activeTab, setActiveTab] = useState<"overview" | "invoices" | "usage">(
@@ -63,6 +65,43 @@ export const BillingDashboard: React.FC = () => {
         return "bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-300";
     }
   };
+
+  // Debugging: Log subscription object
+  console.log("Subscription object:", subscription);
+
+  // Log plan_name and price being used for matching
+  console.log("Looking for plan name:", subscription?.plan_name);
+  console.log("Looking for plan price:", subscription?.subscription_plans?.price_monthly);
+
+  // helper to normalise backend slugs to our i18n keys
+  const normalisePlanKey = (name?: string) => {
+    const n = (name ?? "").toLowerCase().trim();
+    if (n.startsWith("plan_")) return n;
+    switch (n) {
+      case "free": return "plan_free";
+      case "starter": return "plan_starter";
+      case "growth": return "plan_growth";
+      case "business": return "plan_business";
+      default: return n; // unknown: leave as-is
+    }
+  };
+
+  const planKey = normalisePlanKey(subscription?.plan_name);
+
+  console.log("Looking for plan key:", planKey);
+
+  // ---------- plan resolution (logic stays UNtranslated) ----------
+  // Try to match by plan key first; fall back to price comparison if needed.
+  const currentPlan =
+    stripeConfig.products.find(p => p.name === planKey) ??
+    stripeConfig.products.find(p => t(p.name).toLowerCase() === (subscription?.display_name ?? "").toLowerCase()) ??
+    null;
+
+  // What we actually render (translated)
+  const displayPlanName = currentPlan ? t(currentPlan.name) : t("Subscription plan not found");
+  const displayPlanDescription = currentPlan ? t(currentPlan.description) : "";
+  const displayPlanFeatures = currentPlan ? currentPlan.features.map(k => t(k)) : [];
+  const monthlyPriceDisplay = currentPlan ? `$${currentPlan.price}` : "$0";
 
   if (isLoading) {
     return (
@@ -182,8 +221,7 @@ export const BillingDashboard: React.FC = () => {
                       {t("billing_current_plan", "Current Plan")}
                     </p>
                     <p className="text-2xl font-bold text-gray-900 dark:text-white capitalize">
-                      {subscription?.plan_name ||
-                        t("billing_plan_free", "Free")}
+                      {displayPlanName}
                     </p>
                   </div>
                   <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-full">
