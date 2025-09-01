@@ -108,4 +108,41 @@
     X-Frame-Options = "SAMEORIGIN"
     Referrer-Policy = "strict-origin-when-cross-origin"
     Permissions-Policy = "geolocation=(self), camera=(), microphone=(), autoplay=(self), payment=()"
-    Content-Security-Policy = "default-src 'self'; script-src 'self' https://www.googletagmanager.com https://www.google-analytics.com https://cs.iubenda.com https://cdn.iubenda.com https://app.posthog.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://flagcdn.com https://*.supabase.co https://www.google-analytics.com; font-src 'self' data:; connect-src 'self' https://*.supabase.co https://app.posthog.com https://www.google-analytics.com https://ipwho.is; frame-ancestors 'self'; frame-src https://www.youtube.com https://player.vimeo.com;"
+    Content-Security-Policy = """
+      default-src 'self';
+      script-src
+        'self'
+        https://www.googletagmanager.com
+        https://www.google-analytics.com
+        https://cs.iubenda.com
+        https://cdn.iubenda.com
+        https://app.posthog.com
+        https://eu-assets.t.posthog.com;
+        https://eu-assets.i.posthog.com;
+      style-src
+        'self' 'unsafe-inline'
+        https://fonts.googleapis.com;
+      img-src
+        'self' data: blob:
+        https://flagcdn.com
+        https://*.supabase.co
+        https://www.google-analytics.com
+        https://app.posthog.com;
+      font-src
+        'self'
+        https://fonts.gstatic.com
+        data:;
+      connect-src
+        'self'
+        https://*.supabase.co
+        wss://*.supabase.co
+        https://app.posthog.com
+        wss://app.posthog.com
+        https://www.google-analytics.com
+        https://ipwho.is;
+      frame-ancestors 'self';
+      frame-src
+        https://www.youtube.com
+        https://player.vimeo.com
+        https://www.googletagmanager.com;
+    """
