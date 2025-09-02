@@ -457,52 +457,73 @@ const LandingPage: React.FC = () => {
               {t("how_it_works_desc")}
             </p>
           </motion.div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 relative">
-            <div className="hidden md:block absolute top-1/2 left-0 right-0 h-1 bg-gradient-to-r from-primary-500 to-accent-500 transform -translate-y-1/2 z-0"></div>
-            {[
-              {
-                step: 1,
-                title: t("how_upload"),
-                description: t("how_upload_desc"),
-                icon: Database,
-                delay: 0.1,
-              },
-              {
-                step: 2,
-                title: t("how_train"),
-                description: t("how_train_desc"),
-                icon: Cpu,
-                delay: 0.3,
-              },
-              {
-                step: 3,
-                title: t("how_deploy"),
-                description: t("how_deploy_desc"),
-                icon: Globe,
-                delay: 0.5,
-              },
-            ].map((item) => (
-              <motion.div
-                key={item.step}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: item.delay }}
-                viewport={{ once: true, margin: "-100px" }}
-                className="text-center relative z-10"
-              >
-                <div className="w-20 h-20 bg-white dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-6 border-4 border-primary-500 shadow-lg">
-                  <span className="text-2xl font-bold text-primary-600 dark:text-primary-400">
-                    {item.step}
-                  </span>
-                </div>
-                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3">
-                  {item.title}
-                </h3>
-                <p className="text-gray-600 dark:text-gray-300">
-                  {item.description}
-                </p>
-              </motion.div>
-            ))}
+          <div className="space-y-8">
+            <div className="hidden md:grid md:grid-cols-3 relative items-center">
+              <div className="absolute left-0 right-0 h-1 bg-gradient-to-r from-primary-500 to-accent-500 z-0" />
+
+              {[
+                { step: 1, icon: Database, delay: 0.1 },
+                { step: 2, icon: Cpu, delay: 0.3 },
+                { step: 3, icon: Globe, delay: 0.5 },
+              ].map((item) => (
+                <motion.div
+                  key={`bubble-${item.step}`}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: item.delay }}
+                  viewport={{ once: true, margin: "-100px" }}
+                  className="relative flex items-center justify-center py-4 z-10"
+                >
+                  <div className="w-20 h-20 bg-white dark:bg-gray-800 rounded-full flex items-center justify-center border-4 border-primary-500 shadow-lg">
+                    <span className="text-2xl font-bold text-primary-600 dark:text-primary-400">
+                      {item.step}
+                    </span>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              {[
+                {
+                  step: 1,
+                  title: t("how_upload"),
+                  description: t("how_upload_desc"),
+                  icon: Database,
+                  delay: 0.1,
+                },
+                {
+                  step: 2,
+                  title: t("how_train"),
+                  description: t("how_train_desc"),
+                  icon: Cpu,
+                  delay: 0.3,
+                },
+                {
+                  step: 3,
+                  title: t("how_deploy"),
+                  description: t("how_deploy_desc"),
+                  icon: Globe,
+                  delay: 0.5,
+                },
+              ].map((item) => (
+                <motion.div
+                  key={`card-${item.step}`}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: item.delay }}
+                  viewport={{ once: true, margin: "-100px" }}
+                  className="text-center"
+                >
+                  <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3 leading-snug">
+                    {item.title}
+                  </h3>
+                  <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
+                    {item.description}
+                  </p>
+                </motion.div>
+              ))}
+            </div>
           </div>
         </div>
       </section>
