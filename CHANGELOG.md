@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file. See [standa
 
 ## [Unreleased]
 
+* BillingDashboard and SubscriptionStatus component translation fixes. **[CHAT-41]**
+* Follow-up fix to netlify.toml, previous deployment introduced a bug.
 * Updated Content-Security-Policy in netlify.toml file. **[CHAT-39]**
 * Fixed plans section in the landing page to ensure it captures i18n configuration. **[CHAT-40]**
 * All plans translations are now in place and arranged in block for easy access. **[CHAT-40]**

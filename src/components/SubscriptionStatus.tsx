@@ -34,6 +34,19 @@ const SubscriptionStatus: React.FC = () => {
   };
   const locale = localeMap[lang] ?? "en-US";
 
+  // helper to normalise backend slugs to our i18n keys
+  const normalisePlanKey = (name?: string) => {
+    const n = (name ?? "").toLowerCase().trim();
+    if (n.startsWith("plan_")) return n;
+    switch (n) {
+      case "free": return "plan_free";
+      case "starter": return "plan_starter";
+      case "growth": return "plan_growth";
+      case "business": return "plan_business";
+      default: return n; // unknown: leave as-is
+    }
+  };
+  
   const getPlanIcon = (planName: string) => {
     switch (planName) {
       case "free":
@@ -75,6 +88,15 @@ const SubscriptionStatus: React.FC = () => {
   };
 
   const handlePricingNavigation = () => navigate(`${langPrefix}/pricing`);
+
+  /** Resolve the current plan from config using key first, then display_name. */
+  const planKey = normalisePlanKey(subscription?.plan_name);
+  const currentPlan =
+    stripeConfig.products.find(p => p.name === planKey) ??
+    stripeConfig.products.find(
+      p => t(p.name).toLowerCase() === (subscription?.display_name ?? "").toLowerCase()
+    ) ??
+    null;
 
   const getPlanDetails = (planName: string) => {
     return stripeConfig.products.find((p) =>
@@ -146,12 +168,15 @@ const SubscriptionStatus: React.FC = () => {
       </div>
     );
   }
-
-  const currentPlan = getPlanDetails(subscription?.plan_name || "free");
-  const isFreePlan =
-    subscription?.plan_name === "free" || !subscription?.plan_name;
+  
+  const isFreePlan = planKey === "plan_free" || !planKey;
   const isTrialing = subscription?.status === "trialing";
   const isCanceled = subscription?.cancel_at_period_end;
+
+  // Translated values for rendering
+  const displayName = currentPlan ? t(currentPlan.name) : t("plan_free");
+  const displayDescription = currentPlan ? t(currentPlan.description) : t("subscription.freePlan.description", "Basic features to get you started");
+  const displayFeatures = currentPlan ? currentPlan.features.map(k => t(k)) : [];
 
   return (
     <motion.div
@@ -176,15 +201,10 @@ const SubscriptionStatus: React.FC = () => {
                   id="current-plan-title"
                   className="text-xl font-bold text-gray-900 dark:text-white"
                 >
-                  {currentPlan?.name.replace("Chatterwise ", "") ||
-                    t("subscription.freePlan", "Free Plan")}
+                  {displayName}
                 </h3>
                 <p className="text-gray-600 dark:text-gray-400 mt-1 max-w-md">
-                  {currentPlan?.description ||
-                    t(
-                      "subscription.freePlan.description",
-                      "Basic features to get you started"
-                    )}
+                  {displayDescription}
                 </p>
 
                 <div className="flex flex-wrap gap-2 mt-3">
@@ -280,33 +300,19 @@ const SubscriptionStatus: React.FC = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              {currentPlan?.features
-                .slice(0, Math.ceil(currentPlan.features.length / 2))
-                .map((feature, index) => (
-                  <div key={index} className="flex items-center">
-                    <CheckCircle
-                      className="w-5 h-5 text-green-500 dark:text-green-400 mr-3 flex-shrink-0"
-                      aria-hidden="true"
-                    />
-                    <span className="text-gray-700 dark:text-gray-300 text-sm">
-                      {feature}
-                    </span>
-                  </div>
-                ))}
+              {displayFeatures.slice(0, Math.ceil(displayFeatures.length / 2)).map((feature, index) => (
+                <div key={index} className="flex items-centre">
+                  <CheckCircle className="w-5 h-5 text-green-500 dark:text-green-400 mr-3 flex-shrink-0" aria-hidden="true" />
+                  <span className="text-gray-700 dark:text-gray-300 text-sm">{feature}</span>
+                </div>
+              ))}
             </div>
 
             <div className="space-y-2">
-              {currentPlan?.features
-                .slice(Math.ceil(currentPlan.features.length / 2))
-                .map((feature, index) => (
-                  <div key={index} className="flex items-center">
-                    <CheckCircle
-                      className="w-5 h-5 text-green-500 dark:text-green-400 mr-3 flex-shrink-0"
-                      aria-hidden="true"
-                    />
-                    <span className="text-gray-700 dark:text-gray-300 text-sm">
-                      {feature}
-                    </span>
+              {displayFeatures.slice(Math.ceil(displayFeatures.length / 2)).map((feature, index) => (
+                  <div key={index} className="flex items-centre">
+                    <CheckCircle className="w-5 h-5 text-green-500 dark:text-green-400 mr-3 flex-shrink-0" aria-hidden="true" />
+                    <span className="text-gray-700 dark:text-gray-300 text-sm">{feature}</span>
                   </div>
                 ))}
             </div>
