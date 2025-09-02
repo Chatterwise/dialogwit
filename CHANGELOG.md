@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file. See [standa
 
 ## [Unreleased]
 
+### 1.1.5 (2025-09-02)
+
 - BillingDashboard and SubscriptionStatus component translation fixes. **[CHAT-41]**
 - Follow-up fix to netlify.toml, previous deployment introduced a bug.
 - Updated Content-Security-Policy in netlify.toml file. **[CHAT-39]**
