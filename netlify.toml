@@ -138,6 +138,9 @@
         wss://*.supabase.co
         https://app.posthog.com
         wss://app.posthog.com
+        https://eu-assets.i.posthog.com
+        wss://eu-assets.i.posthog.com
+        https://idb.iubenda.com  
         https://www.google-analytics.com
         https://ipwho.is;
       frame-ancestors 'self';
