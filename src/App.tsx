@@ -1,5 +1,11 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
-import { Suspense, lazy, useEffect } from "react";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+  useLocation,
+} from "react-router-dom";
+import { lazy, useEffect } from "react";
 import {
   QueryClient,
   QueryClientProvider,
@@ -147,12 +153,11 @@ const TrainingChatbotPage = lazy(
 const BotChatsPage = lazy(() =>
   import("./components/BotChatsPage").then((m) => ({ default: m.BotChatsPage }))
 );
-import { LanguageProvider } from "./contexts/LanguageContext"; // Import LanguageProvider
+import { LanguageProvider } from "./contexts/LanguageContext";
 import LanguageRedirect from "./components/LanguageRedirect";
 import LoadingScreen from "./components/LoadingScreen";
 
 import * as progress from "./lib/progress";
-import React from "react";
 import { AnimatedSuspense } from "./components/utils/AnimatedSuspense";
 
 const queryClient = new QueryClient({
@@ -175,11 +180,19 @@ const queryClient = new QueryClient({
   }),
 });
 
+// --- Legacy redirect helper (adds /{lang} and preserves ?query) ---
+function LangPrefixedRedirect({ toBase }: { toBase: string }) {
+  const location = useLocation();
+  const stored = localStorage.getItem("lang");
+  const browser = navigator.language?.split("-")[0];
+  const lang = stored || browser || "en";
+  return <Navigate to={`/${lang}${toBase}${location.search}`} replace />;
+}
+
 function AppContent() {
   const { user, loading, emailConfirmed } = useAuth();
-  // Show progress on route changes
   const location = window.location;
-  // naive: start on render, finish after paint
+
   useEffect(() => {
     progress.start();
     const id = window.setTimeout(() => progress.done(), 300);
@@ -196,28 +209,42 @@ function AppContent() {
       </div>
     );
   }
+
   return (
     <Routes>
-      {/* Redirect root to best language based on storage/browser */}
+      {/* Root language redirect */}
       <Route path="/" element={<LanguageRedirect />} />
 
-      {/* All other routes are now nested within a /:lang route */}
+      {/* Legacy, non-lang-prefixed routes → redirect to /{lang}/... */}
+      <Route
+        path="/auth/confirm"
+        element={<LangPrefixedRedirect toBase="/auth/confirm" />}
+      />
+      <Route
+        path="/auth/callback"
+        element={<LangPrefixedRedirect toBase="/auth/callback" />}
+      />
+      <Route
+        path="/reset-password"
+        element={<LangPrefixedRedirect toBase="/reset-password" />}
+      />
+
+      {/* All other routes are nested under /:lang */}
       <Route
         path="/:lang/*"
         element={
           <AnimatedSuspense fallback={<LoadingScreen />}>
             <LanguageProvider>
-              {/* LanguageProvider is now inside the /:lang route */}
               <Routes>
-                {/* Public routes */}
+                {/* Public */}
                 <Route
-                  path="/" // This will match /:lang/
+                  path="/"
                   element={
                     !user ? <LandingPage /> : <Navigate to="dashboard" />
                   }
                 />
                 <Route
-                  path="auth" // /:lang/auth
+                  path="auth"
                   element={
                     !user ? <Auth /> : <Navigate to="../dashboard" replace />
                   }
@@ -243,7 +270,7 @@ function AppContent() {
                 <Route path="cancel" element={<CancelPage />} />
                 <Route path="reset-password" element={<ResetPasswordForm />} />
 
-                {/* Documentation pages - publicly accessible */}
+                {/* Docs (public) */}
                 <Route path="documentation" element={<DocumentationPage />} />
                 <Route path="api-reference" element={<ApiReferencePage />} />
                 <Route path="features" element={<FeaturesPage />} />
@@ -254,8 +281,7 @@ function AppContent() {
                 <Route path="contact" element={<ContactPage />} />
                 <Route path="legal" element={<LegalPage />} />
 
-                {/* Documentation sub-pages */}
-                {/* Category pages */}
+                {/* Docs sub-pages */}
                 <Route
                   path="docs/getting-started"
                   element={<GettingStartedPage />}
@@ -269,8 +295,6 @@ function AppContent() {
                   element={<AdvancedFeaturesPage />}
                 />
                 <Route path="docs/tutorials" element={<TutorialsPage />} />
-
-                {/* Getting Started section */}
                 <Route
                   path="docs/getting-started/introduction"
                   element={<IntroductionPage />}
@@ -287,8 +311,6 @@ function AppContent() {
                   path="docs/getting-started/training-chatbot"
                   element={<TrainingChatbotPage />}
                 />
-
-                {/* Integrations section */}
                 <Route
                   path="docs/integrations/website-integration"
                   element={<WebsiteIntegrationPage />}
@@ -305,8 +327,6 @@ function AppContent() {
                   path="docs/integrations/wordpress-integration"
                   element={<WordPressIntegrationPage />}
                 />
-
-                {/* Advanced Features section */}
                 <Route
                   path="docs/advanced-features/custom-templates"
                   element={<CustomTemplatesPage />}
@@ -319,14 +339,12 @@ function AppContent() {
                   path="docs/advanced-features/security-best-practices"
                   element={<SecurityBestPracticesPage />}
                 />
-
-                {/* Tutorials section */}
                 <Route
                   path="docs/tutorials/customer-support-bot"
                   element={<CustomerSupportBotPage />}
                 />
 
-                {/* Protected routes */}
+                {/* Protected */}
                 <Route
                   path="*"
                   element={
@@ -334,7 +352,6 @@ function AppContent() {
                       emailConfirmed ? (
                         <Layout>
                           <Routes>
-                            {/* Chatbot routes */}
                             <Route
                               path="chatbots/new"
                               element={
@@ -363,8 +380,6 @@ function AppContent() {
                                 </RouteBoundary>
                               }
                             />
-
-                            {/* Other protected routes */}
                             <Route path="dashboard" element={<Dashboard />} />
                             <Route path="chatbots" element={<ChatbotList />} />
                             <Route
@@ -431,7 +446,6 @@ function AppContent() {
                         <EmailConfirmationRequired />
                       )
                     ) : (
-                      // IMPORTANT: keep the lang prefix by using a relative redirect
                       <Navigate to="../auth" replace />
                     )
                   }
