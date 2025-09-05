@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file. See [standa
 
 ## [Unreleased]
 
+- Fixing legacy redirects from supabase  **[NO-TICKET]**
+
 ### 1.1.5 (2025-09-02)
 
 - BillingDashboard and SubscriptionStatus component translation fixes. **[CHAT-41]**
