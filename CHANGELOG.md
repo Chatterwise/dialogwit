@@ -4,7 +4,8 @@ All notable changes to this project will be documented in this file. See [standa
 
 ## [Unreleased]
 
-* CSP fixes, issues identified in live site, did not show up in local testing. Updated netlify.toml. **[CHAT-43]**
+- CSP fixes, issues identified in live site, did not show up in local testing. Updated netlify.toml. **[CHAT-43]**
+- Fixing legacy redirects from supabase  **[NO-TICKET]**
 
 ### 1.1.5 (2025-09-02)
 
