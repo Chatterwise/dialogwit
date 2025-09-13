@@ -9,12 +9,12 @@ import {
   Minimize2,
   Maximize2,
 } from "lucide-react";
+import { supabase } from "../lib/supabase";
 import { useChatbot } from "../hooks/useChatbots";
-import { useChatStream } from "../hooks/useChatStream";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
+import { MarkdownMessage } from "./MarkdownMessage";
+import { useTranslation } from "../hooks/useTranslation";
 import { readSSE } from "./utils/sse";
-import { fetchEventStream } from "../lib/http";
+import { fetchWithRetry } from "../lib/http";
 
 interface Message {
   id: string;
@@ -25,19 +25,19 @@ interface Message {
 }
 
 export const PublicChat = () => {
+  const { t } = useTranslation();
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
-  const { chatbotId } = useParams<{ chatbotId: string }>();
-  const { data: chatbot, isLoading: chatbotLoading } = useChatbot(
-    chatbotId || ""
-  );
-  const { isPending } = useChatStream();
+
+  const { chatbotId } = useParams<{ lang?: string; chatbotId: string }>();
+  const { data: chatbot, isLoading: chatbotLoading } = useChatbot(chatbotId || "");
 
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState("");
   const [isMinimized, setIsMinimized] = useState(false);
-  const [, setThreadId] = useState<string | undefined>(undefined);
+  const [threadId, setThreadId] = useState<string | null>(null);
+  const [isSending, setIsSending] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () =>
@@ -46,21 +46,24 @@ export const PublicChat = () => {
     scrollToBottom();
   }, [messages]);
 
+  // Initial welcome message (localized, with fallback)
   useEffect(() => {
     if (!chatbot) return;
     const welcome =
       (chatbot.welcome_message && chatbot.welcome_message.trim()) ||
-      `Hola, soy ${chatbot.name}. ${
-        chatbot.description ?? ""
-      } ¿En qué puedo ayudarte hoy?`;
+      t(
+        "chat.preview.defaults.welcome",
+        `Hi! I’m ${chatbot.name}. ${chatbot.description ?? ""} How can I help you today?`
+      );
+
     setMessages([
       { id: "welcome", text: welcome, sender: "bot", timestamp: new Date() },
     ]);
-    setThreadId(undefined);
-  }, [chatbot]);
+    setThreadId(null);
+  }, [chatbot, t]);
 
   const handleSend = async () => {
-    if (!inputValue.trim() || !chatbotId) return;
+    if (!inputValue.trim() || !chatbotId || isSending) return;
 
     const userMessage: Message = {
       id: Date.now().toString(),
@@ -70,6 +73,7 @@ export const PublicChat = () => {
     };
     setMessages((prev) => [...prev, userMessage]);
     setInputValue("");
+    setIsSending(true);
 
     const botMsgId = `b_${Date.now() + 1}`;
     setMessages((prev) => [
@@ -86,17 +90,22 @@ export const PublicChat = () => {
     try {
       const base = import.meta.env.VITE_SUPABASE_URL as string;
       const anon = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
+      const { data: sessionData } = await supabase.auth.getSession();
+      const bearer = sessionData.session?.access_token ?? anon;
 
-      const res = await fetchEventStream(`${base}/functions/v1/chat-file-search`, {
+      const res = await fetchWithRetry(`${base}/functions/v1/chat-file-search`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           apikey: anon,
+          Authorization: `Bearer ${bearer}`,
+          Accept: "text/event-stream",
         },
         cache: "no-store",
         body: JSON.stringify({
           chatbot_id: chatbotId,
           message: userMessage.text,
+          ...(threadId ? { thread_id: threadId } : {}),
           stream: true,
         }),
         timeoutMs: 20000,
@@ -105,34 +114,48 @@ export const PublicChat = () => {
 
       let full = "";
       await readSSE(res, {
+        onReady: (tid) => tid && setThreadId(tid),
         onDelta: (chunk) => {
           full += chunk;
+          // show live stream (raw) while typing to avoid broken code fences
           setMessages((prev) =>
             prev.map((m) =>
               m.id === botMsgId ? { ...m, text: full, isLoading: true } : m
             )
           );
         },
-        onEnd: () => {
+        onEnd: (payload) => {
+          const finalText = (payload?.text && String(payload.text)) || full;
           setMessages((prev) =>
             prev.map((m) =>
-              m.id === botMsgId ? { ...m, isLoading: false } : m
+              m.id === botMsgId
+                ? { ...m, text: finalText, isLoading: false }
+                : m
             )
           );
+          if (payload?.thread_id && typeof payload.thread_id === "string") {
+            setThreadId(payload.thread_id);
+          }
         },
       });
-    } catch {
+    } catch (e) {
+      console.error(e);
       setMessages((prev) =>
         prev.map((m) =>
           m.id === botMsgId
             ? {
                 ...m,
-                text: "Sorry, I hit an error. Please try again.",
+                text: t(
+                  "chat.preview.errors.generic",
+                  "Sorry, I couldn’t process that request. Please try again."
+                ),
                 isLoading: false,
               }
             : m
         )
       );
+    } finally {
+      setIsSending(false);
     }
   };
 
@@ -141,32 +164,46 @@ export const PublicChat = () => {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading chatbot...</p>
-        </div>
-      </div>
-    );
-  }
-  if (!chatbot) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <Bot className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-          <h1 className="text-2xl font-bold mb-2">Chatbot Not Found</h1>
           <p className="text-gray-600">
-            The chatbot you're looking for doesn't exist or isn't available.
+            {t("publicChat.loading", "Loading chatbot...")}
           </p>
         </div>
       </div>
     );
   }
+
+  if (!chatbot) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <Bot className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+          <h1 className="text-2xl font-bold mb-2">
+            {t("publicChat.notFoundTitle", "Chatbot Not Found")}
+          </h1>
+          <p className="text-gray-600">
+            {t(
+              "publicChat.notFoundDesc",
+              "The chatbot you're looking for doesn't exist or isn't available."
+            )}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   if (chatbot.status !== "ready") {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <Bot className="h-16 w-16 text-yellow-500 mx-auto mb-4" />
-          <h1 className="text-2xl font-bold mb-2">Chatbot Not Ready</h1>
+          <h1 className="text-2xl font-bold mb-2">
+            {t("publicChat.notReadyTitle", "Chatbot Not Ready")}
+          </h1>
           <p className="text-gray-600">
-            This chatbot is still being processed. Please try again later.
+            {t(
+              "publicChat.notReadyDesc",
+              "This chatbot is still being processed. Please try again later."
+            )}
           </p>
         </div>
       </div>
@@ -190,7 +227,11 @@ export const PublicChat = () => {
             <button
               onClick={() => setIsMinimized((s) => !s)}
               className="p-1 text-gray-400 hover:text-gray-600 rounded transition-colors"
-              title={isMinimized ? "Expand" : "Minimize"}
+              title={
+                isMinimized
+                  ? t("publicChat.expand", "Expand")
+                  : t("publicChat.minimize", "Minimize")
+              }
             >
               {isMinimized ? (
                 <Maximize2 className="h-4 w-4" />
@@ -213,7 +254,9 @@ export const PublicChat = () => {
               <div className="px-6 py-3 border-b bg-gray-50 rounded-t-2xl flex items-center">
                 <MessageCircle className="h-5 w-5 text-primary-600 mr-2" />
                 <h3 className="text-lg font-medium">
-                  Chat with {chatbot.name}
+                  {t("publicChat.header", "Chat with {{name}}", {
+                    name: chatbot.name,
+                  })}
                 </h3>
               </div>
 
@@ -245,41 +288,17 @@ export const PublicChat = () => {
                             ) : (
                               <div className="flex items-center space-x-2">
                                 <Loader className="h-4 w-4 animate-spin" />
-                                <span className="text-sm">Thinking...</span>
+                                <span className="text-sm">
+                                  {t(
+                                    "chat.preview.status.thinking",
+                                    "Thinking..."
+                                  )}
+                                </span>
                               </div>
                             )
                           ) : m.sender === "bot" ? (
                             <div className="prose prose-sm max-w-none">
-                              <ReactMarkdown
-                                remarkPlugins={[remarkGfm]}
-                                components={{
-                                  a: (props) => (
-                                    <a
-                                      {...props}
-                                      className="underline hover:no-underline"
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                    />
-                                  ),
-                                  ul: (props) => (
-                                    <ul {...props} className="list-disc ml-5" />
-                                  ),
-                                  ol: (props) => (
-                                    <ol
-                                      {...props}
-                                      className="list-decimal ml-5"
-                                    />
-                                  ),
-                                  code: (props) => (
-                                    <code
-                                      {...props}
-                                      className="bg-gray-100 px-1 rounded"
-                                    />
-                                  ),
-                                }}
-                              >
-                                {m.text}
-                              </ReactMarkdown>
+                              <MarkdownMessage text={m.text} />
                             </div>
                           ) : (
                             <p className="text-sm whitespace-pre-wrap">
@@ -321,16 +340,24 @@ export const PublicChat = () => {
                         handleSend();
                       }
                     }}
-                    placeholder="Type your message..."
+                    placeholder={t(
+                      "chat.preview.input.placeholder",
+                      "Type your message..."
+                    )}
                     className="flex-1 px-4 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-400"
-                    disabled={isPending}
+                    disabled={isSending}
+                    aria-label={t(
+                      "chat.preview.input.aria_message",
+                      "Message input"
+                    )}
                   />
                   <button
                     onClick={handleSend}
-                    disabled={!inputValue.trim() || isPending}
+                    disabled={!inputValue.trim() || isSending}
                     className="px-5 py-2 bg-primary-600 text-white rounded-xl hover:bg-primary-700 disabled:opacity-50"
+                    aria-label={t("chat.preview.actions.send", "Send")}
                   >
-                    {isPending ? (
+                    {isSending ? (
                       <Loader className="h-4 w-4 animate-spin" />
                     ) : (
                       <Send className="h-4 w-4" />
@@ -338,7 +365,9 @@ export const PublicChat = () => {
                   </button>
                 </div>
                 <p className="text-xs text-gray-500 mt-2 text-center">
-                  Powered by {chatbot.name} • Press Enter to send
+                  {t("publicChat.poweredBy", "Powered by {{name}} • Press Enter to send", {
+                    name: chatbot.name,
+                  })}
                 </p>
               </div>
             </>
@@ -348,7 +377,10 @@ export const PublicChat = () => {
 
       <div className="text-center py-8">
         <p className="text-sm text-gray-500">
-          This chatbot is powered by AI and trained on custom Bot Knowledge
+          {t(
+            "publicChat.footerNote",
+            "This chatbot is powered by AI and trained on custom Bot Knowledge"
+          )}
         </p>
       </div>
     </div>
