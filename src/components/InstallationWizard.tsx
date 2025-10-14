@@ -325,6 +325,10 @@ export default App`;
   const getChatTemplateBaseContent = () => {
     return `import React, { useState, useEffect, useRef } from 'react'
 import { Send, Bot, User, Loader, X, Minimize2, Maximize2, Settings, MoreVertical } from 'lucide-react'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
+import rehypeSanitize from 'rehype-sanitize'
+import type { Components } from 'react-markdown'
 
 interface Message {
   id: string
@@ -349,6 +353,25 @@ interface ChatTemplateProps {
   isOpen?: boolean
   onToggle?: (isOpen: boolean) => void
   className?: string
+}
+
+const markdownComponents: Components = {
+  a: ({ node, ...props }) => (<a {...props} target="_blank" rel="noopener noreferrer" />),
+  code: ({ node, inline, className, children, ...props }: any) =>
+    inline ? (
+      <code
+        className="px-1 py-0.5 rounded bg-black/10 dark:bg-white/10"
+        {...props}
+      >
+        {children}
+      </code>
+    ) : (
+      <pre className="p-3 rounded overflow-x-auto bg-black/10 dark:bg-white/10">
+        <code className={className} {...props}>
+          {children}
+        </code>
+      </pre>
+    ),
 }
 
 export const ChatTemplate = ({
@@ -418,7 +441,7 @@ export const ChatTemplate = ({
     setMessages(prev => [...prev, loadingMessage])
 
     try {
-      const response = await fetch(\`\${apiUrl}/chat\`, {
+      const response = await fetch(\`\${apiUrl}/chat-file-search\`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -622,7 +645,15 @@ export const ChatTemplate = ({
                       </div>
                     ) : (
                       <>
-                        <p className="text-sm whitespace-pre-wrap">{message.text}</p>
+                        <div className="prose prose-sm dark:prose-invert max-w-none [&_p]:my-1 [&_ul]:my-2 [&_ol]:my-2">
+                          <ReactMarkdown
+                            remarkPlugins={[remarkGfm]}
+                            rehypePlugins={[rehypeSanitize]}
+                            components={markdownComponents}
+                          >
+                            {String(message.text || '')}
+                          </ReactMarkdown>
+                        </div>
                         <span className="text-xs opacity-75 mt-1 block">
                           {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                         </span>
@@ -641,7 +672,7 @@ export const ChatTemplate = ({
                   type="text"
                   value={inputValue}
                   onChange={(e) => setInputValue(e.target.value)}
-                  onKeyPress={handleKeyPress}
+                  onKeyDown={handleKeyPress}
                   placeholder={placeholder}
                   className={\`flex-1 px-3 py-2 rounded-lg border \${ 
                     theme === 'dark' 
