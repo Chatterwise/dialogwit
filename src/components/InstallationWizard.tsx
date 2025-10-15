@@ -252,10 +252,10 @@ export const InstallationWizard = () => {
       selections.template.charAt(0).toUpperCase() + selections.template.slice(1);
     const selectedBot = chatbots.find((bot) => bot.id === selections.botId);
 
-    return `import React, { useState } from 'react'
-import { ${templateName}Chat } from './components/ChatTemplates'
+    return `import { useState } from 'react'
+import { ${templateName}Chat } from '@/components/ChatTemplates/${templateName}Chat'
 
-function App() {
+export function ChatWidget() {
   const [isChatOpen, setIsChatOpen] = useState(false)
 
   return (
@@ -287,15 +287,17 @@ function App() {
       selectedBot
         ? `
         botName="${selectedBot.name}"
-        welcomeMessage="Hello! I'm ${selectedBot.name}. ${selectedBot.description} How can I help you today?"`
+        welcomeMessage=${JSON.stringify(
+          (selectedBot?.welcome_message?.trim()
+            || `Hello! I'm ${selectedBot?.name}. ${selectedBot?.description} How can I help you today?`)
+        )}`
         : ""
     }
       />
     </div>
   )
-}
-
-export default App`;
+}`;
+  
   };
 
   const generateScriptCode = () => {
@@ -315,7 +317,11 @@ export default App`;
     selectedBot
       ? `
   data-bot-name="${selectedBot.name}"
-  data-welcome-message="Hello! I'm ${selectedBot.name}. ${selectedBot.description} How can I help you today?"`
+  data-welcome-message="${
+  (selectedBot?.welcome_message?.trim()
+    || `Hello! I'm ${selectedBot?.name}. ${selectedBot?.description} How can I help you today?`)
+    .replace(/"/g, '&quot;')
+  }"`
       : ""
   }
   async>
