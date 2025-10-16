@@ -1066,6 +1066,17 @@
   "profile.buttons.save": "Save Changes",
   "profile.buttons.saving": "Saving...",
 
+  "publicChat.loading": "Loading chatbot...",
+  "publicChat.notFoundTitle": "Chatbot Not Found",
+  "publicChat.notFoundDesc": "The chatbot you're looking for doesn't exist or isn't available.",
+  "publicChat.notReadyTitle": "Chatbot Not Ready",
+  "publicChat.notReadyDesc": "This chatbot is still being processed. Please try again later.",
+  "publicChat.expand": "Expand",
+  "publicChat.minimize": "Minimize",
+  "publicChat.header": "Chat with {{name}}",
+  "publicChat.poweredBy": "Powered by {{name}} • Press Enter to send",
+  "publicChat.footerNote": "This chatbot is powered by AI and trained on custom Bot Knowledge",
+
   "resetPassword.header.title": "Reset Your Password",
   "resetPassword.header.subtitle": "Enter your new password below",
 
