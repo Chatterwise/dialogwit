@@ -64,6 +64,51 @@
   "footer_cookies": "Cookie Policy",
   "footer_copyright": "© 2025 ChatterWise. All rights reserved.",
 
+  "cookies": {
+    "banner_message": "We use essential cookies and, with your consent, analytics cookies to improve our service. You can change your choice at any time in our Cookie Policy.",
+    "banner_link": "Cookie Policy",
+    "accept": "Accept analytics",
+    "reject": "Reject analytics"
+  },
+
+  "legal": {
+    "last_updated": "Last updated: {{date}}",
+    "privacy": { "title": "Privacy Policy" },
+    "terms": {
+      "title": "Terms of Service",
+      "use": "Use of the Service",
+      "use_text": "You must use the service in compliance with applicable laws and these Terms. We may suspend accounts for misuse or security risks.",
+      "accounts": "Accounts",
+      "accounts_text": "You are responsible for maintaining the confidentiality of your account credentials and for all activities under your account.",
+      "fees": "Fees & billing",
+      "fees_text": "If applicable, fees are charged as described at checkout. Taxes may apply. Subscriptions renew unless cancelled as per plan terms.",
+      "liability": "Liability",
+      "liability_text": "To the extent permitted by law, we exclude indirect and consequential losses. Nothing limits liability for fraud or death/personal injury caused by negligence.",
+      "law": "Governing law",
+      "law_text": "These Terms are governed by the laws of England and Wales, and disputes are subject to the exclusive jurisdiction of its courts."
+    },
+    "controller": { "title": "Who we are", "text": "We are the data controller for the purposes of UK GDPR and PECR. This policy explains how we process personal data when you use our services." },
+    "purposes": {
+      "title": "What data we process and why",
+      "service": "Service delivery: account, authentication, communications, and security (necessary for contract or legitimate interests).",
+      "analytics": "Analytics: improve performance and features (only with your consent; disabled until accepted)."
+    },
+    "lawful_basis": { "title": "Lawful bases", "text": "We rely on contract (to provide the service), legitimate interests (security and fraud prevention), and consent (analytics cookies)." },
+    "transfers": { "title": "International transfers", "text": "Where data is transferred outside the UK, we implement appropriate safeguards such as standard contractual clauses and regional hosting when available." },
+    "retention": { "title": "Retention", "text": "We keep personal data only as long as necessary for the purposes described or to comply with legal obligations." },
+    "rights": { "title": "Your rights", "text": "You have rights under UK GDPR including access, rectification, erasure, restriction, objection, portability, and the right to withdraw consent." },
+    "contact": { "title": "Contact", "text": "To exercise your rights or ask questions, contact us at privacy@yourdomain.example." },
+    "cookies": {
+      "title": "Cookie Policy",
+      "essential": "Essential cookies",
+      "essential_text": "These are necessary to provide the service and cannot be switched off. They are usually set in response to actions you take, such as logging in or filling in forms.",
+      "analytics": "Analytics cookies",
+      "analytics_text": "We use analytics to improve performance and user experience. These run only with your consent. You can change your choice at any time.",
+      "manage": "How to manage cookies",
+      "manage_text": "Use the banner to accept or reject analytics cookies. You can also control cookies through your browser settings."
+    }
+  },
+
   "header_create": "Create",
   "header_new_chatbot": "New Chatbot",
   "header_add_knowledge": "Add Knowledge",
