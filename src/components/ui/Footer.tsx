@@ -14,14 +14,15 @@ const Footer = () => {
               <Logo className="h-12 w-52" />
             </div>
             <p className="mt-4 text-gray-400">{t("footer_tagline")}</p>
+            {/*
             {false && (
               <div className="mt-4 flex space-x-4">
-                {/* Social icons (kept for future use) */}
+                Social icons (kept for future use)
                 <a
                   href="#"
                   className="text-gray-400 hover:text-white transition-colors"
                 >
-                  {/* Twitter */}
+                  Twitter
                   <svg
                     className="h-6 w-6"
                     fill="currentColor"
@@ -34,7 +35,7 @@ const Footer = () => {
                   href="#"
                   className="text-gray-400 hover:text-white transition-colors"
                 >
-                  {/* GitHub */}
+                  GitHub
                   <svg
                     className="h-6 w-6"
                     fill="currentColor"
@@ -47,7 +48,7 @@ const Footer = () => {
                   href="#"
                   className="text-gray-400 hover:text-white transition-colors"
                 >
-                  {/* LinkedIn */}
+                  LinkedIn
                   <svg
                     className="h-6 w-6"
                     fill="currentColor"
@@ -58,6 +59,7 @@ const Footer = () => {
                 </a>
               </div>
             )}
+            */}
           </div>
 
           <div>

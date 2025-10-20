@@ -10,7 +10,7 @@ export class RouteBoundary extends React.Component<Props, { hasError: boolean }>
   }
 
   componentDidCatch(error: unknown) {
-    // eslint-disable-next-line no-console
+     
     console.error("Route error:", error);
   }
 

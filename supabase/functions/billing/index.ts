@@ -119,7 +119,7 @@ serve(async (req)=>{
         return createErrorResponse('Plan not found', 404);
       }
       // Get or create Stripe customer
-      let customerId = await getOrCreateStripeCustomer(authContext.userId, supabaseClient);
+      const customerId = await getOrCreateStripeCustomer(authContext.userId, supabaseClient);
       const priceId = billing_cycle === 'yearly' ? plan.stripe_price_id_yearly : plan.stripe_price_id_monthly;
       if (!priceId) {
         return createErrorResponse('Price not configured for this plan', 400);
