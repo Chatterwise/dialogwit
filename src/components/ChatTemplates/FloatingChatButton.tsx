@@ -7,7 +7,7 @@ export function FloatingChatButton({ onClick }: { onClick: () => void }) {
   const bg =
     theme === "dark"
       ? "bg-neutral-900/90 backdrop-blur-sm border border-neutral-800"
-      : "bg-white/90 backdrop-blur-md border border-gray-200";
+      : "bg-white backdrop-blur-md border border-gray-200";
   const shadow =
     theme === "dark"
       ? "shadow-xl shadow-blue-900/30"
@@ -44,8 +44,8 @@ export function FloatingChatButton({ onClick }: { onClick: () => void }) {
       style={{ boxShadow: "0 4px 28px 0 rgba(0,0,0,.16)" }}
     >
       <MessageSquare
-        className="w-8 h-8 text-primary-600 group-hover:scale-110 group-hover:text-primary-500 group-hover:drop-shadow-lg transition-transform duration-150"
-        strokeWidth={2.5}
+        className="w-8 h-8 text-primary-400 group-hover:scale-110 group-hover:text-primary-500 group-hover:drop-shadow-lg transition-transform duration-150"
+        strokeWidth={3}
       />
     </motion.button>
   );
