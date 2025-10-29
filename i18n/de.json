@@ -61,6 +61,49 @@
   "footer_privacy": "Datenschutzrichtlinie",
   "footer_terms": "Allgemeine Geschäftsbedingungen",
   "footer_cookies": "Cookie-Richtlinie",
+  "cookies": {
+    "banner_message": "Wir verwenden notwendige Cookies und – mit deiner Einwilligung – Analyse-Cookies zur Verbesserung unseres Dienstes. Du kannst deine Auswahl jederzeit in unserer Cookie-Richtlinie ändern.",
+    "banner_link": "Cookie-Richtlinie",
+    "accept": "Analyse akzeptieren",
+    "reject": "Analyse ablehnen"
+  },
+  "legal": {
+    "last_updated": "Zuletzt aktualisiert: {{date}}",
+    "privacy": { "title": "Datenschutzerklärung" },
+    "terms": {
+      "title": "Nutzungsbedingungen",
+      "use": "Nutzung des Dienstes",
+      "use_text": "Du musst den Dienst in Übereinstimmung mit geltendem Recht und diesen Bedingungen nutzen. Wir können Konten bei Missbrauch oder Sicherheitsrisiken sperren.",
+      "accounts": "Konten",
+      "accounts_text": "Du bist für die Vertraulichkeit deiner Zugangsdaten und alle Aktivitäten in deinem Konto verantwortlich.",
+      "fees": "Gebühren & Abrechnung",
+      "fees_text": "Gegebenenfalls werden Gebühren wie beim Checkout angegeben berechnet. Steuern können anfallen. Abos verlängern sich automatisch, sofern nicht gemäß den Bedingungen gekündigt.",
+      "liability": "Haftung",
+      "liability_text": "Soweit gesetzlich zulässig, schließen wir indirekte und Folgeschäden aus. Nichts beschränkt die Haftung für Betrug oder Tod/Personenschäden durch Fahrlässigkeit.",
+      "law": "Anwendbares Recht",
+      "law_text": "Diese Bedingungen unterliegen dem Recht von England und Wales; Gerichte dieser Gerichtsbarkeit sind ausschließlich zuständig."
+    },
+    "controller": { "title": "Wer wir sind", "text": "Wir sind der Verantwortliche im Sinne des UK GDPR und PECR. Diese Richtlinie erklärt, wie wir personenbezogene Daten verarbeiten, wenn du unsere Dienste nutzt." },
+    "purposes": {
+      "title": "Welche Daten und warum",
+      "service": "Bereitstellung des Dienstes: Konto, Authentifizierung, Kommunikation und Sicherheit (erforderlich für Vertrag oder berechtigte Interessen).",
+      "analytics": "Analytik: Verbesserung von Leistung und Funktionen (nur mit deiner Einwilligung; bis dahin deaktiviert)."
+    },
+    "lawful_basis": { "title": "Rechtsgrundlagen", "text": "Wir stützen uns auf Vertrag (Dienstleistung), berechtigte Interessen (Sicherheit/Betrugsprävention) und Einwilligung (Analyse-Cookies)." },
+    "transfers": { "title": "Internationale Übermittlungen", "text": "Bei Übermittlungen außerhalb des Vereinigten Königreichs setzen wir geeignete Garantien um, z. B. Standardvertragsklauseln und regionale Speicherung, sofern verfügbar." },
+    "retention": { "title": "Aufbewahrung", "text": "Wir speichern personenbezogene Daten nur so lange, wie es für die beschriebenen Zwecke erforderlich ist oder rechtlich vorgeschrieben wird." },
+    "rights": { "title": "Deine Rechte", "text": "Du hast Rechte nach UK GDPR, u. a. auf Auskunft, Berichtigung, Löschung, Einschränkung, Widerspruch, Datenübertragbarkeit und Widerruf der Einwilligung." },
+    "contact": { "title": "Kontakt", "text": "Zur Ausübung deiner Rechte oder bei Fragen kontaktiere uns unter privacy@yourdomain.example." },
+    "cookies": {
+      "title": "Cookie-Richtlinie",
+      "essential": "Unbedingt erforderliche Cookies",
+      "essential_text": "Diese sind für die Bereitstellung des Dienstes erforderlich und können nicht deaktiviert werden. Sie werden meist als Reaktion auf von dir getätigte Aktionen gesetzt.",
+      "analytics": "Analyse-Cookies",
+      "analytics_text": "Wir verwenden Analysen zur Verbesserung der Leistung und Nutzererfahrung. Sie laufen nur mit deiner Einwilligung. Du kannst deine Wahl jederzeit ändern.",
+      "manage": "Cookies verwalten",
+      "manage_text": "Nutze das Banner, um Analyse-Cookies zu akzeptieren oder abzulehnen. Du kannst Cookies auch im Browser steuern."
+    }
+  },
   "footer_copyright": "© 2025 ChatterWise. Alle Rechte vorbehalten.",
   "header_create": "Erstellen",
   "header_new_chatbot": "Neuer Chatbot",

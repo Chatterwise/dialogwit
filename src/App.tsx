@@ -94,6 +94,7 @@ import SuccessPage from "./components/SuccessPage";
 const LandingPage = lazy(() => import("./components/LandingPage"));
 import { ChatbotSettings } from "./components/ChatbotSettings";
 import { ToastRenderer } from "./components/ToastRenderer";
+import CookieBanner from "./components/CookieBanner";
 const AboutUsPage = lazy(() => import("./pages/AboutUsPage"));
 const ApiReferencePage = lazy(() => import("./pages/ApiReferencePage"));
 // import BlogPage from "./pages/BlogPage";
@@ -103,6 +104,9 @@ const DocumentationPage = lazy(() => import("./pages/DocumentationPage"));
 const EnterprisePage = lazy(() => import("./pages/EnterprisePage"));
 const FeaturesPage = lazy(() => import("./pages/FeaturesPage"));
 const LegalPage = lazy(() => import("./pages/LegalPage"));
+const PrivacyPolicyPage = lazy(() => import("./pages/PrivacyPolicyPage"));
+const TermsPage = lazy(() => import("./pages/TermsPage"));
+const CookiePolicyPage = lazy(() => import("./pages/CookiePolicyPage"));
 import { WebhookManager } from "./components/WebhookManager";
 
 // Documentation Pages
@@ -168,7 +172,6 @@ const queryClient = new QueryClient({
     },
   },
   queryCache: new QueryCache({
-    onFetch: () => progress.start(),
     onError: () => progress.done(),
     onSuccess: () => progress.done(),
   }),
@@ -280,6 +283,9 @@ function AppContent() {
                 <Route path="about" element={<AboutUsPage />} />
                 <Route path="contact" element={<ContactPage />} />
                 <Route path="legal" element={<LegalPage />} />
+                <Route path="privacy" element={<PrivacyPolicyPage />} />
+                <Route path="terms" element={<TermsPage />} />
+                <Route path="cookies" element={<CookiePolicyPage />} />
 
                 {/* Docs sub-pages */}
                 <Route
@@ -451,6 +457,7 @@ function AppContent() {
                   }
                 />
               </Routes>
+              <CookieBanner />
             </LanguageProvider>
           </AnimatedSuspense>
         }

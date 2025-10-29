@@ -61,6 +61,49 @@
   "footer_privacy": "Adatvédelmi szabályzat",
   "footer_terms": "Felhasználási feltételek",
   "footer_cookies": "Cookie szabályzat",
+  "cookies": {
+    "banner_message": "Alapvető sütiket használunk, és – hozzájárulásoddal – analitikai sütiket a szolgáltatás javításához. Választásodat bármikor módosíthatod a Sütiszabályzatban.",
+    "banner_link": "Sütiszabályzat",
+    "accept": "Analitika elfogadása",
+    "reject": "Analitika elutasítása"
+  },
+  "legal": {
+    "last_updated": "Utoljára frissítve: {{date}}",
+    "privacy": { "title": "Adatvédelmi tájékoztató" },
+    "terms": {
+      "title": "Szolgáltatási feltételek",
+      "use": "A szolgáltatás használata",
+      "use_text": "A szolgáltatást az alkalmazandó jogszabályokkal és ezen feltételekkel összhangban kell használnod. Visszaélés vagy biztonsági kockázat esetén a fiókot felfüggeszthetjük.",
+      "accounts": "Fiókok",
+      "accounts_text": "Felelős vagy a fiókod hitelesítő adatainak bizalmas kezeléséért és a fiókodban végzett minden tevékenységért.",
+      "fees": "Díjak és számlázás",
+      "fees_text": "Adott esetben a díjakat a fizetéskor megjelenített feltételek szerint számítjuk fel. Adók merülhetnek fel. Az előfizetések automatikusan megújulnak, hacsak a feltételek szerint nem mondod le.",
+      "liability": "Felelősség",
+      "liability_text": "A jog által megengedett mértékig kizárjuk a közvetett és következményi károkat. Semmi sem korlátozza a csalásért vagy gondatlanságból eredő halálért/személysérülésért való felelősséget.",
+      "law": "Irányadó jog",
+      "law_text": "Ezen feltételekre Anglia és Wales joga irányadó, a jogvitákra e joghatóság bíróságai kizárólagosan illetékesek."
+    },
+    "controller": { "title": "Kik vagyunk", "text": "Adatkezelők vagyunk a UK GDPR és PECR szerint. Ez a tájékoztató ismerteti, hogyan kezeljük a személyes adatokat a szolgáltatás használatakor." },
+    "purposes": {
+      "title": "Milyen adatokat és miért",
+      "service": "Szolgáltatásnyújtás: fiók, hitelesítés, kommunikáció és biztonság (szerződés teljesítése vagy jogos érdek).",
+      "analytics": "Analitika: teljesítmény és funkciók javítása (csak hozzájárulással; elfogadásig kikapcsolva)."
+    },
+    "lawful_basis": { "title": "Jogi alapok", "text": "A szolgáltatás nyújtása érdekében szerződésre, biztonság és csalásmegelőzés céljából jogos érdekekre, analitikai sütik esetén hozzájárulásra támaszkodunk." },
+    "transfers": { "title": "Nemzetközi adattovábbítás", "text": "Az Egyesült Királyságon kívüli adattovábbítás esetén megfelelő garanciákat alkalmazunk, például általános szerződési feltételeket és regionális tárolást, ha elérhető." },
+    "retention": { "title": "Megőrzés", "text": "A személyes adatokat csak a leírt célokhoz szükséges ideig vagy jogi kötelezettség teljesítéséig őrizzük meg." },
+    "rights": { "title": "Jogai d", "text": "A UK GDPR alapján jogaid vannak, többek között hozzáférés, helyesbítés, törlés, korlátozás, tiltakozás, adathordozhatóság és a hozzájárulás visszavonása." },
+    "contact": { "title": "Kapcsolat", "text": "Jogai gyakorlásához vagy kérdéseihez írj a privacy@yourdomain.example címre." },
+    "cookies": {
+      "title": "Sütiszabályzat",
+      "essential": "Alapvető sütik",
+      "essential_text": "Ezek szükségesek a szolgáltatáshoz és nem kapcsolhatók ki. Általában olyan műveletekre reagálva állítjuk be őket, mint a bejelentkezés vagy űrlapok kitöltése.",
+      "analytics": "Analitikai sütik",
+      "analytics_text": "Analitikát használunk a teljesítmény és a felhasználói élmény javításához. Csak a hozzájárulásoddal működnek. A választásodat bármikor módosíthatod.",
+      "manage": "Sütik kezelése",
+      "manage_text": "A banner segítségével fogadhatod el vagy utasíthatod el az analitikai sütiket. A böngésző beállításaiban is szabályozhatod őket."
+    }
+  },
   "footer_copyright": "© 2025 ChatterWise. Minden jog fenntartva.",
   "header_create": "Létrehozás",
   "header_new_chatbot": "Új chatbot",
