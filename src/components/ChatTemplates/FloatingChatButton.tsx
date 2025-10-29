@@ -1,18 +1,7 @@
 import { MessageSquare } from "lucide-react";
 import { motion } from "framer-motion";
-import { useTheme } from "../../hooks/useTheme";
 
 export function FloatingChatButton({ onClick }: { onClick: () => void }) {
-  const { theme } = useTheme();
-  const bg =
-    theme === "dark"
-      ? "bg-neutral-900/90 backdrop-blur-sm border border-neutral-800"
-      : "bg-white/90 backdrop-blur-md border border-gray-200";
-  const shadow =
-    theme === "dark"
-      ? "shadow-xl shadow-blue-900/30"
-      : "shadow-lg shadow-blue-200/40";
-
   return (
     <motion.button
       onClick={onClick}
@@ -32,11 +21,14 @@ export function FloatingChatButton({ onClick }: { onClick: () => void }) {
       }}
       className={`
         fixed bottom-6 right-6 w-16 h-16
-        ${bg} ${shadow}
+        bg-white dark:bg-neutral-900/90
+        backdrop-blur-md dark:backdrop-blur-sm
+        border-2 border-gray-200 dark:border-neutral-800
+        shadow-lg shadow-blue-200/40 dark:shadow-xl dark:shadow-blue-900/30
         flex items-center justify-center
-        rounded-2xl border-2
+        rounded-2xl
         hover:scale-105 active:scale-95
-        hover:border-primary-500/80
+        hover:border-primary-500/80 dark:hover:border-primary-400/80
         focus-visible:ring-2 focus-visible:ring-primary-500
         transition-all duration-150
         outline-none group z-50
@@ -44,8 +36,8 @@ export function FloatingChatButton({ onClick }: { onClick: () => void }) {
       style={{ boxShadow: "0 4px 28px 0 rgba(0,0,0,.16)" }}
     >
       <MessageSquare
-        className="w-8 h-8 text-primary-600 group-hover:scale-110 group-hover:text-primary-500 group-hover:drop-shadow-lg transition-transform duration-150"
-        strokeWidth={2.5}
+        className="w-9 h-9 text-primary-500 group-hover:scale-110 group-hover:text-primary-500 group-hover:drop-shadow-lg transition-transform duration-150"
+        strokeWidth={3.5}
       />
     </motion.button>
   );

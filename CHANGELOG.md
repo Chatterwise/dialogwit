@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file. See [standa
 
 ## [Unreleased]
 
+- Fix theme handling in the src/components/ChatTemplates/FloatingChatButton.tsx component. **[CHAT-46]**
 - Remove Iubenda references. Added UK compliant consent banner, generated internal pages for cookies, term of service, and privacy policies, reworked links in footer. Also, posthog analytics are now enabled through the src/components/AnalyticsProvider.tsx based on consent response. **[CHAT-45]**
 - InstallationWizard.tsx updated to accept markdown, point at the new supabase function to handle bot message, use the new welcome_message column when not null or default to current configuration using bot name and description. **[CHAT-44]**
 - CSP fixes, issues identified in live site, did not show up in local testing. Updated netlify.toml. **[CHAT-43]**
