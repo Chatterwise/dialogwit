@@ -39,7 +39,7 @@ serve(async (req)=>{
             webhook_id: webhook.id
           };
           // Add signature if secret is provided
-          let headers = {
+          const headers = {
             'Content-Type': 'application/json',
             'User-Agent': 'ChatBot-Webhook/1.0'
           };
@@ -127,7 +127,7 @@ serve(async (req)=>{
         webhook_id: webhook.id
       };
       try {
-        let headers = {
+        const headers = {
           'Content-Type': 'application/json',
           'User-Agent': 'ChatBot-Webhook-Test/1.0'
         };

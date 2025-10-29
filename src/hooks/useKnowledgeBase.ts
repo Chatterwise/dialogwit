@@ -206,7 +206,7 @@ export const useBulkDeleteKnowledgeBase = () => {
       let fail = 0;
       for (const id of ids) {
         try {
-          // eslint-disable-next-line no-await-in-loop
+           
           await removeOne.mutateAsync(id);
           ok += 1;
         } catch {

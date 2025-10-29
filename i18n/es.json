@@ -61,6 +61,49 @@
   "footer_privacy": "Política de privacidad",
   "footer_terms": "Términos y condiciones",
   "footer_cookies": "Política de cookies",
+  "cookies": {
+    "banner_message": "Usamos cookies esenciales y, con tu consentimiento, cookies de analítica para mejorar el servicio. Puedes cambiar tu elección en cualquier momento en nuestra Política de cookies.",
+    "banner_link": "Política de cookies",
+    "accept": "Aceptar analítica",
+    "reject": "Rechazar analítica"
+  },
+  "legal": {
+    "last_updated": "Última actualización: {{date}}",
+    "privacy": { "title": "Política de privacidad" },
+    "terms": {
+      "title": "Términos del servicio",
+      "use": "Uso del Servicio",
+      "use_text": "Debes usar el servicio conforme a las leyes aplicables y estos Términos. Podemos suspender cuentas por uso indebido o riesgos de seguridad.",
+      "accounts": "Cuentas",
+      "accounts_text": "Eres responsable de mantener la confidencialidad de tus credenciales y de todas las actividades de tu cuenta.",
+      "fees": "Tarifas y facturación",
+      "fees_text": "Si corresponde, las tarifas se cobran según lo indicado al pagar. Pueden aplicarse impuestos. Las suscripciones se renuevan salvo cancelación según los términos.",
+      "liability": "Responsabilidad",
+      "liability_text": "En la medida permitida por la ley, excluimos pérdidas indirectas o consecuenciales. Nada limita la responsabilidad por fraude o muerte/lesiones por negligencia.",
+      "law": "Ley aplicable",
+      "law_text": "Estos Términos se rigen por las leyes de Inglaterra y Gales y los tribunales de esa jurisdicción tendrán competencia exclusiva."
+    },
+    "controller": { "title": "Quiénes somos", "text": "Somos el responsable del tratamiento según UK GDPR y PECR. Esta política explica cómo tratamos datos personales cuando usas nuestros servicios." },
+    "purposes": {
+      "title": "Qué datos tratamos y por qué",
+      "service": "Prestación del servicio: cuenta, autenticación, comunicaciones y seguridad (necesario para el contrato o intereses legítimos).",
+      "analytics": "Analítica: mejorar rendimiento y funciones (solo con tu consentimiento; desactivado hasta que lo aceptes)."
+    },
+    "lawful_basis": { "title": "Bases legales", "text": "Nos basamos en el contrato (para prestar el servicio), intereses legítimos (seguridad y prevención del fraude) y consentimiento (cookies de analítica)." },
+    "transfers": { "title": "Transferencias internacionales", "text": "Cuando se transfieren datos fuera del Reino Unido, aplicamos garantías adecuadas como cláusulas contractuales tipo y alojamiento regional cuando esté disponible." },
+    "retention": { "title": "Conservación", "text": "Conservamos los datos personales solo el tiempo necesario para los fines descritos o para cumplir obligaciones legales." },
+    "rights": { "title": "Tus derechos", "text": "Tienes derechos según el UK GDPR, incluidos acceso, rectificación, supresión, restricción, oposición, portabilidad y retirar el consentimiento." },
+    "contact": { "title": "Contacto", "text": "Para ejercer tus derechos o realizar consultas, contáctanos en privacy@yourdomain.example." },
+    "cookies": {
+      "title": "Política de cookies",
+      "essential": "Cookies esenciales",
+      "essential_text": "Son necesarias para prestar el servicio y no se pueden desactivar. Suelen configurarse al realizar acciones como iniciar sesión o completar formularios.",
+      "analytics": "Cookies de analítica",
+      "analytics_text": "Usamos analítica para mejorar el rendimiento y la experiencia. Solo funciona con tu consentimiento. Puedes cambiar tu elección en cualquier momento.",
+      "manage": "Cómo gestionar las cookies",
+      "manage_text": "Usa el banner para aceptar o rechazar las cookies de analítica. También puedes controlarlas desde tu navegador."
+    }
+  },
   "footer_copyright": "© 2025 ChatterWise. Todos los derechos reservados.",
   "header_create": "Crear",
   "header_new_chatbot": "Nuevo chatbot",

@@ -415,9 +415,7 @@ export const EnterpriseChatTemplate = ({
                 <span>Your data is private</span>
               </div>
               <a
-                href="https://www.iubenda.com/privacy-policy/16849142"
-                target="_blank"
-                rel="noopener noreferrer"
+                href="/privacy"
                 className="text-xs underline hover:text-primary-400 transition-colors"
               >
                 Privacy policy
