@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file. See [standa
 
 ## [Unreleased]
 
+- Removed token allowance box from src/components/PricingPlans.tsx. **[CHAT-47]**
 - Updated i18n allowance entries for all our plans. **[CHAT-47]**
 - Resize src/components/ChatTemplates/FloatingChatButton.tsx component, too large. **[NO-TICKET]**
 - Fix theme handling in the src/components/ChatTemplates/FloatingChatButton.tsx component. **[CHAT-46]**
