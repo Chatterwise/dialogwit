@@ -13,7 +13,6 @@ export const stripeConfig = {
         "plan_free_2",
         "plan_free_3",
         "plan_free_4",
-        "plan_free_5",
       ],
       limits: {
         tokens_per_month: 20000,
@@ -37,7 +36,6 @@ export const stripeConfig = {
         "plan_starter_2",
         "plan_starter_3",
         "plan_starter_4",
-        "plan_starter_5",
       ],
       limits: {
         tokens_per_month: 200000,
@@ -61,7 +59,6 @@ export const stripeConfig = {
         "plan_growth_2",
         "plan_growth_3",
         "plan_growth_4",
-        "plan_growth_5",
       ],
       limits: {
         tokens_per_month: 1000000,
@@ -85,7 +82,6 @@ export const stripeConfig = {
         "plan_business_2",
         "plan_business_3",
         "plan_business_4",
-        "plan_business_5",
       ],
       limits: {
         tokens_per_month: 5000000,
