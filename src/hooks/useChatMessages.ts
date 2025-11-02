@@ -23,52 +23,6 @@ export const useChatMessages = (chatbotId: string) => {
   });
 };
 
-// export const useSendMessage = () => {
-//   const queryClient = useQueryClient();
-
-//   return useMutation({
-//     mutationFn: async ({
-//       chatbotId,
-//       message,
-//       userId,
-//     }: {
-//       chatbotId: string;
-//       message: string;
-//       userId: string;
-//     }) => {
-//       // Call the chat edge function
-//       const response = await fetch(
-//         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat`,
-//         {
-//           method: "POST",
-//           headers: {
-//             "Content-Type": "application/json",
-//             Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-//           },
-//           body: JSON.stringify({
-//             chatbot_id: chatbotId,
-//             message,
-//             user_ip: userId,
-//           }),
-//         }
-//       );
-
-//       if (!response.ok) {
-//         throw new Error("Failed to send message");
-//       }
-
-//       const data = await response.json();
-//       return data;
-//     },
-//     onSuccess: (_, variables) => {
-//       // Invalidate chat messages to refetch
-//       queryClient.invalidateQueries({
-//         queryKey: ["chat_messages", variables.chatbotId],
-//       });
-//     },
-//   });
-// };
-
 export const useSendMessage = () => {
   const queryClient = useQueryClient();
 
@@ -85,7 +39,7 @@ export const useSendMessage = () => {
       onChunk: (chunk: string) => void;
     }) => {
       const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat`,
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat-file-search`,
         {
           method: "POST",
           headers: {
@@ -107,33 +61,51 @@ export const useSendMessage = () => {
 
       const reader = response.body.getReader();
       const decoder = new TextDecoder("utf-8");
-      let fullMessage = "";
+      let buf = "";
+      let full = "";
 
       while (true) {
-        const { done, value } = await reader.read();
+        const { value, done } = await reader.read();
         if (done) break;
+        buf += decoder.decode(value, { stream: true });
 
-        const chunk = decoder.decode(value, { stream: true });
-        fullMessage += chunk;
-        onChunk(chunk);
+        let split: number;
+        while ((split = buf.indexOf("\n\n")) !== -1) {
+          const frame = buf.slice(0, split);
+          buf = buf.slice(split + 2);
+
+          let evt = "";
+          let data = "";
+          for (const line of frame.split("\n")) {
+            if (line.startsWith("event:")) evt = line.slice(6).trim();
+            if (line.startsWith("data:")) data += line.slice(5) + "\n";
+          }
+          if (!data) continue;
+
+          try {
+            const payload = JSON.parse(data);
+            if (evt === "delta" && typeof payload.text === "string") {
+              onChunk(payload.text);
+              full += payload.text;
+            }
+            if (evt === "end") {
+              // optional: payload.text contains the final
+            }
+          } catch {
+            // ignore malformed chunks
+          }
+        }
       }
 
-      return fullMessage;
+      return full;
     },
-onSuccess: (_, { chatbotId }) => {
-  // Invalidate the query for this chatbot's messages
-  queryClient.invalidateQueries({
-    queryKey: ["chat_messages", chatbotId || ""],
-    exact: true,
-  });
-  // Manually refetch if you want to be extra sure
-  queryClient.refetchQueries({
-    queryKey: ["chat_messages", chatbotId || ""],
-    exact: true,
-  });
-},
+    onSuccess: (_, { chatbotId }) => {
+      queryClient.invalidateQueries({ queryKey: ["chat_messages", chatbotId || ""], exact: true });
+      queryClient.refetchQueries({ queryKey: ["chat_messages", chatbotId || ""], exact: true });
+    },
   });
 };
+
 
 export const useChatAnalytics = (chatbotId: string) => {
   return useQuery({
