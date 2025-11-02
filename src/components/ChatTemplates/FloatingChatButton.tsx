@@ -36,8 +36,8 @@ export function FloatingChatButton({ onClick }: { onClick: () => void }) {
       style={{ boxShadow: "0 4px 28px 0 rgba(0,0,0,.16)" }}
     >
       <MessageSquare
-        className="w-9 h-9 text-primary-500 group-hover:scale-110 group-hover:text-primary-500 group-hover:drop-shadow-lg transition-transform duration-150"
-        strokeWidth={3.5}
+        className="w-8 h-8 text-primary-500 group-hover:scale-110 group-hover:text-primary-500 group-hover:drop-shadow-lg transition-transform duration-150"
+        strokeWidth={3}
       />
     </motion.button>
   );
