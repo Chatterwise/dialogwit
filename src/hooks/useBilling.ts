@@ -1,24 +1,50 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
 
 const DEBUG_BILLING = true;
 
+type Json = Record<string, any> | null;
+
+type SubscriptionRow = {
+  id: string;
+  user_id: string;
+  plan_id: string | null;
+  status: string | null;
+  current_period_start: string | null; // ISO
+  current_period_end: string | null;   // ISO
+  metadata: Json;
+  // Plan snapshot fields on subscription (as your sample shows)
+  name?: string | null;
+  display_name?: string | null;
+  description?: string | null;
+  features?: Json;
+  limits?: Json; // { tokens_per_month?: number, ... }
+  // If you still do an explicit join, this will be present:
+  subscription_plans?: {
+    name?: string | null;
+    display_name?: string | null;
+    features?: Json;
+    limits?: Json;
+  } | null;
+};
+
 export const useBilling = () => {
-  // Get current user once and gate all queries on that
+  // 1) Auth
   const userQuery = useQuery({
     queryKey: ['auth', 'user'],
     queryFn: async () => {
-      const { data: { user }, error } = await supabase.auth.getUser();
+      const { data, error } = await supabase.auth.getUser();
       if (error) throw error;
-      return user ?? null;
+      return data.user ?? null;
     },
     staleTime: 60_000,
   });
 
+  // 2) Subscription (+ plan info if joined)
   const subscriptionQuery = useQuery({
     queryKey: ['subscription', userQuery.data?.id],
-    enabled: !!userQuery.data, // run for any authenticated user
-    queryFn: async () => {
+    enabled: !!userQuery.data, // only when logged in
+    queryFn: async (): Promise<SubscriptionRow | null> => {
       const user = userQuery.data!;
       const { data, error } = await supabase
         .from('user_subscriptions')
@@ -30,38 +56,82 @@ export const useBilling = () => {
 
       if (error) throw error;
 
-      // Graceful free-plan fallback if no row
-      const plan = data?.subscription_plans || {};
-      return {
-        ...data,
-        plan_name: plan.name || 'free',
-        display_name: plan.display_name || 'Free',
-        features: plan.features || {},
-        limits: plan.limits || {},
-        metadata: data?.metadata || {}
-      };
+      // If there is no row, return a synthetic free subscription (null keeps UI simple)
+      if (!data) return null;
+
+      return data as unknown as SubscriptionRow;
     },
     staleTime: 5 * 60 * 1000,
   });
 
+  // Helper to resolve limits/features/display safely from either snapshot or joined plan.
+  const resolvePlanInfo = (sub: SubscriptionRow | null) => {
+    const snapLimits = (sub?.limits ?? {}) as Record<string, any>;
+    const joinLimits = (sub?.subscription_plans?.limits ?? {}) as Record<string, any>;
+    const limits = { ...joinLimits, ...snapLimits };
+
+    const snapFeatures = (sub?.features ?? {}) as Record<string, any>;
+    const joinFeatures = (sub?.subscription_plans?.features ?? {}) as Record<string, any>;
+    const features = { ...joinFeatures, ...snapFeatures };
+
+    const planName =
+      sub?.name ||
+      sub?.subscription_plans?.name ||
+      'free';
+
+    const displayName =
+      sub?.display_name ||
+      sub?.subscription_plans?.display_name ||
+      'Free';
+
+    // Hard default to avoid undefined math later
+    const tokensPerMonth =
+      Number(limits.tokens_per_month ?? 10000);
+
+    return {
+      plan_name: planName,
+      display_name: displayName,
+      features,
+      limits: { ...limits, tokens_per_month: tokensPerMonth },
+      metadata: sub?.metadata ?? {},
+    };
+  };
+
+  // 3) Usage (anniversary window if present, else calendar month)
   const usageQuery = useQuery({
-    queryKey: ['usage', userQuery.data?.id, subscriptionQuery.data?.plan_name],
-    enabled: !!userQuery.data && subscriptionQuery.status !== 'loading',
+    queryKey: ['usage', userQuery.data?.id, subscriptionQuery.data?.id],
+    enabled: !!userQuery.data && subscriptionQuery.isSuccess,
     staleTime: 2 * 60 * 1000,
     queryFn: async () => {
       const user = userQuery.data!;
-      const planTokens = subscriptionQuery.data?.limits?.tokens_per_month ?? 10000;
+      const sub = subscriptionQuery.data ?? null;
 
-      const now = new Date();
-      const start = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
-      const end = new Date(now.getFullYear(), now.getMonth() + 1, 1).toISOString();
+      // Resolve plan info safely
+      const plan = resolvePlanInfo(sub);
+      const planTokens = Number(plan.limits.tokens_per_month ?? 10000);
 
+      // Build period window
+      let startISO: string;
+      let endISO: string;
+
+      if (sub?.current_period_start && sub?.current_period_end) {
+        // Anniversary billing window
+        startISO = new Date(sub.current_period_start).toISOString();
+        endISO = new Date(sub.current_period_end).toISOString();
+      } else {
+        // Fallback: calendar month
+        const now = new Date();
+        startISO = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+        endISO = new Date(now.getFullYear(), now.getMonth() + 1, 1).toISOString();
+      }
+
+      // usage_tracking in window
       const { data: usageData, error: usageErr } = await supabase
         .from('usage_tracking')
         .select('metric_name, metric_value, usage_source, period_start')
         .eq('user_id', user.id)
-        .gte('period_start', start)
-        .lt('period_start', end);
+        .gte('period_start', startISO)
+        .lt('period_start', endISO);
 
       if (usageErr) throw usageErr;
 
@@ -70,18 +140,23 @@ export const useBilling = () => {
       const usageMap = new Map<string, number>();
 
       (usageData ?? []).forEach((u) => {
-        if (u.metric_name === 'chat_tokens_per_month' && u.usage_source === 'chat') {
+        const metric = u.metric_name;
+        const src = u.usage_source;
+
+        if (metric === 'chat_tokens_per_month' && src === 'chat') {
           chatTokensUsed += u.metric_value;
         }
-        if (u.metric_name === 'training_tokens_per_month' && u.usage_source === 'training') {
+        if (metric === 'training_tokens_per_month' && src === 'training') {
           trainingTokensUsed += u.metric_value;
         }
-        const key = `${u.metric_name}:${u.usage_source}`;
+
+        const key = `${metric}:${src}`;
         usageMap.set(key, (usageMap.get(key) || 0) + u.metric_value);
       });
 
       const tokensUsed = chatTokensUsed + trainingTokensUsed;
 
+      // Token rollovers
       const { data: rolledOverData, error: rolloverErr } = await supabase
         .from('token_rollovers')
         .select('tokens_rolled_over')
@@ -97,6 +172,7 @@ export const useBilling = () => {
 
       const availableTokens = Math.max(0, planTokens + rolledOver - tokensUsed);
 
+      // Chatbots count
       const { count: chatbotsCount, error: botsErr } = await supabase
         .from('chatbots')
         .select('*', { count: 'exact', head: true })
@@ -105,6 +181,7 @@ export const useBilling = () => {
       if (botsErr) throw botsErr;
 
       if (DEBUG_BILLING) {
+        console.log('📅 Window:', { startISO, endISO });
         console.log('📊 Tokens used:', tokensUsed);
         console.log('📦 Rolled-over Tokens:', rolledOver);
         console.log('💰 Available Tokens:', availableTokens);
@@ -113,6 +190,8 @@ export const useBilling = () => {
       }
 
       return {
+        plan,
+        window: { startISO, endISO },
         tokens_used: tokensUsed,
         chat_tokens_used: chatTokensUsed,
         training_tokens_used: trainingTokensUsed,
@@ -126,6 +205,7 @@ export const useBilling = () => {
     },
   });
 
+  // 4) Invoices
   const invoicesQuery = useQuery({
     queryKey: ['invoices', userQuery.data?.id],
     enabled: !!userQuery.data,
@@ -138,13 +218,27 @@ export const useBilling = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      return data;
+      return data ?? [];
     },
     staleTime: 5 * 60 * 1000,
   });
 
+  // Derived subscription data (safe free fallback)
+  const subscription = (() => {
+    const sub = subscriptionQuery.data ?? null;
+    const plan = resolvePlanInfo(sub);
+    return {
+      ...(sub || {}),
+      plan_name: plan.plan_name,
+      display_name: plan.display_name,
+      features: plan.features,
+      limits: plan.limits,
+      metadata: plan.metadata,
+    };
+  })();
+
   return {
-    subscription: subscriptionQuery.data || null,
+    subscription: subscription || null,
     usage: usageQuery.data || null,
     invoices: invoicesQuery.data || [],
     isLoading:
@@ -152,6 +246,10 @@ export const useBilling = () => {
       subscriptionQuery.isLoading ||
       usageQuery.isLoading ||
       invoicesQuery.isLoading,
-    error: userQuery.error || subscriptionQuery.error || usageQuery.error || invoicesQuery.error,
+    error:
+      userQuery.error ||
+      subscriptionQuery.error ||
+      usageQuery.error ||
+      invoicesQuery.error,
   };
 };
