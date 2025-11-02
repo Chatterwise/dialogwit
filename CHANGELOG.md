@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file. See [standa
 
 ## [Unreleased]
 
+- Updated i18n allowance entries for all our plans. **[CHAT-47]**
 - Resize src/components/ChatTemplates/FloatingChatButton.tsx component, too large. **[NO-TICKET]**
 - Fix theme handling in the src/components/ChatTemplates/FloatingChatButton.tsx component. **[CHAT-46]**
 - Remove Iubenda references. Added UK compliant consent banner, generated internal pages for cookies, term of service, and privacy policies, reworked links in footer. Also, posthog analytics are now enabled through the src/components/AnalyticsProvider.tsx based on consent response. **[CHAT-45]**
