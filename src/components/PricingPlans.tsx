@@ -238,7 +238,7 @@ const PricingPlans: React.FC = () => {
                     ))}
                   </div>
 
-                  {/* Usage Limits */}
+                  {/* Usage Limits *
                   <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 mb-6">
                     <h4 className="font-semibold text-gray-900 dark:text-white mb-3 text-sm">
                       {t("pricing.cards.usageLimits", "Usage Limits")}
@@ -253,7 +253,7 @@ const PricingPlans: React.FC = () => {
                         </span>
                       </div>
                     </div>
-                  </div>
+                  </div>*/}
 
                   {/* CTA Button */}
                   <button

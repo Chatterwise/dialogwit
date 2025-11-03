@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file. See [standa
 
 ## [Unreleased]
 
+- Ensure src/components/PricingPlans.tsx only fetch the right number of features per plan. **[CHAT-47]**
+- Updated plan features, including language support. **[CHAT-47]**
+- Removed token allowance box from src/components/PricingPlans.tsx. **[CHAT-47]**
+- Updated i18n allowance entries for all our plans. **[CHAT-47]**
+- Resize src/components/ChatTemplates/FloatingChatButton.tsx component, too large. **[NO-TICKET]**
 - Fix theme handling in the src/components/ChatTemplates/FloatingChatButton.tsx component. **[CHAT-46]**
 - Remove Iubenda references. Added UK compliant consent banner, generated internal pages for cookies, term of service, and privacy policies, reworked links in footer. Also, posthog analytics are now enabled through the src/components/AnalyticsProvider.tsx based on consent response. **[CHAT-45]**
 - InstallationWizard.tsx updated to accept markdown, point at the new supabase function to handle bot message, use the new welcome_message column when not null or default to current configuration using bot name and description. **[CHAT-44]**

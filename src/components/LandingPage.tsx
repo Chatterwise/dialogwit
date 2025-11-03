@@ -819,7 +819,6 @@ const LandingPage: React.FC = () => {
                 t("plan_starter_2"),
                 t("plan_starter_3"),
                 t("plan_starter_4"),
-                t("plan_starter_5"),
               ]}
               popular={true}
               delay={0.3}
@@ -846,7 +845,6 @@ const LandingPage: React.FC = () => {
                 t("plan_business_2"),
                 t("plan_business_3"),
                 t("plan_business_4"),
-                t("plan_business_5"),
               ]}
               popular={false}
               delay={0.5}
