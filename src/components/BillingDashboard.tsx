@@ -20,6 +20,7 @@ import SubscriptionStatus from "./SubscriptionStatus";
 import { useTranslation } from "../hooks/useTranslation";
 import { stripeConfig } from "../stripe-config";
 
+
 export const BillingDashboard: React.FC = () => {
   // Locale-aware path helper (same logic used elsewhere)
   const { pathname } = useLocation();
@@ -27,7 +28,8 @@ export const BillingDashboard: React.FC = () => {
   const locale = match?.[1] ?? "en";
   const localePath = (to: string) => {
     const normalized = to.startsWith("/") ? to : `/${to}`;
-    if (normalized === `/${locale}` || normalized.startsWith(`/${locale}/`)) return normalized;
+    if (normalized === `/${locale}` || normalized.startsWith(`/${locale}/`))
+      return normalized;
     return `/${locale}${normalized}`;
   };
 
@@ -71,18 +73,26 @@ export const BillingDashboard: React.FC = () => {
 
   // Log plan_name and price being used for matching
   console.log("Looking for plan name:", subscription?.plan_name);
-  console.log("Looking for plan price:", subscription?.subscription_plans?.price_monthly);
+  console.log(
+    "Looking for plan price:",
+    subscription?.subscription_plans?.price_monthly
+  );
 
   // helper to normalise backend slugs to our i18n keys
   const normalisePlanKey = (name?: string) => {
     const n = (name ?? "").toLowerCase().trim();
     if (n.startsWith("plan_")) return n;
     switch (n) {
-      case "free": return "plan_free";
-      case "starter": return "plan_starter";
-      case "growth": return "plan_growth";
-      case "business": return "plan_business";
-      default: return n; // unknown: leave as-is
+      case "free":
+        return "plan_free";
+      case "starter":
+        return "plan_starter";
+      case "growth":
+        return "plan_growth";
+      case "business":
+        return "plan_business";
+      default:
+        return n; // unknown: leave as-is
     }
   };
 
@@ -93,14 +103,22 @@ export const BillingDashboard: React.FC = () => {
   // ---------- plan resolution (logic stays UNtranslated) ----------
   // Try to match by plan key first; fall back to price comparison if needed.
   const currentPlan =
-    stripeConfig.products.find(p => p.name === planKey) ??
-    stripeConfig.products.find(p => t(p.name).toLowerCase() === (subscription?.display_name ?? "").toLowerCase()) ??
+    stripeConfig.products.find((p) => p.name === planKey) ??
+    stripeConfig.products.find(
+      (p) =>
+        t(p.name).toLowerCase() ===
+        (subscription?.display_name ?? "").toLowerCase()
+    ) ??
     null;
 
   // What we actually render (translated)
-  const displayPlanName = currentPlan ? t(currentPlan.name) : t("Subscription plan not found");
+  const displayPlanName = currentPlan
+    ? t(currentPlan.name)
+    : t("Subscription plan not found");
   const displayPlanDescription = currentPlan ? t(currentPlan.description) : "";
-  const displayPlanFeatures = currentPlan ? currentPlan.features.map(k => t(k)) : [];
+  const displayPlanFeatures = currentPlan
+    ? currentPlan.features.map((k) => t(k))
+    : [];
   const monthlyPriceDisplay = currentPlan ? `$${currentPlan.price}` : "$0";
 
   if (isLoading) {
@@ -295,50 +313,54 @@ export const BillingDashboard: React.FC = () => {
               </h3>
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <div className="text-center">
-                  <div className="text-3xl font-bold text-blue-600 dark:text-blue-400 mb-2">
-                    {usage?.tokens_used?.toLocaleString() || 0}
+                {[
+                  {
+                    id: "messages_used",
+                    value:
+                      usage?.estimated_chats_used != null
+                        ? usage.estimated_chats_used.toLocaleString()
+                        : "0",
+                    color: "text-blue-600 dark:text-blue-400",
+                    label: t("billing_messages_used", "Messages Used"),
+                    footnote: t("billing_this_month", "This month"),
+                  },
+                  {
+                    id: "chatbots_created",
+                    value: usage?.chatbots_created || 0,
+                    color: "text-purple-600 dark:text-purple-400",
+                    label: t("billing_chatbots_created", "Chatbots Created"),
+                    footnote: t("billing_total", "Total"),
+                  },
+                  {
+                    id: "documents_uploaded",
+                    value: usage?.documents_uploaded || 0,
+                    color: "text-green-600 dark:text-green-400",
+                    label: t(
+                      "billing_documents_uploaded",
+                      "Documents Uploaded"
+                    ),
+                    footnote: t("billing_total", "Total"),
+                  },
+                  {
+                    id: "api_requests",
+                    value: usage?.api_requests || 0,
+                    color: "text-orange-600 dark:text-orange-400",
+                    label: t("billing_api_requests", "API Requests"),
+                    footnote: t("billing_this_month", "This month"),
+                  },
+                ].map((card) => (
+                  <div key={card.id} className="text-center">
+                    <div className={`text-3xl font-bold mb-2 ${card.color}`}>
+                      {card.value}
+                    </div>
+                    <div className="text-sm text-gray-600 dark:text-gray-400">
+                      {card.label}
+                    </div>
+                    <div className="text-xs text-gray-500 dark:text-gray-500 mt-1">
+                      {card.footnote}
+                    </div>
                   </div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400">
-                    {t("billing_tokens_used", "Tokens Used")}
-                  </div>
-                  <div className="text-xs text-gray-500 dark:text-gray-500 mt-1">
-                    {t("billing_this_month", "This month")}
-                  </div>
-                </div>
-                <div className="text-center">
-                  <div className="text-3xl font-bold text-purple-600 dark:text-purple-400 mb-2">
-                    {usage?.chatbots_created || 0}
-                  </div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400">
-                    {t("billing_chatbots_created", "Chatbots Created")}
-                  </div>
-                  <div className="text-xs text-gray-500 dark:text-gray-500 mt-1">
-                    {t("billing_total", "Total")}
-                  </div>
-                </div>
-                <div className="text-center">
-                  <div className="text-3xl font-bold text-green-600 dark:text-green-400 mb-2">
-                    {usage?.documents_uploaded || 0}
-                  </div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400">
-                    {t("billing_documents_uploaded", "Documents Uploaded")}
-                  </div>
-                  <div className="text-xs text-gray-500 dark:text-gray-500 mt-1">
-                    {t("billing_total", "Total")}
-                  </div>
-                </div>
-                <div className="text-center">
-                  <div className="text-3xl font-bold text-orange-600 dark:text-orange-400 mb-2">
-                    {usage?.api_requests || 0}
-                  </div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400">
-                    {t("billing_api_requests", "API Requests")}
-                  </div>
-                  <div className="text-xs text-gray-500 dark:text-gray-500 mt-1">
-                    {t("billing_this_month", "This month")}
-                  </div>
-                </div>
+                ))}
               </div>
 
               <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700 flex justify-between items-center">
@@ -349,7 +371,7 @@ export const BillingDashboard: React.FC = () => {
                   )}
                 </div>
                 <Link
-                  to={localePath('/analytics')}
+                  to={localePath("/analytics")}
                   className="text-primary-600 dark:text-primary-400 font-medium text-sm hover:text-primary-700 dark:hover:text-primary-300 flex items-center"
                 >
                   {t(
@@ -638,7 +660,7 @@ export const BillingDashboard: React.FC = () => {
                         whileTap={{ scale: 0.95 }}
                       >
                         <Link
-                          to={localePath('/pricing')}
+                          to={localePath("/pricing")}
                           className="inline-flex items-center px-4 py-2 bg-primary-600 dark:bg-primary-700 text-white rounded-lg font-medium shadow-md hover:shadow-lg transition-all"
                         >
                           <Zap className="w-4 h-4 mr-2" />

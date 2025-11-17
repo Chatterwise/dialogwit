@@ -61,6 +61,7 @@
   "footer_privacy": "Política de privacidad",
   "footer_terms": "Términos y condiciones",
   "footer_cookies": "Política de cookies",
+  "footer_copyright": "© 2025 ChatterWise. Todos los derechos reservados.",
   "cookies": {
     "banner_message": "Usamos cookies esenciales y, con tu consentimiento, cookies de analítica para mejorar el servicio. Puedes cambiar tu elección en cualquier momento en nuestra Política de cookies.",
     "banner_link": "Política de cookies",
@@ -69,7 +70,9 @@
   },
   "legal": {
     "last_updated": "Última actualización: {{date}}",
-    "privacy": { "title": "Política de privacidad" },
+    "privacy": {
+      "title": "Política de privacidad"
+    },
     "terms": {
       "title": "Términos del servicio",
       "use": "Uso del Servicio",
@@ -83,17 +86,35 @@
       "law": "Ley aplicable",
       "law_text": "Estos Términos se rigen por las leyes de Inglaterra y Gales y los tribunales de esa jurisdicción tendrán competencia exclusiva."
     },
-    "controller": { "title": "Quiénes somos", "text": "Somos el responsable del tratamiento según UK GDPR y PECR. Esta política explica cómo tratamos datos personales cuando usas nuestros servicios." },
+    "controller": {
+      "title": "Quiénes somos",
+      "text": "Somos el responsable del tratamiento según UK GDPR y PECR. Esta política explica cómo tratamos datos personales cuando usas nuestros servicios."
+    },
     "purposes": {
       "title": "Qué datos tratamos y por qué",
       "service": "Prestación del servicio: cuenta, autenticación, comunicaciones y seguridad (necesario para el contrato o intereses legítimos).",
       "analytics": "Analítica: mejorar rendimiento y funciones (solo con tu consentimiento; desactivado hasta que lo aceptes)."
     },
-    "lawful_basis": { "title": "Bases legales", "text": "Nos basamos en el contrato (para prestar el servicio), intereses legítimos (seguridad y prevención del fraude) y consentimiento (cookies de analítica)." },
-    "transfers": { "title": "Transferencias internacionales", "text": "Cuando se transfieren datos fuera del Reino Unido, aplicamos garantías adecuadas como cláusulas contractuales tipo y alojamiento regional cuando esté disponible." },
-    "retention": { "title": "Conservación", "text": "Conservamos los datos personales solo el tiempo necesario para los fines descritos o para cumplir obligaciones legales." },
-    "rights": { "title": "Tus derechos", "text": "Tienes derechos según el UK GDPR, incluidos acceso, rectificación, supresión, restricción, oposición, portabilidad y retirar el consentimiento." },
-    "contact": { "title": "Contacto", "text": "Para ejercer tus derechos o realizar consultas, contáctanos en privacy@yourdomain.example." },
+    "lawful_basis": {
+      "title": "Bases legales",
+      "text": "Nos basamos en el contrato (para prestar el servicio), intereses legítimos (seguridad y prevención del fraude) y consentimiento (cookies de analítica)."
+    },
+    "transfers": {
+      "title": "Transferencias internacionales",
+      "text": "Cuando se transfieren datos fuera del Reino Unido, aplicamos garantías adecuadas como cláusulas contractuales tipo y alojamiento regional cuando esté disponible."
+    },
+    "retention": {
+      "title": "Conservación",
+      "text": "Conservamos los datos personales solo el tiempo necesario para los fines descritos o para cumplir obligaciones legales."
+    },
+    "rights": {
+      "title": "Tus derechos",
+      "text": "Tienes derechos según el UK GDPR, incluidos acceso, rectificación, supresión, restricción, oposición, portabilidad y retirar el consentimiento."
+    },
+    "contact": {
+      "title": "Contacto",
+      "text": "Para ejercer tus derechos o realizar consultas, contáctanos en privacy@yourdomain.example."
+    },
     "cookies": {
       "title": "Política de cookies",
       "essential": "Cookies esenciales",
@@ -104,7 +125,6 @@
       "manage_text": "Usa el banner para aceptar o rechazar las cookies de analítica. También puedes controlarlas desde tu navegador."
     }
   },
-  "footer_copyright": "© 2025 ChatterWise. Todos los derechos reservados.",
   "header_create": "Crear",
   "header_new_chatbot": "Nuevo chatbot",
   "header_add_knowledge": "Añadir conocimiento",
@@ -138,35 +158,30 @@
   "actionmodal_placeholder": "Escribe {{word}} para confirmar",
   "actionmodal_cancel": "Cancelar",
   "actionmodal_processing": "Procesando...",
-  
   "plan_free": "Chatterwise Gratis",
   "plan_free_desc": "Empieza a crear chatbots con IA sin costo. Ideal para experimentar y hacer pruebas.",
-  "plan_free_1": "50 chats al mes",
+  "plan_free_1": "50 chats por mes",
   "plan_free_2": "1 chatbot",
   "plan_free_3": "Analítica básica",
   "plan_free_4": "Soporte por correo electrónico",
-  
   "plan_starter": "Chatterwise Inicial",
   "plan_starter_desc": "Perfecto para individuos o equipos pequeños que están comenzando.",
-  "plan_starter_1": "500 chats al mes",
+  "plan_starter_1": "500 chats por mes",
   "plan_starter_2": "Hasta 5 chatbots",
-  "plan_starter_3": "Asistencia por correo para la configuración",
+  "plan_starter_3": "Guía de configuración por email",
   "plan_starter_4": "Soporte prioritario por correo electrónico",
-  
   "plan_growth": "Chatterwise Crecimiento",
   "plan_growth_desc": "Diseñado para equipos en expansión que necesitan mayor capacidad y soporte.",
-  "plan_growth_1": "2,500 chats al mes",
+  "plan_growth_1": "2.500 chats por mes",
   "plan_growth_2": "Hasta 20 chatbots",
-  "plan_growth_3": "Asistencia guiada con configuración personalizada",
-  "plan_growth_4": "Soporte por videollamada y correo electrónico",
-  
+  "plan_growth_3": "Configuración asistida con personalización",
+  "plan_growth_4": "Soporte por videollamada y email",
   "plan_business": "Chatterwise Empresarial",
   "plan_business_desc": "Infraestructura de chatbot de nivel empresarial con opciones avanzadas de personalización y soporte dedicado.",
-  "plan_business_1": "12,000 chats al mes",
+  "plan_business_1": "12.000 chats por mes",
   "plan_business_2": "Chatbots ilimitados",
   "plan_business_3": "Soporte dedicado",
-  "plan_business_4": "Configuración completa y asistencia con la personalización de marca",
-  
+  "plan_business_4": "Soporte completo para configuración y personalización de marca",
   "plan_business_contact": "Contáctanos para precios",
   "analytics_title": "Análisis avanzados",
   "analytics_subtitle": "Información completa sobre el rendimiento de tu chatbot y la participación de los usuarios.",
@@ -269,6 +284,7 @@
   "billing_api_requests": "Solicitudes API",
   "billing_this_month": "Este mes",
   "billing_total": "Total",
+  "billing_messages_used": "Chats utilizados",
   "billing_more_analytics_prompt": "¿Necesitas análisis más detallados?",
   "billing_view_detailed_analytics": "Ver análisis detallados",
   "billing_invoice_history": "Historial de facturas",
@@ -380,12 +396,12 @@
   "chatbotdetail_tab_chat": "Chat",
   "chatbotdetail_tab_knowledge": "Conocimiento",
   "chatbotdetail_tab_analytics": "Analíticas",
-  "chatbotdetail_stat_total_messages": "Mensajes totales",
-  "chatbotdetail_stat_today": "Mensajes de hoy",
+  "chatbotdetail_stat_total_messages": "Total de chats",
+  "chatbotdetail_stat_today": "Chats de hoy",
   "chatbotdetail_stat_avg_response_len": "Longitud media de respuesta",
   "chatbotdetail_stat_kb_items": "Elementos de conocimiento",
   "chatbotdetail_chars": "caracteres",
-  "chatbotdetail_chart_7d": "Mensajes a lo largo del tiempo (últimos 7 días)",
+  "chatbotdetail_chart_7d": "Chats a lo largo del tiempo (últimos 7 días)",
   "chatbotdetail_no_analytics": "No hay datos analíticos disponibles.",
   "chatbotdetail_recent_conversations": "Conversaciones recientes",
   "chatbotdetail_loading_messages": "Cargando mensajes...",
@@ -564,7 +580,9 @@
   "dashboard.stats.note_tokens_today": "{{count}} hoy",
   "dashboard.stats.knowledge_items": "Elementos de conocimiento",
   "dashboard.stats.note_knowledge_across": "En todos los chatbots",
+  "dashboard.stats.total_messages_used": "Total de chats utilizados",
   "dashboard.chart.messages_this_week": "Mensajes esta semana",
+  "dashboard.stats.note_messages_remaining": "Aprox. {{count}} chats restantes en este período",
   "dashboard.recent_activity.title": "Actividad reciente",
   "dashboard.recent_activity.item_title": "Mensaje en {{name}}",
   "dashboard.recent_activity.empty": "No hay actividad reciente",
@@ -1042,6 +1060,10 @@
   "subscription.usage.cta.viewPlans": "Ver todos los planes",
   "subscription.usage.cta.viewPlans.title": "Ver todos los planes",
   "subscription.usage.cta.viewPlans.aria": "Ver todos los planes",
+  "subscription.usage.messages.title": "Chats",
+  "subscription.usage.messages.subtitle": "Usados / Total en este período",
+  "subscription.usage.messages.progressAria": "Uso de chats",
+  "subscription.usage.messages.progressTitle": "Progreso de uso de chats",
   "subscription.reco.title": "Recomendaciones de optimización",
   "subscription.reco.tokens": "Considera actualizar para obtener más tokens y evitar interrupciones del servicio",
   "subscription.reco.chatbots": "Te estás acercando a tu límite de chatbots - actualiza para crear más",

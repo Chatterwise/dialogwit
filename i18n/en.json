@@ -87,17 +87,35 @@
       "law": "Governing law",
       "law_text": "These Terms are governed by the laws of England and Wales, and disputes are subject to the exclusive jurisdiction of its courts."
     },
-    "controller": { "title": "Who we are", "text": "We are the data controller for the purposes of UK GDPR and PECR. This policy explains how we process personal data when you use our services." },
+    "controller": {
+      "title": "Who we are",
+      "text": "We are the data controller for the purposes of UK GDPR and PECR. This policy explains how we process personal data when you use our services."
+    },
     "purposes": {
       "title": "What data we process and why",
       "service": "Service delivery: account, authentication, communications, and security (necessary for contract or legitimate interests).",
       "analytics": "Analytics: improve performance and features (only with your consent; disabled until accepted)."
     },
-    "lawful_basis": { "title": "Lawful bases", "text": "We rely on contract (to provide the service), legitimate interests (security and fraud prevention), and consent (analytics cookies)." },
-    "transfers": { "title": "International transfers", "text": "Where data is transferred outside the UK, we implement appropriate safeguards such as standard contractual clauses and regional hosting when available." },
-    "retention": { "title": "Retention", "text": "We keep personal data only as long as necessary for the purposes described or to comply with legal obligations." },
-    "rights": { "title": "Your rights", "text": "You have rights under UK GDPR including access, rectification, erasure, restriction, objection, portability, and the right to withdraw consent." },
-    "contact": { "title": "Contact", "text": "To exercise your rights or ask questions, contact us at privacy@yourdomain.example." },
+    "lawful_basis": {
+      "title": "Lawful bases",
+      "text": "We rely on contract (to provide the service), legitimate interests (security and fraud prevention), and consent (analytics cookies)."
+    },
+    "transfers": {
+      "title": "International transfers",
+      "text": "Where data is transferred outside the UK, we implement appropriate safeguards such as standard contractual clauses and regional hosting when available."
+    },
+    "retention": {
+      "title": "Retention",
+      "text": "We keep personal data only as long as necessary for the purposes described or to comply with legal obligations."
+    },
+    "rights": {
+      "title": "Your rights",
+      "text": "You have rights under UK GDPR including access, rectification, erasure, restriction, objection, portability, and the right to withdraw consent."
+    },
+    "contact": {
+      "title": "Contact",
+      "text": "To exercise your rights or ask questions, contact us at privacy@yourdomain.example."
+    },
     "cookies": {
       "title": "Cookie Policy",
       "essential": "Essential cookies",
@@ -297,7 +315,7 @@
   "billing_api_requests": "API Requests",
   "billing_this_month": "This month",
   "billing_total": "Total",
-
+  "billing_messages_used": "Chats Used",
   "billing_more_analytics_prompt": "Need more detailed analytics?",
   "billing_view_detailed_analytics": "View detailed analytics",
 
@@ -438,13 +456,13 @@
   "chatbotdetail_tab_knowledge": "Knowledge",
   "chatbotdetail_tab_analytics": "Analytics",
 
-  "chatbotdetail_stat_total_messages": "Total Messages",
-  "chatbotdetail_stat_today": "Today's Messages",
+  "chatbotdetail_stat_total_messages": "Total Chats",
+  "chatbotdetail_stat_today": "Today's Chats",
   "chatbotdetail_stat_avg_response_len": "Avg Response Length",
   "chatbotdetail_stat_kb_items": "Knowledge Items",
   "chatbotdetail_chars": "chars",
 
-  "chatbotdetail_chart_7d": "Messages Over Time (Last 7 Days)",
+  "chatbotdetail_chart_7d": "Chats Over Time (Last 7 Days)",
   "chatbotdetail_no_analytics": "No analytics data available.",
 
   "chatbotdetail_recent_conversations": "Recent Conversations",
@@ -657,9 +675,9 @@
   "dashboard.stats.note_tokens_today": "{{count}} today",
   "dashboard.stats.knowledge_items": "Knowledge Items",
   "dashboard.stats.note_knowledge_across": "Across all chatbots",
-
+  "dashboard.stats.total_messages_used": "Total Chats Used",
   "dashboard.chart.messages_this_week": "Messages This Week",
-
+  "dashboard.stats.note_messages_remaining": "Approx. {{count}} chats remaining this period",
   "dashboard.recent_activity.title": "Recent Activity",
   "dashboard.recent_activity.item_title": "Message in {{name}}",
   "dashboard.recent_activity.empty": "No recent activity",
@@ -1229,8 +1247,12 @@
   "subscription.usage.cta.viewPlans": "View all plans",
   "subscription.usage.cta.viewPlans.title": "View all plans",
   "subscription.usage.cta.viewPlans.aria": "View all plans",
-
+  "subscription.usage.messages.title": "Chats",
+  "subscription.usage.messages.subtitle": "Used / Total this period",
+  "subscription.usage.messages.progressAria": "Chats usage",
+  "subscription.usage.messages.progressTitle": "Chats usage progress",
   "subscription.reco.title": "Optimization Recommendations",
+
   "subscription.reco.tokens": "Consider upgrading for more tokens to avoid service interruption",
   "subscription.reco.chatbots": "You're approaching your chatbot limit - upgrade to create more",
   "subscription.reco.documents": "Running low on document uploads - consider a higher tier plan",

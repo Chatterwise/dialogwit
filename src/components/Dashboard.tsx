@@ -292,14 +292,21 @@ export function Dashboard() {
       ),
     },
     {
-      title: t("dashboard.stats.total_tokens_used", "Total Tokens Used"),
-      value: usage?.tokens_used?.toLocaleString() || 0,
+      title: t("dashboard.stats.total_messages_used", "Total Messages Used"),
+      value:
+        usage?.estimated_chats_used != null
+          ? usage.estimated_chats_used.toLocaleString()
+          : 0,
       icon: MessageCircle,
       color:
         "text-purple-600 dark:text-purple-400 bg-purple-100 dark:bg-purple-900/30",
-      note: t("dashboard.stats.note_tokens_today", "{{count}} today", {
-        count: analyticsData?.todayMessages || 0,
-      }),
+      note: t(
+        "dashboard.stats.note_messages_remaining",
+        "Approx. {{count}} chats remaining this period",
+        {
+          count: usage?.estimated_chats_available ?? 0,
+        }
+      ),
     },
     {
       title: t("dashboard.stats.knowledge_items", "Knowledge Items"),

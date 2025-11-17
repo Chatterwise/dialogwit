@@ -28,6 +28,8 @@ type SubscriptionRow = {
   } | null;
 };
 
+const TOKENS_PER_CHAT = 5_000_000 / 12_000;
+
 export const useBilling = () => {
   // 1) Auth
   const userQuery = useQuery({
@@ -56,7 +58,6 @@ export const useBilling = () => {
 
       if (error) throw error;
 
-      // If there is no row, return a synthetic free subscription (null keeps UI simple)
       if (!data) return null;
 
       return data as unknown as SubscriptionRow;
@@ -84,7 +85,6 @@ export const useBilling = () => {
       sub?.subscription_plans?.display_name ||
       'Free';
 
-    // Hard default to avoid undefined math later
     const tokensPerMonth =
       Number(limits.tokens_per_month ?? 10000);
 
@@ -106,26 +106,21 @@ export const useBilling = () => {
       const user = userQuery.data!;
       const sub = subscriptionQuery.data ?? null;
 
-      // Resolve plan info safely
       const plan = resolvePlanInfo(sub);
       const planTokens = Number(plan.limits.tokens_per_month ?? 10000);
 
-      // Build period window
       let startISO: string;
       let endISO: string;
 
       if (sub?.current_period_start && sub?.current_period_end) {
-        // Anniversary billing window
         startISO = new Date(sub.current_period_start).toISOString();
         endISO = new Date(sub.current_period_end).toISOString();
       } else {
-        // Fallback: calendar month
         const now = new Date();
         startISO = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
         endISO = new Date(now.getFullYear(), now.getMonth() + 1, 1).toISOString();
       }
 
-      // usage_tracking in window
       const { data: usageData, error: usageErr } = await supabase
         .from('usage_tracking')
         .select('metric_name, metric_value, usage_source, period_start')
@@ -156,7 +151,6 @@ export const useBilling = () => {
 
       const tokensUsed = chatTokensUsed + trainingTokensUsed;
 
-      // Token rollovers
       const { data: rolledOverData, error: rolloverErr } = await supabase
         .from('token_rollovers')
         .select('tokens_rolled_over')
@@ -172,7 +166,14 @@ export const useBilling = () => {
 
       const availableTokens = Math.max(0, planTokens + rolledOver - tokensUsed);
 
-      // Chatbots count
+      const estimatedChatsAvailable = Math.max(
+        0,
+        Math.floor(availableTokens / TOKENS_PER_CHAT)
+      );
+      const estimatedChatsUsed = Math.floor(tokensUsed / TOKENS_PER_CHAT);
+      const estimatedChatsTotal = estimatedChatsAvailable + estimatedChatsUsed;
+      const chatsMessage = `Approx. ${estimatedChatsAvailable.toLocaleString()} chats remaining this period.`;
+
       const { count: chatbotsCount, error: botsErr } = await supabase
         .from('chatbots')
         .select('*', { count: 'exact', head: true })
@@ -187,6 +188,11 @@ export const useBilling = () => {
         console.log('💰 Available Tokens:', availableTokens);
         console.log('💬 Chat Tokens Used:', chatTokensUsed);
         console.log('📚 Training Tokens Used:', trainingTokensUsed);
+        console.log('💬 Chats (est):', {
+          total: estimatedChatsTotal,
+          used: estimatedChatsUsed,
+          available: estimatedChatsAvailable,
+        });
       }
 
       return {
@@ -197,6 +203,10 @@ export const useBilling = () => {
         training_tokens_used: trainingTokensUsed,
         rolled_over: rolledOver,
         available_tokens: availableTokens,
+        estimated_chats_total: estimatedChatsTotal,
+        estimated_chats_used: estimatedChatsUsed,
+        estimated_chats_available: estimatedChatsAvailable,
+        chats_message: chatsMessage,
         chatbots_created: chatbotsCount || 0,
         documents_uploaded: 0,
         api_requests: usageMap.get('api_requests_per_minute:chat') || 0,
@@ -223,7 +233,6 @@ export const useBilling = () => {
     staleTime: 5 * 60 * 1000,
   });
 
-  // Derived subscription data (safe free fallback)
   const subscription = (() => {
     const sub = subscriptionQuery.data ?? null;
     const plan = resolvePlanInfo(sub);

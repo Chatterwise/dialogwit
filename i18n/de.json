@@ -61,6 +61,7 @@
   "footer_privacy": "Datenschutzrichtlinie",
   "footer_terms": "Allgemeine Geschäftsbedingungen",
   "footer_cookies": "Cookie-Richtlinie",
+  "footer_copyright": "© 2025 ChatterWise. Alle Rechte vorbehalten.",
   "cookies": {
     "banner_message": "Wir verwenden notwendige Cookies und – mit deiner Einwilligung – Analyse-Cookies zur Verbesserung unseres Dienstes. Du kannst deine Auswahl jederzeit in unserer Cookie-Richtlinie ändern.",
     "banner_link": "Cookie-Richtlinie",
@@ -69,7 +70,9 @@
   },
   "legal": {
     "last_updated": "Zuletzt aktualisiert: {{date}}",
-    "privacy": { "title": "Datenschutzerklärung" },
+    "privacy": {
+      "title": "Datenschutzerklärung"
+    },
     "terms": {
       "title": "Nutzungsbedingungen",
       "use": "Nutzung des Dienstes",
@@ -83,17 +86,35 @@
       "law": "Anwendbares Recht",
       "law_text": "Diese Bedingungen unterliegen dem Recht von England und Wales; Gerichte dieser Gerichtsbarkeit sind ausschließlich zuständig."
     },
-    "controller": { "title": "Wer wir sind", "text": "Wir sind der Verantwortliche im Sinne des UK GDPR und PECR. Diese Richtlinie erklärt, wie wir personenbezogene Daten verarbeiten, wenn du unsere Dienste nutzt." },
+    "controller": {
+      "title": "Wer wir sind",
+      "text": "Wir sind der Verantwortliche im Sinne des UK GDPR und PECR. Diese Richtlinie erklärt, wie wir personenbezogene Daten verarbeiten, wenn du unsere Dienste nutzt."
+    },
     "purposes": {
       "title": "Welche Daten und warum",
       "service": "Bereitstellung des Dienstes: Konto, Authentifizierung, Kommunikation und Sicherheit (erforderlich für Vertrag oder berechtigte Interessen).",
       "analytics": "Analytik: Verbesserung von Leistung und Funktionen (nur mit deiner Einwilligung; bis dahin deaktiviert)."
     },
-    "lawful_basis": { "title": "Rechtsgrundlagen", "text": "Wir stützen uns auf Vertrag (Dienstleistung), berechtigte Interessen (Sicherheit/Betrugsprävention) und Einwilligung (Analyse-Cookies)." },
-    "transfers": { "title": "Internationale Übermittlungen", "text": "Bei Übermittlungen außerhalb des Vereinigten Königreichs setzen wir geeignete Garantien um, z. B. Standardvertragsklauseln und regionale Speicherung, sofern verfügbar." },
-    "retention": { "title": "Aufbewahrung", "text": "Wir speichern personenbezogene Daten nur so lange, wie es für die beschriebenen Zwecke erforderlich ist oder rechtlich vorgeschrieben wird." },
-    "rights": { "title": "Deine Rechte", "text": "Du hast Rechte nach UK GDPR, u. a. auf Auskunft, Berichtigung, Löschung, Einschränkung, Widerspruch, Datenübertragbarkeit und Widerruf der Einwilligung." },
-    "contact": { "title": "Kontakt", "text": "Zur Ausübung deiner Rechte oder bei Fragen kontaktiere uns unter privacy@yourdomain.example." },
+    "lawful_basis": {
+      "title": "Rechtsgrundlagen",
+      "text": "Wir stützen uns auf Vertrag (Dienstleistung), berechtigte Interessen (Sicherheit/Betrugsprävention) und Einwilligung (Analyse-Cookies)."
+    },
+    "transfers": {
+      "title": "Internationale Übermittlungen",
+      "text": "Bei Übermittlungen außerhalb des Vereinigten Königreichs setzen wir geeignete Garantien um, z. B. Standardvertragsklauseln und regionale Speicherung, sofern verfügbar."
+    },
+    "retention": {
+      "title": "Aufbewahrung",
+      "text": "Wir speichern personenbezogene Daten nur so lange, wie es für die beschriebenen Zwecke erforderlich ist oder rechtlich vorgeschrieben wird."
+    },
+    "rights": {
+      "title": "Deine Rechte",
+      "text": "Du hast Rechte nach UK GDPR, u. a. auf Auskunft, Berichtigung, Löschung, Einschränkung, Widerspruch, Datenübertragbarkeit und Widerruf der Einwilligung."
+    },
+    "contact": {
+      "title": "Kontakt",
+      "text": "Zur Ausübung deiner Rechte oder bei Fragen kontaktiere uns unter privacy@yourdomain.example."
+    },
     "cookies": {
       "title": "Cookie-Richtlinie",
       "essential": "Unbedingt erforderliche Cookies",
@@ -104,7 +125,6 @@
       "manage_text": "Nutze das Banner, um Analyse-Cookies zu akzeptieren oder abzulehnen. Du kannst Cookies auch im Browser steuern."
     }
   },
-  "footer_copyright": "© 2025 ChatterWise. Alle Rechte vorbehalten.",
   "header_create": "Erstellen",
   "header_new_chatbot": "Neuer Chatbot",
   "header_add_knowledge": "Wissen hinzufügen",
@@ -138,35 +158,30 @@
   "actionmodal_placeholder": "{{word}} zur Bestätigung eingeben",
   "actionmodal_cancel": "Abbrechen",
   "actionmodal_processing": "Wird verarbeitet...",
-  
   "plan_free": "Chatterwise Free",
   "plan_free_desc": "Beginne kostenlos mit dem Erstellen von KI-gestützten Chatbots. Ideal zum Experimentieren und Testen.",
   "plan_free_1": "50 Chats pro Monat",
   "plan_free_2": "1 Chatbot",
   "plan_free_3": "Einfache Analysen",
   "plan_free_4": "E-Mail-Support",
-  
   "plan_starter": "Chatterwise Starter",
   "plan_starter_desc": "Ideal für Einzelpersonen oder kleine Teams, die gerade erst anfangen.",
   "plan_starter_1": "500 Chats pro Monat",
   "plan_starter_2": "Bis zu 5 Chatbots",
-  "plan_starter_3": "Einrichtungsunterstützung per E-Mail",
+  "plan_starter_3": "E-Mail-Einrichtungshilfe",
   "plan_starter_4": "Priorisierter E-Mail-Support",
-  
   "plan_growth": "Chatterwise Growth",
   "plan_growth_desc": "Entwickelt für wachsende Teams, die mehr Kapazität und Support benötigen.",
   "plan_growth_1": "2.500 Chats pro Monat",
   "plan_growth_2": "Bis zu 20 Chatbots",
   "plan_growth_3": "Unterstützte Einrichtung mit individueller Konfiguration",
-  "plan_growth_4": "Support per Videoanruf und E-Mail",
-  
+  "plan_growth_4": "Videoanruf- & E-Mail-Support",
   "plan_business": "Chatterwise Business",
   "plan_business_desc": "Unternehmensgerechte Chatbot-Infrastruktur mit erweiterten Anpassungsmöglichkeiten und dediziertem Support.",
   "plan_business_1": "12.000 Chats pro Monat",
   "plan_business_2": "Unbegrenzte Chatbots",
   "plan_business_3": "Dedizierter Support",
-  "plan_business_4": "Umfassende Einrichtung und Unterstützung beim Markenauftritt",
-  
+  "plan_business_4": "Vollständige Konfigurations- und Branding-Einrichtungsunterstützung",
   "plan_business_contact": "Kontaktieren Sie uns für Preise",
   "analytics_title": "Erweiterte Analysen",
   "analytics_subtitle": "Umfassende Einblicke in die Leistung Ihres Chatbots und das Nutzerengagement.",
@@ -269,6 +284,7 @@
   "billing_api_requests": "API-Anfragen",
   "billing_this_month": "Diesen Monat",
   "billing_total": "Gesamt",
+  "billing_messages_used": "Genutzte Chats",
   "billing_more_analytics_prompt": "Benötigen Sie detailliertere Analysen?",
   "billing_view_detailed_analytics": "Detaillierte Analysen anzeigen",
   "billing_invoice_history": "Rechnungsverlauf",
@@ -380,12 +396,12 @@
   "chatbotdetail_tab_chat": "Chat",
   "chatbotdetail_tab_knowledge": "Wissen",
   "chatbotdetail_tab_analytics": "Analytik",
-  "chatbotdetail_stat_total_messages": "Gesamtnachrichten",
-  "chatbotdetail_stat_today": "Heutige Nachrichten",
+  "chatbotdetail_stat_total_messages": "Chats insgesamt",
+  "chatbotdetail_stat_today": "Heutige Chats",
   "chatbotdetail_stat_avg_response_len": "Durchschn. Antwortlänge",
   "chatbotdetail_stat_kb_items": "Wissenselemente",
   "chatbotdetail_chars": "Zeichen",
-  "chatbotdetail_chart_7d": "Nachrichten im Zeitverlauf (letzte 7 Tage)",
+  "chatbotdetail_chart_7d": "Chats im Zeitverlauf (letzte 7 Tage)",
   "chatbotdetail_no_analytics": "Keine Analysedaten verfügbar.",
   "chatbotdetail_recent_conversations": "Aktuelle Gespräche",
   "chatbotdetail_loading_messages": "Nachrichten werden geladen...",
@@ -564,7 +580,9 @@
   "dashboard.stats.note_tokens_today": "{{count}} heute",
   "dashboard.stats.knowledge_items": "Wissenselemente",
   "dashboard.stats.note_knowledge_across": "Über alle Chatbots hinweg",
+  "dashboard.stats.total_messages_used": "Insgesamt genutzte Chats",
   "dashboard.chart.messages_this_week": "Nachrichten diese Woche",
+  "dashboard.stats.note_messages_remaining": "Ca. {{count}} verbleibende Chats in diesem Zeitraum",
   "dashboard.recent_activity.title": "Neueste Aktivitäten",
   "dashboard.recent_activity.item_title": "Nachricht in {{name}}",
   "dashboard.recent_activity.empty": "Keine neueren Aktivitäten",
@@ -1042,6 +1060,10 @@
   "subscription.usage.cta.viewPlans": "Alle Pläne anzeigen",
   "subscription.usage.cta.viewPlans.title": "Alle Pläne anzeigen",
   "subscription.usage.cta.viewPlans.aria": "Alle Pläne anzeigen",
+  "subscription.usage.messages.title": "Chats",
+  "subscription.usage.messages.subtitle": "Genutzt / Gesamt in diesem Zeitraum",
+  "subscription.usage.messages.progressAria": "Chat-Nutzung",
+  "subscription.usage.messages.progressTitle": "Fortschritt der Chat-Nutzung",
   "subscription.reco.title": "Optimierungsempfehlungen",
   "subscription.reco.tokens": "Erwägen Sie ein Upgrade für mehr Tokens, um Serviceunterbrechungen zu vermeiden",
   "subscription.reco.chatbots": "Sie nähern sich Ihrem Chatbot-Limit - führen Sie ein Upgrade durch, um mehr zu erstellen",

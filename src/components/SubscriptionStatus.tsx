@@ -300,19 +300,33 @@ const SubscriptionStatus: React.FC = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              {displayFeatures.slice(0, Math.ceil(displayFeatures.length / 2)).map((feature, index) => (
-                <div key={index} className="flex items-centre">
-                  <CheckCircle className="w-5 h-5 text-green-500 dark:text-green-400 mr-3 flex-shrink-0" aria-hidden="true" />
-                  <span className="text-gray-700 dark:text-gray-300 text-sm">{feature}</span>
-                </div>
-              ))}
+              {displayFeatures
+                .slice(0, Math.ceil(displayFeatures.length / 2))
+                .map((feature, index) => (
+                  <div key={index} className="flex items-centre">
+                    <CheckCircle
+                      className="w-5 h-5 text-green-500 dark:text-green-400 mr-3 flex-shrink-0"
+                      aria-hidden="true"
+                    />
+                    <span className="text-gray-700 dark:text-gray-300 text-sm">
+                      {feature}
+                    </span>
+                  </div>
+                ))}
             </div>
 
             <div className="space-y-2">
-              {displayFeatures.slice(Math.ceil(displayFeatures.length / 2)).map((feature, index) => (
+              {displayFeatures
+                .slice(Math.ceil(displayFeatures.length / 2))
+                .map((feature, index) => (
                   <div key={index} className="flex items-centre">
-                    <CheckCircle className="w-5 h-5 text-green-500 dark:text-green-400 mr-3 flex-shrink-0" aria-hidden="true" />
-                    <span className="text-gray-700 dark:text-gray-300 text-sm">{feature}</span>
+                    <CheckCircle
+                      className="w-5 h-5 text-green-500 dark:text-green-400 mr-3 flex-shrink-0"
+                      aria-hidden="true"
+                    />
+                    <span className="text-gray-700 dark:text-gray-300 text-sm">
+                      {feature}
+                    </span>
                   </div>
                 ))}
             </div>
@@ -334,10 +348,10 @@ const SubscriptionStatus: React.FC = () => {
           </h4>
 
           <div className="grid grid-cols-1 md:grid-cols-1 gap-6">
-            {/* Tokens Usage */}
+            {/* Messages Usage (instead of Tokens) */}
             <div
               className="bg-white dark:bg-gray-900/50 rounded-xl border border-gray-100 dark:border-gray-700 p-4"
-              aria-labelledby="usage-tokens-title"
+              aria-labelledby="usage-messages-title"
             >
               <div className="flex items-center mb-3">
                 <FileText
@@ -345,20 +359,23 @@ const SubscriptionStatus: React.FC = () => {
                   aria-hidden="true"
                 />
                 <h5
-                  id="usage-tokens-title"
+                  id="usage-messages-title"
                   className="font-medium text-gray-900 dark:text-white"
                 >
-                  {t("subscription.usage.tokens.title", "Tokens")}
+                  {t("subscription.usage.messages.title", "Messages")}
                 </h5>
               </div>
 
               <div className="flex justify-between items-center mb-2">
                 <span className="text-sm text-gray-700 dark:text-gray-300">
-                  {t("subscription.usage.tokens.subtitle", "Used / Available")}
+                  {t(
+                    "subscription.usage.messages.subtitle",
+                    "Used / Total this period"
+                  )}
                 </span>
                 <span className="text-sm text-gray-500 dark:text-gray-400">
-                  {(usage.tokens_used || 0).toLocaleString()} /{" "}
-                  {currentPlan.limits.tokens_per_month.toLocaleString()}
+                  {(usage.estimated_chats_used || 0).toLocaleString()} /{" "}
+                  {(usage.estimated_chats_total || 0).toLocaleString()}
                 </span>
               </div>
 
@@ -368,29 +385,29 @@ const SubscriptionStatus: React.FC = () => {
                 aria-valuemin={0}
                 aria-valuemax={100}
                 aria-valuenow={getUsagePercentage(
-                  usage.tokens_used || 0,
-                  currentPlan.limits.tokens_per_month
+                  usage.estimated_chats_used || 0,
+                  usage.estimated_chats_total || 1
                 )}
                 aria-label={t(
-                  "subscription.usage.tokens.progressAria",
-                  "Token usage"
+                  "subscription.usage.messages.progressAria",
+                  "Message usage"
                 )}
                 title={t(
-                  "subscription.usage.tokens.progressTitle",
-                  "Token usage progress"
+                  "subscription.usage.messages.progressTitle",
+                  "Message usage progress"
                 )}
               >
                 <div
                   className={`${getProgressColor(
                     getUsagePercentage(
-                      usage.tokens_used || 0,
-                      currentPlan.limits.tokens_per_month
+                      usage.estimated_chats_used || 0,
+                      usage.estimated_chats_total || 1
                     )
                   )} h-2 rounded-full transition-all duration-300`}
                   style={{
                     width: `${getUsagePercentage(
-                      usage.tokens_used || 0,
-                      currentPlan.limits.tokens_per_month
+                      usage.estimated_chats_used || 0,
+                      usage.estimated_chats_total || 1
                     )}%`,
                   }}
                 ></div>
@@ -399,14 +416,14 @@ const SubscriptionStatus: React.FC = () => {
               <div
                 className={`text-xs mt-1 px-2 py-1 rounded-full inline-block ${getUsageColor(
                   getUsagePercentage(
-                    usage.tokens_used || 0,
-                    currentPlan.limits.tokens_per_month
+                    usage.estimated_chats_used || 0,
+                    usage.estimated_chats_total || 1
                   )
                 )}`}
               >
                 {getUsagePercentage(
-                  usage.tokens_used || 0,
-                  currentPlan.limits.tokens_per_month
+                  usage.estimated_chats_used || 0,
+                  usage.estimated_chats_total || 1
                 ).toFixed(1)}
                 {t("subscription.usage.percentSuffix", "% used")}
               </div>
