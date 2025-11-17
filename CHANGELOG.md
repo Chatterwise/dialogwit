@@ -15,7 +15,7 @@ All notable changes to this project will be documented in this file. See [standa
 - CSP fixes, issues identified in live site, did not show up in local testing. Updated netlify.toml. **[CHAT-43]**
 - Fixing legacy redirects from supabase  **[NO-TICKET]**
 - Fix PublicChat language deployment errors. **[NO-TICKET]**
-
+- Moving to Chats instead of tokens **[CHAT-52]**
 ### 1.1.5 (2025-09-02)
 
 - BillingDashboard and SubscriptionStatus component translation fixes. **[CHAT-41]**

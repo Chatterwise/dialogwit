@@ -64,6 +64,45 @@ checksums:
     footer_terms: 646acb84eb1093bb0369e94069aaa006
     footer_cookies: 3729dde157adf062b3f07301ae3cd596
     footer_copyright: 813b8902d892dc67771b707d11d69971
+    cookies/banner_message: 0df56c58954286dd78e6d7e2e2afcf0b
+    cookies/banner_link: 3729dde157adf062b3f07301ae3cd596
+    cookies/accept: eac4ed0b5a1bfae0e35970c1a8d5c384
+    cookies/reject: a2e69bdb7841b6fa180075658cfd5640
+    legal/last_updated: f1b9f6e4be54773603be55c048f44d8c
+    legal/privacy/title: 7459744a63ef8af4e517a09024bd7c08
+    legal/terms/title: 5add91f519e39025708e54a7eb7a9fc5
+    legal/terms/use: fd5f65af2e8ab332378c53355e87e73a
+    legal/terms/use_text: 53951c55e7ff7083dbd694ebd27b891d
+    legal/terms/accounts: dbb9796c495f5e0f0de6f71bd32527ae
+    legal/terms/accounts_text: 706a9fc1db1cf22559a45bcb66f9abfc
+    legal/terms/fees: fb76a96fbc2368dbe5c0366b826e23f8
+    legal/terms/fees_text: 584fc68d406e8e70f6c373c0b3cc32b6
+    legal/terms/liability: fa84f8581ce18c0a8829e20665b6b452
+    legal/terms/liability_text: f0143b58e2e908e1ff36abb3d1d38619
+    legal/terms/law: 9df5f13b19af34619899013771263a55
+    legal/terms/law_text: 30e1608adf683600cff580edfc24f3be
+    legal/controller/title: 344806e0c9f4ab339aac3dfd96ecb9f1
+    legal/controller/text: f77cfb0501c7a3efb7cafd63f8dea0f2
+    legal/purposes/title: 60bca9a1b88a9e1f2ab53e5cf5a987db
+    legal/purposes/service: ea06214b766f556c115a119b8b0013a5
+    legal/purposes/analytics: 9262725a4f0aac209007017b18f1b527
+    legal/lawful_basis/title: 8deb8961b0ff0f5581bdadfe0ff1a5b1
+    legal/lawful_basis/text: ae4a73e1cb1901cd971af6b2234d49aa
+    legal/transfers/title: ad6258b7308a08e14ec4de016b7b4375
+    legal/transfers/text: 049c46677e607a0e2e94ed34d1b1ecd8
+    legal/retention/title: 61888036df620d1d8297f02c2d3d312f
+    legal/retention/text: b6db970192ea8e44890cca8fb23fd721
+    legal/rights/title: 585ec4c822474a8008a60649fc3fac56
+    legal/rights/text: c94b8969ac68b1be00300ea7acebbe00
+    legal/contact/title: 9afa39bc47019ee6dec6c74b6273967c
+    legal/contact/text: 39ea7d2300b6bd5fd6c2bb35cff988da
+    legal/cookies/title: 3729dde157adf062b3f07301ae3cd596
+    legal/cookies/essential: a02cce316a77aa9adf63c51b6d7e4219
+    legal/cookies/essential_text: 8ff830e62f6d22a9a8413a94ed48a855
+    legal/cookies/analytics: 3852a20c13189e03f3827dfe771e4e3e
+    legal/cookies/analytics_text: 7e36da4ac9749cd2922ee6ea3d1fe9f6
+    legal/cookies/manage: fc56724c817e2cd130943a69d0b2bab6
+    legal/cookies/manage_text: ccbeec73173e9ad9f0349861a3b7e5f0
     header_create: 757ccd28dd533ff3a933355273c1e32a
     header_new_chatbot: f69e0a89f73232f8db7977dd20fc520d
     header_add_knowledge: cabeb92b3ba7901f591b88cc0cbe150e
@@ -99,32 +138,28 @@ checksums:
     actionmodal_processing: 4d21e725093ba79328dcedc0f092ab3f
     plan_free: 1a35349d0a3bf673842103574d7f9b96
     plan_free_desc: e6f93fd8add93779f15190b537fe3319
-    plan_free_1: df556db7af5be8d8520f6226ab2dce94
-    plan_free_2: 9f9cf1cbd8ec50fc2023b1e318175d05
+    plan_free_1: b6a88161f87788d11183474c271ad35a
+    plan_free_2: 353529c53ab83f70ee543203eb9a1bc0
     plan_free_3: a309698980e2c0d356865f2c39de0ac7
     plan_free_4: 7d6e8763a664c739e4b1b17dcf6b3d24
-    plan_free_5: 811983d4faf3b7fda6470163040fbd90
     plan_starter: 1561d17a37e3148c501a4a66ec11ec50
     plan_starter_desc: 3c0296dfd0e6627f9f7f33a519039bc9
-    plan_starter_1: de70beeeff3e060f08d37db44ba7e7c6
-    plan_starter_2: 7d6e8763a664c739e4b1b17dcf6b3d24
-    plan_starter_3: 7df3061b96c8faaf0c532db0d41065af
+    plan_starter_1: c5277ce32d3d086b8469740c33da575b
+    plan_starter_2: 5e58188e3fde75edeb42ea85e59cd932
+    plan_starter_3: 07fe35d389a79529d9168971f1ea45b2
     plan_starter_4: 678538c912a770b1e1416ecdb8e299b1
-    plan_starter_5: 811983d4faf3b7fda6470163040fbd90
     plan_growth: 2f3e6385e01ae3a7393c6a7f4d8b2644
     plan_growth_desc: 425c2887e68f13c91be789d9a933b109
-    plan_growth_1: b988fac66eb772a601316b0feb6c8c6d
-    plan_growth_2: 39ec20108a869f9f00a9eaa217bfd876
-    plan_growth_3: bb9f62c1cd0601e0b3fae13f7685c81d
-    plan_growth_4: fd6a8fb9d8f188fc4ba193562272726e
-    plan_growth_5: 811983d4faf3b7fda6470163040fbd90
+    plan_growth_1: 3ea502b6b80de3dc702778023c31f997
+    plan_growth_2: bc5928b86938a7ebbef4aa74e3468483
+    plan_growth_3: eb9fd3a02d254f2486c25370e3df07b2
+    plan_growth_4: eb2c74f4be5eb1bd7f14cb4359bad3ee
     plan_business: 0819ff343031b2b90021d36aaeb14982
     plan_business_desc: 3594f01b5124921f85773c9688d8f20d
-    plan_business_1: 314eb8b046e062b9d20004fdca3fc898
+    plan_business_1: 16a4e894fad0e9c8d18b547cf80d8e30
     plan_business_2: 4ec8735a6346a2d502e33be879ba5871
-    plan_business_3: 327a00b49e8a8ccd16914a805549689b
-    plan_business_4: 28a57ff95b08e633d4078feba035b368
-    plan_business_5: 390862f066a08562d500f809496570cc
+    plan_business_3: 28a57ff95b08e633d4078feba035b368
+    plan_business_4: 2203bdc1237a6b9f4dc5c983ed0136ad
     plan_business_contact: 5ef4091454fbca0bb7e3758975cb060d
     analytics_title: 966f8f30c70d90026d5e127b276f8886
     analytics_subtitle: 187e0334091ff290e590d87c429ef01c
@@ -227,6 +262,7 @@ checksums:
     billing_api_requests: 96bcef2dfaa2afd7d42333339975b552
     billing_this_month: 50845a38865204a97773c44dcd2ebb90
     billing_total: f60dc0a14e9b1bace656c644de25de5b
+    billing_messages_used: e3d5b278270cce23faa54c9d9d4eb583
     billing_more_analytics_prompt: 2597c9a13ff5b4660eee0368e01bb45d
     billing_view_detailed_analytics: 85579633673b6cc45a996d3ac39ca2cf
     billing_invoice_history: 016af7ea38bd7ca132e0f53efd590908
@@ -338,12 +374,12 @@ checksums:
     chatbotdetail_tab_chat: 1171b63c16b3431dca319af1804de2a0
     chatbotdetail_tab_knowledge: 434d6cd2ab58b3fcfca0d49e0b354c8b
     chatbotdetail_tab_analytics: ec67586974cc78f25959d47bb36683a7
-    chatbotdetail_stat_total_messages: 6599793098e23c37fbdaf38216a94c96
-    chatbotdetail_stat_today: 0b91a56d54e5a6ae342a8f7ee87ebcf9
+    chatbotdetail_stat_total_messages: e6e0d1bfb54d0fccb9a2184577da603a
+    chatbotdetail_stat_today: 8aaf46de1b75d890b9e31778e367df81
     chatbotdetail_stat_avg_response_len: 584280d4713d263398823088c41f8841
     chatbotdetail_stat_kb_items: 1650e050f5c9c61fa7ff1b5a95886650
     chatbotdetail_chars: 62c739ed84a66c12b987b97993f455df
-    chatbotdetail_chart_7d: f26fe27f0e0137cd71a4570f5de82fd9
+    chatbotdetail_chart_7d: 40fac0ca91f2c17b21de8174423df3fd
     chatbotdetail_no_analytics: 791ef1da4a76ab64d1596ee5d8191637
     chatbotdetail_recent_conversations: ea10c542af901a96e90c62957592afe3
     chatbotdetail_loading_messages: 4028ddc4eccabdc5852ef461c6210f10
@@ -522,7 +558,9 @@ checksums:
     dashboard.stats.note_tokens_today: 1eea355d84a83232e7749ee03b6f57ea
     dashboard.stats.knowledge_items: 1650e050f5c9c61fa7ff1b5a95886650
     dashboard.stats.note_knowledge_across: 907563dc13bd2efd6ae4678c409f348f
+    dashboard.stats.total_messages_used: ac8e9d2c9d85ed27bece6a52ae5c2e17
     dashboard.chart.messages_this_week: 1447f91384a0c4a79b780601327b6721
+    dashboard.stats.note_messages_remaining: ef53c8f007bbf5aade24019fc07c7dfa
     dashboard.recent_activity.title: d4b07b3b4faedbd20762ab8a665d979d
     dashboard.recent_activity.item_title: cfc1fbe969c17ff1622ee843d6ea008d
     dashboard.recent_activity.empty: c7b64228ee16c8ee0142d331af70b079
@@ -904,6 +942,16 @@ checksums:
     profile.timezones.hint: 259be8ac4864bf05ebfeb716aff15250
     profile.buttons.save: d895276cde226e9225eca1e74aa799f4
     profile.buttons.saving: 7cb2d8f012d57db8a62187b65ef164dc
+    publicChat.loading: b6f0a776462715b4ee5f31b4e2fad8f4
+    publicChat.notFoundTitle: 145f780804538a6479a279d597dc0dbb
+    publicChat.notFoundDesc: a96a2bd3000900e0791b789f5349c22b
+    publicChat.notReadyTitle: 9581faa742dc9b182dd3d2dbf528f906
+    publicChat.notReadyDesc: 6fd01bec7607d55f97beb97df70da0ec
+    publicChat.expand: 1bffd02092bb2dd1ac0455fe93ceb1f2
+    publicChat.minimize: 5e1c3f49e6aed756467f4d13dfc55a06
+    publicChat.header: 0a543fcab86c93a47bce0b45042a7d63
+    publicChat.poweredBy: 31a87fdb0f9b137d7d01f005b0d8d6bf
+    publicChat.footerNote: f9d07075bceddc634da4dc0c342cc1ff
     resetPassword.header.title: dd55e85b15c0978aa6227cba0ef3e539
     resetPassword.header.subtitle: 742c470ca97fb2615616a18546ced32b
     resetPassword.errors.missingToken: 0dad74b2d979c21b410f8e400a1333f2
@@ -990,6 +1038,10 @@ checksums:
     subscription.usage.cta.viewPlans: 7f13c67d28cc007cbffd1439645065d8
     subscription.usage.cta.viewPlans.title: 7f13c67d28cc007cbffd1439645065d8
     subscription.usage.cta.viewPlans.aria: 7f13c67d28cc007cbffd1439645065d8
+    subscription.usage.messages.title: 2c16db9b867815e8624b3f4ca923ae44
+    subscription.usage.messages.subtitle: d23380ca3410f57a14dcbccecfc2b927
+    subscription.usage.messages.progressAria: 2c86aa2635b3172b6e6650611e4e9ddd
+    subscription.usage.messages.progressTitle: 1d53abc7e68a631c89848ed121e176aa
     subscription.reco.title: 5b81932dde316a534dbb89984a1eff20
     subscription.reco.tokens: 47b9f27c4a8dc6b36fb7137109206174
     subscription.reco.chatbots: 095e877b482b94a7deaadda455e666ca

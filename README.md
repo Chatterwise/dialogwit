@@ -4,6 +4,8 @@
 
 A complete chatbot integration solution that allows users to easily add AI-powered chatbots to any web application. Supports both React (headless approach) and universal script tag integration.
 
+Lingo npx lingo.dev@latest run
+
 ## Commit message rules
 
 - **Default** (patch): chore: …, docs: …, refactor: …, ci: …, etc.

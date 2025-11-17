@@ -61,6 +61,7 @@
   "footer_privacy": "Adatvédelmi szabályzat",
   "footer_terms": "Felhasználási feltételek",
   "footer_cookies": "Cookie szabályzat",
+  "footer_copyright": "© 2025 ChatterWise. Minden jog fenntartva.",
   "cookies": {
     "banner_message": "Alapvető sütiket használunk, és – hozzájárulásoddal – analitikai sütiket a szolgáltatás javításához. Választásodat bármikor módosíthatod a Sütiszabályzatban.",
     "banner_link": "Sütiszabályzat",
@@ -69,7 +70,9 @@
   },
   "legal": {
     "last_updated": "Utoljára frissítve: {{date}}",
-    "privacy": { "title": "Adatvédelmi tájékoztató" },
+    "privacy": {
+      "title": "Adatvédelmi tájékoztató"
+    },
     "terms": {
       "title": "Szolgáltatási feltételek",
       "use": "A szolgáltatás használata",
@@ -83,17 +86,35 @@
       "law": "Irányadó jog",
       "law_text": "Ezen feltételekre Anglia és Wales joga irányadó, a jogvitákra e joghatóság bíróságai kizárólagosan illetékesek."
     },
-    "controller": { "title": "Kik vagyunk", "text": "Adatkezelők vagyunk a UK GDPR és PECR szerint. Ez a tájékoztató ismerteti, hogyan kezeljük a személyes adatokat a szolgáltatás használatakor." },
+    "controller": {
+      "title": "Kik vagyunk",
+      "text": "Adatkezelők vagyunk a UK GDPR és PECR szerint. Ez a tájékoztató ismerteti, hogyan kezeljük a személyes adatokat a szolgáltatás használatakor."
+    },
     "purposes": {
       "title": "Milyen adatokat és miért",
       "service": "Szolgáltatásnyújtás: fiók, hitelesítés, kommunikáció és biztonság (szerződés teljesítése vagy jogos érdek).",
       "analytics": "Analitika: teljesítmény és funkciók javítása (csak hozzájárulással; elfogadásig kikapcsolva)."
     },
-    "lawful_basis": { "title": "Jogi alapok", "text": "A szolgáltatás nyújtása érdekében szerződésre, biztonság és csalásmegelőzés céljából jogos érdekekre, analitikai sütik esetén hozzájárulásra támaszkodunk." },
-    "transfers": { "title": "Nemzetközi adattovábbítás", "text": "Az Egyesült Királyságon kívüli adattovábbítás esetén megfelelő garanciákat alkalmazunk, például általános szerződési feltételeket és regionális tárolást, ha elérhető." },
-    "retention": { "title": "Megőrzés", "text": "A személyes adatokat csak a leírt célokhoz szükséges ideig vagy jogi kötelezettség teljesítéséig őrizzük meg." },
-    "rights": { "title": "Jogai d", "text": "A UK GDPR alapján jogaid vannak, többek között hozzáférés, helyesbítés, törlés, korlátozás, tiltakozás, adathordozhatóság és a hozzájárulás visszavonása." },
-    "contact": { "title": "Kapcsolat", "text": "Jogai gyakorlásához vagy kérdéseihez írj a privacy@yourdomain.example címre." },
+    "lawful_basis": {
+      "title": "Jogi alapok",
+      "text": "A szolgáltatás nyújtása érdekében szerződésre, biztonság és csalásmegelőzés céljából jogos érdekekre, analitikai sütik esetén hozzájárulásra támaszkodunk."
+    },
+    "transfers": {
+      "title": "Nemzetközi adattovábbítás",
+      "text": "Az Egyesült Királyságon kívüli adattovábbítás esetén megfelelő garanciákat alkalmazunk, például általános szerződési feltételeket és regionális tárolást, ha elérhető."
+    },
+    "retention": {
+      "title": "Megőrzés",
+      "text": "A személyes adatokat csak a leírt célokhoz szükséges ideig vagy jogi kötelezettség teljesítéséig őrizzük meg."
+    },
+    "rights": {
+      "title": "Jogai d",
+      "text": "A UK GDPR alapján jogaid vannak, többek között hozzáférés, helyesbítés, törlés, korlátozás, tiltakozás, adathordozhatóság és a hozzájárulás visszavonása."
+    },
+    "contact": {
+      "title": "Kapcsolat",
+      "text": "Jogai gyakorlásához vagy kérdéseihez írj a privacy@yourdomain.example címre."
+    },
     "cookies": {
       "title": "Sütiszabályzat",
       "essential": "Alapvető sütik",
@@ -104,7 +125,6 @@
       "manage_text": "A banner segítségével fogadhatod el vagy utasíthatod el az analitikai sütiket. A böngésző beállításaiban is szabályozhatod őket."
     }
   },
-  "footer_copyright": "© 2025 ChatterWise. Minden jog fenntartva.",
   "header_create": "Létrehozás",
   "header_new_chatbot": "Új chatbot",
   "header_add_knowledge": "Tudás hozzáadása",
@@ -138,35 +158,30 @@
   "actionmodal_placeholder": "Írd be a következőt: {{word}} a megerősítéshez",
   "actionmodal_cancel": "Mégse",
   "actionmodal_processing": "Feldolgozás...",
-  
   "plan_free": "Chatterwise Ingyenes",
   "plan_free_desc": "Kezdd el az AI-alapú chatbotok építését ingyen. Ideális kísérletezéshez és teszteléshez.",
-  "plan_free_1": "Havi 50 csevegés",
+  "plan_free_1": "Havi 50 beszélgetés",
   "plan_free_2": "1 chatbot",
   "plan_free_3": "Alapvető elemzések",
   "plan_free_4": "E-mailes ügyfélszolgálat",
-  
   "plan_starter": "Chatterwise Kezdő",
   "plan_starter_desc": "Nagyszerű választás egyéneknek vagy kisebb csapatoknak a kezdeti lépésekhez.",
-  "plan_starter_1": "Havi 500 csevegés",
-  "plan_starter_2": "Legfeljebb 5 chatbot",
-  "plan_starter_3": "E-mailes beállítási útmutatás",
+  "plan_starter_1": "Havi 500 beszélgetés",
+  "plan_starter_2": "Akár 5 chatbot",
+  "plan_starter_3": "E-mailes beállítási útmutató",
   "plan_starter_4": "Elsőbbségi e-mailes ügyfélszolgálat",
-  
   "plan_growth": "Chatterwise Növekedés",
   "plan_growth_desc": "Növekvő csapatok számára, akiknek több kapacitásra és támogatásra van szükségük.",
-  "plan_growth_1": "Havi 2 500 csevegés",
-  "plan_growth_2": "Legfeljebb 20 chatbot",
-  "plan_growth_3": "Segített beállítás egyedi konfigurációval",
-  "plan_growth_4": "Videóhívásos és e-mailes támogatás",
-  
+  "plan_growth_1": "Havi 2 500 beszélgetés",
+  "plan_growth_2": "Akár 20 chatbot",
+  "plan_growth_3": "Támogatott beállítás egyedi konfigurációval",
+  "plan_growth_4": "Videóhívás és e-mailes támogatás",
   "plan_business": "Chatterwise Üzleti",
   "plan_business_desc": "Vállalati szintű chatbot-infrastruktúra fejlett testreszabási lehetőségekkel és dedikált támogatással.",
-  "plan_business_1": "Havi 12 000 csevegés",
+  "plan_business_1": "Havi 12 000 beszélgetés",
   "plan_business_2": "Korlátlan számú chatbot",
   "plan_business_3": "Dedikált támogatás",
-  "plan_business_4": "Teljes konfiguráció és márka-beállítási támogatás",
-  
+  "plan_business_4": "Teljes körű konfiguráció és arculati beállítás támogatás",
   "plan_business_contact": "Lépjen kapcsolatba velünk az árakért",
   "analytics_title": "Fejlett analitika",
   "analytics_subtitle": "Átfogó betekintés a chatbot teljesítményébe és a felhasználói aktivitásba.",
@@ -269,6 +284,7 @@
   "billing_api_requests": "API kérések",
   "billing_this_month": "Ebben a hónapban",
   "billing_total": "Összesen",
+  "billing_messages_used": "Felhasznált beszélgetések",
   "billing_more_analytics_prompt": "Részletesebb elemzésre van szüksége?",
   "billing_view_detailed_analytics": "Részletes elemzés megtekintése",
   "billing_invoice_history": "Számlatörténet",
@@ -380,12 +396,12 @@
   "chatbotdetail_tab_chat": "Csevegés",
   "chatbotdetail_tab_knowledge": "Tudásbázis",
   "chatbotdetail_tab_analytics": "Elemzés",
-  "chatbotdetail_stat_total_messages": "Összes üzenet",
-  "chatbotdetail_stat_today": "Mai üzenetek",
+  "chatbotdetail_stat_total_messages": "Összes beszélgetés",
+  "chatbotdetail_stat_today": "Mai beszélgetések",
   "chatbotdetail_stat_avg_response_len": "Átlagos válaszhossz",
   "chatbotdetail_stat_kb_items": "Tudáselemek",
   "chatbotdetail_chars": "karakter",
-  "chatbotdetail_chart_7d": "Üzenetek időbeli eloszlása (utolsó 7 nap)",
+  "chatbotdetail_chart_7d": "Beszélgetések időbeli eloszlása (utolsó 7 nap)",
   "chatbotdetail_no_analytics": "Nincs elérhető elemzési adat.",
   "chatbotdetail_recent_conversations": "Legutóbbi beszélgetések",
   "chatbotdetail_loading_messages": "Üzenetek betöltése...",
@@ -564,7 +580,9 @@
   "dashboard.stats.note_tokens_today": "{{count}} ma",
   "dashboard.stats.knowledge_items": "Tudáselemek",
   "dashboard.stats.note_knowledge_across": "Minden chatboton keresztül",
+  "dashboard.stats.total_messages_used": "Összes felhasznált beszélgetés",
   "dashboard.chart.messages_this_week": "Üzenetek ezen a héten",
+  "dashboard.stats.note_messages_remaining": "Kb. {{count}} beszélgetés maradt ebben az időszakban",
   "dashboard.recent_activity.title": "Legutóbbi tevékenység",
   "dashboard.recent_activity.item_title": "Üzenet itt: {{name}}",
   "dashboard.recent_activity.empty": "Nincs legutóbbi tevékenység",
@@ -1042,6 +1060,10 @@
   "subscription.usage.cta.viewPlans": "Összes csomag megtekintése",
   "subscription.usage.cta.viewPlans.title": "Összes csomag megtekintése",
   "subscription.usage.cta.viewPlans.aria": "Összes csomag megtekintése",
+  "subscription.usage.messages.title": "Beszélgetések",
+  "subscription.usage.messages.subtitle": "Felhasznált / Összes ebben az időszakban",
+  "subscription.usage.messages.progressAria": "Beszélgetések használata",
+  "subscription.usage.messages.progressTitle": "Beszélgetések használatának előrehaladása",
   "subscription.reco.title": "Optimalizálási javaslatok",
   "subscription.reco.tokens": "Fontold meg az előfizetés frissítését több tokenért, hogy elkerüld a szolgáltatás megszakadását",
   "subscription.reco.chatbots": "Közelítesz a chatbot limitedhez - frissíts, hogy többet hozhass létre",
