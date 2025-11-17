@@ -154,9 +154,9 @@ export const ChatbotList = () => {
             <motion.div
               layout
               key={chatbot.id}
-              className="bg-white/90 dark:bg-gray-900/90 backdrop-blur-lg rounded-2xl shadow-xl border border-gray-100 dark:border-gray-800 overflow-hidden hover:shadow-2xl transition duration-200"
+              className="bg-white/90 dark:bg-gray-900/90 backdrop-blur-lg rounded-2xl shadow-xl border border-gray-100 dark:border-gray-800 overflow-hidden hover:shadow-2xl transition duration-200 h-full flex flex-col"
             >
-              <div className="p-6">
+              <div className="p-6 flex flex-col flex-1">
                 <div className="flex items-center justify-between mb-5">
                   <div className="flex items-center">
                     {(() => {
@@ -200,89 +200,83 @@ export const ChatbotList = () => {
                   {chatbot.description}
                 </p>
 
-                <p className="text-xs text-gray-500 dark:text-gray-400 mb-5">
-                  {t("chatbotlist_role_template", "Role Template:")}{" "}
-                  <span className="font-medium">
-                    {chatbot?.bot_role_templates?.name ??
-                      t("chatbotlist_role_none", "None assigned")}
-                  </span>
-                </p>
+                <div className="mt-auto space-y-3">
+                  <div className="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400">
+                    <span>
+                      {t("chatbotlist_created", "Created")}{" "}
+                      {new Date(chatbot.created_at).toLocaleDateString()}
+                    </span>
+                    {/* <span className="flex items-center">
+                      <MessageCircle className="h-4 w-4 mr-1" />
+                      {t("chatbotlist_messages_count", "{{count}} messages", {
+                        count: 0,
+                      })}
+                    </span> */}
+                  </div>
 
-                <div className="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400 mb-5">
-                  <span>
-                    {t("chatbotlist_created", "Created")}{" "}
-                    {new Date(chatbot.created_at).toLocaleDateString()}
-                  </span>
-                  <span className="flex items-center">
-                    <MessageCircle className="h-4 w-4 mr-1" />
-                    {t("chatbotlist_messages_count", "{{count}} messages", {
-                      count: 0,
-                    })}
-                  </span>
-                </div>
-
-                <div className="flex space-x-2">
-                  <Link
-                    to={`/${currentLanguage}/chatbots/${chatbot.id}`}
-                    className="flex-1 text-center py-2 px-4 rounded-xl text-sm font-semibold text-white bg-primary-600 hover:bg-primary-700 transition-colors"
-                  >
-                    {t("chatbotlist_view", "View")}
-                  </Link>
-                  <Link
-                    to={`/${currentLanguage}/chatbots/${chatbot.id}/settings`}
-                    className="flex items-center justify-center px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-xl text-blue-500 hover:bg-gray-50 dark:hover:bg-gray-800 transition"
-                    title={t("chatbotlist_settings", "Settings")}
-                    aria-label={t("chatbotlist_settings", "Settings")}
-                  >
-                    <Settings className="h-4 w-4" />
-                  </Link>
-                  {chatbot.status === "deleted" ? (
-                    <button
-                      onClick={() => restoreChatbot(chatbot.id)}
-                      className="flex items-center justify-center px-3 py-2 border border-green-300 dark:border-green-900 text-green-700 dark:text-green-400 rounded-xl hover:bg-green-50 dark:hover:bg-green-900/20 transition"
-                      title={t(
-                        "chatbotlist_restore_title",
-                        "Restore {{name}}",
-                        { name: chatbot.name }
-                      )}
+                  <div className="flex space-x-2">
+                    <Link
+                      to={`/${currentLanguage}/chatbots/${chatbot.id}`}
+                      className="flex-1 text-center py-2 px-4 rounded-xl text-sm font-semibold text-white bg-primary-600 hover:bg-primary-700 transition-colors"
                     >
-                      <RotateCcw className="h-4 w-4" />
-                    </button>
-                  ) : (
-                    <button
-                      onClick={() =>
-                        chatbot.id === "6db4c04f-0ed7-4f7d-b622-bd003e22bac5"
-                          ? alert(
-                              t(
-                                "chatbotlist_demo_cannot_delete",
-                                "This chatbot cannot be deleted."
+                      {t("chatbotlist_view", "View")}
+                    </Link>
+                    <Link
+                      to={`/${currentLanguage}/chatbots/${chatbot.id}/settings`}
+                      className="flex items-center justify-center px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-xl text-blue-500 hover:bg-gray-50 dark:hover:bg-gray-800 transition"
+                      title={t("chatbotlist_settings", "Settings")}
+                      aria-label={t("chatbotlist_settings", "Settings")}
+                    >
+                      <Settings className="h-4 w-4" />
+                    </Link>
+                    {chatbot.status === "deleted" ? (
+                      <button
+                        onClick={() => restoreChatbot(chatbot.id)}
+                        className="flex items-center justify-center px-3 py-2 border border-green-300 dark:border-green-900 text-green-700 dark:text-green-400 rounded-xl hover:bg-green-50 dark:hover:bg-green-900/20 transition"
+                        title={t(
+                          "chatbotlist_restore_title",
+                          "Restore {{name}}",
+                          { name: chatbot.name }
+                        )}
+                      >
+                        <RotateCcw className="h-4 w-4" />
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() =>
+                          chatbot.id === "6db4c04f-0ed7-4f7d-b622-bd003e22bac5"
+                            ? alert(
+                                t(
+                                  "chatbotlist_demo_cannot_delete",
+                                  "This chatbot cannot be deleted."
+                                )
                               )
-                            )
-                          : handleDeleteClick(chatbot.id, chatbot.name)
-                      }
-                      disabled={
-                        deletingId === chatbot.id ||
-                        chatbot.id === "6db4c04f-0ed7-4f7d-b622-bd003e22bac5"
-                      }
-                      className="flex items-center justify-center px-3 py-2 border border-red-300 dark:border-red-900 text-red-600 dark:text-red-400 rounded-xl hover:bg-red-50 dark:hover:bg-red-900/20 transition disabled:opacity-50"
-                      title={
-                        chatbot.id === "6db4c04f-0ed7-4f7d-b622-bd003e22bac5"
-                          ? t(
-                              "chatbotlist_demo_cannot_delete_title",
-                              "This chatbot cannot be deleted"
-                            )
-                          : t("chatbotlist_delete_title", "Delete {{name}}", {
-                              name: chatbot.name,
-                            })
-                      }
-                    >
-                      {deletingId === chatbot.id ? (
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-red-600"></div>
-                      ) : (
-                        <Trash2 className="h-4 w-4" />
-                      )}
-                    </button>
-                  )}
+                            : handleDeleteClick(chatbot.id, chatbot.name)
+                        }
+                        disabled={
+                          deletingId === chatbot.id ||
+                          chatbot.id === "6db4c04f-0ed7-4f7d-b622-bd003e22bac5"
+                        }
+                        className="flex items-center justify-center px-3 py-2 border border-red-300 dark:border-red-900 text-red-600 dark:text-red-400 rounded-xl hover:bg-red-50 dark:hover:bg-red-900/20 transition disabled:opacity-50"
+                        title={
+                          chatbot.id === "6db4c04f-0ed7-4f7d-b622-bd003e22bac5"
+                            ? t(
+                                "chatbotlist_demo_cannot_delete_title",
+                                "This chatbot cannot be deleted"
+                              )
+                            : t("chatbotlist_delete_title", "Delete {{name}}", {
+                                name: chatbot.name,
+                              })
+                        }
+                      >
+                        {deletingId === chatbot.id ? (
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-red-600"></div>
+                        ) : (
+                          <Trash2 className="h-4 w-4" />
+                        )}
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
             </motion.div>

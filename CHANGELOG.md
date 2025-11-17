@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file. See [standa
 
 ## [Unreleased]
 
+- Remove redundant details and improved styling of the chabotlist cards in src/components/ChatbotList.tsx. **[CHAT-53]**
 - Ensure src/components/PricingPlans.tsx only fetch the right number of features per plan. **[CHAT-47]**
 - Updated plan features, including language support. **[CHAT-47]**
 - Removed token allowance box from src/components/PricingPlans.tsx. **[CHAT-47]**
