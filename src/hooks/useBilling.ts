@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
 
 const DEBUG_BILLING = true;
@@ -13,13 +13,11 @@ type SubscriptionRow = {
   current_period_start: string | null; // ISO
   current_period_end: string | null;   // ISO
   metadata: Json;
-  // Plan snapshot fields on subscription (as your sample shows)
   name?: string | null;
   display_name?: string | null;
   description?: string | null;
   features?: Json;
-  limits?: Json; // { tokens_per_month?: number, ... }
-  // If you still do an explicit join, this will be present:
+  limits?: Json;
   subscription_plans?: {
     name?: string | null;
     display_name?: string | null;
@@ -28,10 +26,27 @@ type SubscriptionRow = {
   } | null;
 };
 
-const TOKENS_PER_CHAT = 5_000_000 / 12_000;
+// TOKENS_PER_CHAT is now derived per plan based on max chats
+const getTokensPerChat = (planName: string, tokensPerMonth: number) => {
+  const maxChatsMap: Record<string, number> = {
+    free: 50,
+    starter: 500,
+    growth: 2500,
+    business: 12000,
+  };
+
+  const maxChatsForPlan =
+    maxChatsMap[planName] ??
+    50;
+
+  if (!tokensPerMonth || maxChatsForPlan <= 0) {
+    return 400; // sane fallback
+  }
+
+  return tokensPerMonth / maxChatsForPlan;
+};
 
 export const useBilling = () => {
-  // 1) Auth
   const userQuery = useQuery({
     queryKey: ['auth', 'user'],
     queryFn: async () => {
@@ -42,10 +57,9 @@ export const useBilling = () => {
     staleTime: 60_000,
   });
 
-  // 2) Subscription (+ plan info if joined)
   const subscriptionQuery = useQuery({
     queryKey: ['subscription', userQuery.data?.id],
-    enabled: !!userQuery.data, // only when logged in
+    enabled: !!userQuery.data,
     queryFn: async (): Promise<SubscriptionRow | null> => {
       const user = userQuery.data!;
       const { data, error } = await supabase
@@ -65,7 +79,6 @@ export const useBilling = () => {
     staleTime: 5 * 60 * 1000,
   });
 
-  // Helper to resolve limits/features/display safely from either snapshot or joined plan.
   const resolvePlanInfo = (sub: SubscriptionRow | null) => {
     const snapLimits = (sub?.limits ?? {}) as Record<string, any>;
     const joinLimits = (sub?.subscription_plans?.limits ?? {}) as Record<string, any>;
@@ -97,7 +110,6 @@ export const useBilling = () => {
     };
   };
 
-  // 3) Usage (anniversary window if present, else calendar month)
   const usageQuery = useQuery({
     queryKey: ['usage', userQuery.data?.id, subscriptionQuery.data?.id],
     enabled: !!userQuery.data && subscriptionQuery.isSuccess,
@@ -108,6 +120,7 @@ export const useBilling = () => {
 
       const plan = resolvePlanInfo(sub);
       const planTokens = Number(plan.limits.tokens_per_month ?? 10000);
+      const tokensPerChat = getTokensPerChat(plan.plan_name, planTokens);
 
       let startISO: string;
       let endISO: string;
@@ -168,9 +181,9 @@ export const useBilling = () => {
 
       const estimatedChatsAvailable = Math.max(
         0,
-        Math.floor(availableTokens / TOKENS_PER_CHAT)
+        Math.floor(availableTokens / tokensPerChat)
       );
-      const estimatedChatsUsed = Math.floor(tokensUsed / TOKENS_PER_CHAT);
+      const estimatedChatsUsed = Math.floor(tokensUsed / tokensPerChat);
       const estimatedChatsTotal = estimatedChatsAvailable + estimatedChatsUsed;
       const chatsMessage = `Approx. ${estimatedChatsAvailable.toLocaleString()} chats remaining this period.`;
 
@@ -183,6 +196,9 @@ export const useBilling = () => {
 
       if (DEBUG_BILLING) {
         console.log('📅 Window:', { startISO, endISO });
+        console.log('🧾 Active plan:', plan.plan_name);
+        console.log('📊 Tokens per month:', planTokens);
+        console.log('💬 Tokens per chat:', tokensPerChat);
         console.log('📊 Tokens used:', tokensUsed);
         console.log('📦 Rolled-over Tokens:', rolledOver);
         console.log('💰 Available Tokens:', availableTokens);
@@ -215,7 +231,6 @@ export const useBilling = () => {
     },
   });
 
-  // 4) Invoices
   const invoicesQuery = useQuery({
     queryKey: ['invoices', userQuery.data?.id],
     enabled: !!userQuery.data,
